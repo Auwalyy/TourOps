@@ -1,0 +1,44 @@
+version: '3.9'
+
+services:
+  mongo:
+    image: mongo:7
+    container_name: tourops-mongo
+    restart: unless-stopped
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongo_data:/data/db
+    environment:
+      MONGO_INITDB_DATABASE: tourops
+
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    container_name: tourops-api
+    restart: unless-stopped
+    ports:
+      - '5000:5000'
+    env_file:
+      - ./apps/api/.env
+    depends_on:
+      - mongo
+    environment:
+      MONGO_URI: mongodb://mongo:27017/tourops
+
+  web:
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile
+    container_name: tourops-web
+    restart: unless-stopped
+    ports:
+      - '3000:3000'
+    environment:
+      NEXT_PUBLIC_API_URL: http://api:5000
+    depends_on:
+      - api
+
+volumes:
+  mongo_data:
