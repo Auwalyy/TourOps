@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import {
   Globe, Search, Loader2, CheckCircle2, Clock, XCircle, AlertCircle,
@@ -48,7 +48,7 @@ function Row({ label, value }: { label: string; value?: string | null }) {
   );
 }
 
-export default function TrackFilePage() {
+function TrackFilePageContent() {
   const searchParams = useSearchParams();
   const [fileNumber, setFileNumber] = useState('');
   const [loading, setLoading] = useState(false);
@@ -337,5 +337,13 @@ export default function TrackFilePage() {
         Powered by TourOps
       </footer>
     </div>
+  );
+}
+
+export default function PortalTrackPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gray-50 p-6 text-sm text-gray-500 dark:bg-gray-950">Loading tracker...</div>}>
+      <TrackFilePageContent />
+    </Suspense>
   );
 }

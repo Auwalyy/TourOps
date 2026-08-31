@@ -34,6 +34,10 @@ export default function PackageDetailPage() {
   if (isLoading) return <Skeleton className="h-64 w-full" />;
   if (!pkg) return <p className="text-gray-500">Package not found.</p>;
 
+  const itinerary = pkg.itinerary ?? [];
+  const inclusions = pkg.inclusions ?? [];
+  const exclusions = pkg.exclusions ?? [];
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
@@ -70,17 +74,17 @@ export default function PackageDetailPage() {
             </CardContent>
           </Card>
 
-          {pkg.itinerary.length > 0 && (
+          {itinerary.length > 0 && (
             <Card>
               <CardHeader><CardTitle>Itinerary</CardTitle></CardHeader>
               <CardContent className="space-y-4">
-                {pkg.itinerary.map((day) => (
+                {itinerary.map((day: { day: number; title: string; description: string; activities: string[] }) => (
                   <div key={day.day} className="border-l-2 border-blue-200 pl-4 dark:border-blue-800">
                     <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">Day {day.day}: {day.title}</p>
                     <p className="mt-1 text-xs text-gray-500">{day.description}</p>
                     {day.activities.length > 0 && (
                       <ul className="mt-1 space-y-0.5">
-                        {day.activities.map((a, i) => <li key={i} className="text-xs text-gray-600 dark:text-gray-400">• {a}</li>)}
+                        {day.activities.map((a: string, i: number) => <li key={i} className="text-xs text-gray-600 dark:text-gray-400">• {a}</li>)}
                       </ul>
                     )}
                   </div>
@@ -91,12 +95,12 @@ export default function PackageDetailPage() {
         </div>
 
         <div className="space-y-4">
-          {pkg.inclusions.length > 0 && (
+          {inclusions.length > 0 && (
             <Card>
               <CardHeader><CardTitle>Inclusions</CardTitle></CardHeader>
               <CardContent>
                 <ul className="space-y-1">
-                  {pkg.inclusions.map((item, i) => (
+                  {inclusions.map((item: string, i: number) => (
                     <li key={i} className="flex items-start gap-2 text-sm text-gray-700 dark:text-gray-300">
                       <span className="mt-0.5 text-green-500">✓</span> {item}
                     </li>
@@ -105,12 +109,12 @@ export default function PackageDetailPage() {
               </CardContent>
             </Card>
           )}
-          {pkg.exclusions.length > 0 && (
+          {exclusions.length > 0 && (
             <Card>
               <CardHeader><CardTitle>Exclusions</CardTitle></CardHeader>
               <CardContent>
                 <ul className="space-y-1">
-                  {pkg.exclusions.map((item, i) => (
+                  {exclusions.map((item: string, i: number) => (
                     <li key={i} className="flex items-start gap-2 text-sm text-gray-700 dark:text-gray-300">
                       <span className="mt-0.5 text-red-500">✗</span> {item}
                     </li>

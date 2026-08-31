@@ -1,4 +1,5 @@
 'use client';
+import { Suspense } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -15,7 +16,7 @@ const schema = z.object({
 
 type FormData = z.infer<typeof schema>;
 
-export default function ResetPasswordPage() {
+function ResetPasswordForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get('token') || '';
@@ -52,5 +53,13 @@ export default function ResetPasswordPage() {
         <Button type="submit" className="w-full" loading={isSubmitting}>Reset Password</Button>
       </form>
     </div>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={<div className="text-sm text-gray-500">Loading reset form...</div>}>
+      <ResetPasswordForm />
+    </Suspense>
   );
 }

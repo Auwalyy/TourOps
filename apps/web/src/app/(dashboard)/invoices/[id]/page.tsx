@@ -48,6 +48,8 @@ export default function InvoiceDetailPage() {
   if (!invoice) return <p className="text-gray-500">Invoice not found.</p>;
 
   const customer = invoice.customerId as any;
+  const lineItems = invoice.lineItems ?? [];
+  const payments = invoice.payments ?? [];
 
   return (
     <div className="space-y-6">
@@ -82,7 +84,7 @@ export default function InvoiceDetailPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {invoice.lineItems.map((item, i) => (
+                  {lineItems.map((item: { description: string; quantity: number; unitPrice: number; total: number }, i: number) => (
                     <tr key={i} className="border-b border-gray-50 dark:border-gray-800">
                       <td className="py-2">{item.description}</td>
                       <td className="py-2 text-right">{item.quantity}</td>
@@ -104,12 +106,12 @@ export default function InvoiceDetailPage() {
             </CardContent>
           </Card>
 
-          {invoice.payments.length > 0 && (
+          {payments.length > 0 && (
             <Card>
               <CardHeader><CardTitle>Payment History</CardTitle></CardHeader>
               <CardContent>
                 <ul className="divide-y divide-gray-50 dark:divide-gray-800">
-                  {invoice.payments.map((p, i) => (
+                  {payments.map((p: { amount: number; method: string; reference?: string; paidAt: string }, i: number) => (
                     <li key={i} className="flex items-center justify-between py-3 text-sm">
                       <div>
                         <p className="font-medium text-gray-900 dark:text-gray-100">{formatCurrency(p.amount, invoice.currency)}</p>
