@@ -22,6 +22,7 @@ const TRAVEL_TYPE_LABELS: Record<TravelType, string> = {
   tourist_visa: 'Tourist Visa',
   business: 'Business',
   medical: 'Medical',
+  other: 'Other',
 };
 
 const STATUS_SUMMARY_LABELS: Record<string, string> = {

@@ -1,6 +1,7 @@
 import { Response, NextFunction } from 'express';
 import { AuthRequest } from '../types/express';
 import { travelFileService } from '../services/travelFile.service';
+import { travelFileRepository } from '../repositories/travelFile.repository';
 import { sendSuccess, sendCreated, sendPaginated } from '../utils/response';
 
 export const travelFileController = {
@@ -33,7 +34,7 @@ export const travelFileController = {
   async updateStatus(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       sendSuccess(res, await travelFileService.updateStatus(
-        req.user!.agencyId!.toString(), req.params.id, req.user!.id, req.body.status, req.body.description
+        req.user!.agencyId!.toString(), req.params.id, req.user!.id, req.body.status, req.body.reason
       ), 'Status updated');
     } catch (e) { next(e); }
   },
@@ -52,7 +53,9 @@ export const travelFileController = {
 
   async addNote(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      sendSuccess(res, await travelFileService.addNote(req.user!.agencyId!.toString(), req.params.id, req.user!.id, req.body.content), 'Note added');
+      sendSuccess(res, await travelFileService.addNote(
+        req.user!.agencyId!.toString(), req.params.id, req.user!.id, req.body.content, req.body.visibility
+      ), 'Note added');
     } catch (e) { next(e); }
   },
 
@@ -74,9 +77,27 @@ export const travelFileController = {
     } catch (e) { next(e); }
   },
 
+  async updatePhysicalFile(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      sendSuccess(res, await travelFileService.updatePhysicalFile(req.user!.agencyId!.toString(), req.params.id, req.user!.id, req.body), 'Physical file updated');
+    } catch (e) { next(e); }
+  },
+
+  async getHealth(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      sendSuccess(res, await travelFileService.getHealth(req.user!.agencyId!.toString(), req.params.id));
+    } catch (e) { next(e); }
+  },
+
   async statusSummary(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       sendSuccess(res, await travelFileService.statusSummary(req.user!.agencyId!.toString()));
+    } catch (e) { next(e); }
+  },
+
+  async attentionRequired(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      sendSuccess(res, await travelFileRepository.attentionRequired(req.user!.agencyId!.toString()));
     } catch (e) { next(e); }
   },
 

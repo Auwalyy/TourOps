@@ -172,25 +172,29 @@ export interface Notification {
   createdAt: string;
 }
 
-export type TravelType = 'umrah' | 'hajj' | 'study_abroad' | 'tourist_visa' | 'business' | 'medical';
+export type TravelType = 'umrah' | 'hajj' | 'study_abroad' | 'tourist_visa' | 'business' | 'medical' | 'other';
 
 export type TravelFileStatus =
+  | 'draft'
   | 'open'
   | 'pending_payment'
   | 'awaiting_documents'
   | 'visa_processing'
   | 'ready_for_departure'
   | 'completed'
-  | 'cancelled';
+  | 'cancelled'
+  | 'archived';
 
 export interface TravelFileTask {
   _id: string;
   title: string;
+  description?: string;
   assignedTo?: User | string;
+  createdBy?: User | string;
   dueDate?: string;
+  completedAt?: string;
   priority: 'low' | 'medium' | 'high';
-  status: 'pending' | 'in_progress' | 'done';
-  notes?: string;
+  status: 'todo' | 'in_progress' | 'completed' | 'cancelled';
   createdAt: string;
 }
 
@@ -198,6 +202,7 @@ export interface TravelFileNote {
   _id: string;
   content: string;
   createdBy: User | string;
+  visibility: 'internal' | 'shared';
   createdAt: string;
 }
 
@@ -207,6 +212,21 @@ export interface TravelFileTimeline {
   description: string;
   performedBy: User | string;
   performedAt: string;
+  source?: string;
+}
+
+export interface PhysicalFile {
+  physicalFileNumber?: string;
+  cabinetLocation?: string;
+  shelfLocation?: string;
+  status: 'at_branch' | 'with_visa_officer' | 'sent_for_processing' | 'with_embassy' | 'returned' | 'archived';
+  originalPassportReceived: boolean;
+  passportReceivedDate?: string;
+  passportReceivedBy?: User | string;
+  passportReturnedDate?: string;
+  passportReturnedBy?: User | string;
+  staffResponsible?: User | string;
+  notes?: string;
 }
 
 export interface TravelFile {
@@ -218,14 +238,21 @@ export interface TravelFile {
   bookingId?: Booking | string;
   visaApplicationId?: VisaApplication | string;
   destination: string;
+  departureDate?: string;
+  returnDate?: string;
   departureGroup?: string;
   assignedConsultant?: User | string;
   assignedVisaOfficer?: User | string;
   status: TravelFileStatus;
+  statusHistory: Array<{ _id: string; previousStatus: string; newStatus: string; changedBy: User | string; changedAt: string; reason?: string }>;
   priority: 'low' | 'normal' | 'high' | 'urgent';
   timeline: TravelFileTimeline[];
   tasks: TravelFileTask[];
   notes: TravelFileNote[];
+  physicalFile: PhysicalFile;
+  totalCost: number;
+  amountPaid: number;
+  balance: number;
   invoiceIds: Invoice[];
   documentIds: Document[];
   createdAt: string;

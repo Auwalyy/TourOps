@@ -1,4 +1,5 @@
 import { FilterQuery } from 'mongoose';
+import mongoose from 'mongoose';
 import { Invoice, IInvoice } from '../models/Invoice';
 import { BaseRepository } from './base.repository';
 
@@ -26,7 +27,7 @@ class InvoiceRepository extends BaseRepository<IInvoice> {
 
   async getFinancialSummary(agencyId: string) {
     return Invoice.aggregate([
-      { $match: { agencyId: { $toString: agencyId } } },
+      { $match: { agencyId: new mongoose.Types.ObjectId(agencyId) } },
       {
         $group: {
           _id: null,
@@ -43,7 +44,7 @@ class InvoiceRepository extends BaseRepository<IInvoice> {
     return Invoice.aggregate([
       {
         $match: {
-          agencyId: { $toString: agencyId },
+          agencyId: new mongoose.Types.ObjectId(agencyId),
           issuedAt: { $gte: new Date(`${year}-01-01`), $lte: new Date(`${year}-12-31`) },
         },
       },

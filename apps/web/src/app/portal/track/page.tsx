@@ -82,7 +82,7 @@ export default function TrackFilePage() {
   const officer = file?.assignedVisaOfficer as any;
   const pkg = file?.packageId as any;
   const balance = file ? (file.totalCost || 0) - (file.amountPaid || 0) : 0;
-  const doneTasks = file?.tasks?.filter((t: any) => t.status === 'done').length ?? 0;
+  const doneTasks = file?.tasks?.filter((t: any) => t.status === 'completed').length ?? 0;
   const totalTasks = file?.tasks?.length ?? 0;
 
   return (
@@ -251,11 +251,11 @@ export default function TrackFilePage() {
                 <ul className="space-y-2">
                   {file.tasks.map((t: any, i: number) => (
                     <li key={i} className="flex items-start gap-3 text-sm">
-                      <span className={`mt-0.5 h-4 w-4 shrink-0 rounded-full border-2 flex items-center justify-center ${t.status === 'done' ? 'bg-green-500 border-green-500' : 'border-gray-300'}`}>
-                        {t.status === 'done' && <CheckCircle2 className="h-3 w-3 text-white" />}
+                      <span className={`mt-0.5 h-4 w-4 shrink-0 rounded-full border-2 flex items-center justify-center ${t.status === 'completed' ? 'bg-green-500 border-green-500' : 'border-gray-300'}`}>
+                        {t.status === 'completed' && <CheckCircle2 className="h-3 w-3 text-white" />}
                       </span>
                       <div className="flex-1">
-                        <p className={t.status === 'done' ? 'line-through text-gray-400' : 'text-gray-800 dark:text-gray-200'}>{t.title}</p>
+                        <p className={t.status === 'completed' ? 'line-through text-gray-400' : 'text-gray-800 dark:text-gray-200'}>{t.title}</p>
                         <p className="text-xs text-gray-400 mt-0.5 capitalize">
                           {t.priority} priority
                           {t.dueDate && ` · Due ${format(new Date(t.dueDate), 'dd MMM yyyy')}`}
@@ -271,20 +271,27 @@ export default function TrackFilePage() {
             {/* Documents */}
             {file.documentIds?.length > 0 && (
               <Section title={`Documents (${file.documentIds.length})`} icon={FolderOpen}>
-                <ul className="space-y-2">
+                <ul className="space-y-3">
                   {file.documentIds.map((doc: any, i: number) => (
-                    <li key={i} className="flex items-center justify-between text-sm">
-                      <div>
-                        <p className="font-medium text-gray-800 dark:text-gray-200">{doc.name || doc.originalName}</p>
+                    <li key={i} className="flex items-center justify-between gap-4">
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-gray-800 dark:text-gray-200 truncate">
+                          {doc.name || doc.originalName}
+                        </p>
                         <p className="text-xs text-gray-400 capitalize">
                           {doc.category}
                           {doc.expiryDate && ` · Expires ${format(new Date(doc.expiryDate), 'dd MMM yyyy')}`}
                         </p>
                       </div>
                       {doc.fileUrl && (
-                        <a href={doc.fileUrl} target="_blank" rel="noreferrer"
-                          className="text-xs text-blue-600 hover:underline shrink-0 ml-4">
-                          View
+                        <a
+                          href={doc.fileUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          download
+                          className="flex shrink-0 items-center gap-1.5 rounded-lg border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700 hover:bg-blue-100 transition-colors"
+                        >
+                          ↓ Download
                         </a>
                       )}
                     </li>

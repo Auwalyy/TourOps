@@ -7,6 +7,7 @@ interface DocumentFilter {
   customerId?: string;
   bookingId?: string;
   visaApplicationId?: string;
+  travelFileId?: string;
   category?: string;
   search?: string;
   page: number;
@@ -18,11 +19,12 @@ class DocumentRepository extends BaseRepository<IDocument> {
     super(DocumentFile);
   }
 
-  async search({ agencyId, customerId, bookingId, visaApplicationId, category, search, page, limit }: DocumentFilter) {
+  async search({ agencyId, customerId, bookingId, visaApplicationId, travelFileId, category, search, page, limit }: DocumentFilter) {
     const filter: FilterQuery<IDocument> = { agencyId };
     if (customerId) filter.customerId = customerId;
     if (bookingId) filter.bookingId = bookingId;
     if (visaApplicationId) filter.visaApplicationId = visaApplicationId;
+    if (travelFileId) filter.travelFileId = travelFileId;
     if (category) filter.category = category;
     if (search) filter.name = { $regex: search, $options: 'i' };
     return this.paginate(filter, page, limit, { createdAt: -1 }, 'uploadedBy');

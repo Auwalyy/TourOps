@@ -1,12 +1,12 @@
 'use client';
 import { useQuery } from '@tanstack/react-query';
 import { dashboardApi, travelFilesApi } from '@/services/api.service';
-import { formatCurrency, formatRelativeTime } from '@/lib/utils';
+import { formatCurrency, formatRelativeTime, formatDate } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle, SkeletonCard } from '@/components/ui/Card';
-import { Users, FileText, Globe, TrendingUp, AlertCircle, Calendar, FolderKanban } from 'lucide-react';
+import { Users, FileText, Globe, TrendingUp, AlertCircle, Calendar, FolderKanban, AlertTriangle } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { StatusBadge } from '@/components/ui/StatusBadge';
-import { formatDate } from '@/lib/utils';
+import Link from 'next/link';
 
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
@@ -51,6 +51,11 @@ export default function DashboardPage() {
   const { data: travelSummary } = useQuery({
     queryKey: ['travel-files', 'summary'],
     queryFn: () => travelFilesApi.statusSummary().then((r) => r.data.data),
+  });
+
+  const { data: attentionFiles } = useQuery({
+    queryKey: ['travel-files', 'attention'],
+    queryFn: () => travelFilesApi.attentionRequired().then((r) => r.data.data),
   });
 
   const travelMap = Object.fromEntries((travelSummary || []).map((s: any) => [s._id, s.count]));
@@ -163,6 +168,49 @@ export default function DashboardPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Attention Required */}
+      {attentionFiles && attentionFiles.length > 0 && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4 text-orange-500" />
+              <CardTitle>Attention Required ({attentionFiles.length})</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <ul className="divide-y divide-gray-50 dark:divide-gray-800">
+              {attentionFiles.map((f: any) => {
+                const c = f.customerId as any;
+                return (
+                  <li key={f._id} className="flex items-center justify-between gap-4 py-3">
+                    <div className="min-w-0">
+                      <Link href={`/travel-files/${f._id}`} className="font-mono text-sm font-semibold text-blue-600 hover:underline">
+                        {f.fileNumber}
+                      </Link>
+                      <p className="text-sm text-gray-700 dark:text-gray-300">
+                        {c?.firstName} {c?.lastName}
+                      </p>
+                      <p className="text-xs text-gray-400">{f.destination}</p>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-2">
+                      <span className={`rounded-full px-2 py-0.5 text-xs font-medium capitalize ${
+                        f.priority === 'urgent' ? 'bg-red-100 text-red-700' :
+                        f.priority === 'high' ? 'bg-orange-100 text-orange-700' :
+                        'bg-gray-100 text-gray-600'
+                      }`}>{f.priority}</span>
+                      <StatusBadge status={f.status} />
+                      {f.departureDate && (
+                        <span className="text-xs text-gray-400">{formatDate(f.departureDate)}</span>
+                      )}
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

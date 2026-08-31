@@ -1,16 +1,17 @@
 'use client';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, Clock, CheckSquare, StickyNote, FolderOpen, Receipt, AlertCircle, Copy, Check } from 'lucide-react';
+import { ArrowLeft, Clock, CheckSquare, StickyNote, FolderOpen, Receipt, AlertCircle, Copy, Check, Upload, Trash2, Download } from 'lucide-react';
 import { toast } from 'sonner';
-import { travelFilesApi } from '@/services/api.service';
+import { travelFilesApi, documentsApi } from '@/services/api.service';
 import { TravelFile, TravelFileStatus } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle, Skeleton } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { Select, Input, Label, Textarea } from '@/components/ui/Input';
 import { formatDate, formatCurrency, formatRelativeTime } from '@/lib/utils';
+import { TravelFileHealthBanner } from '@/components/features/travel-files/TravelFileHealthBanner';
 
 const TRAVEL_TYPE_LABELS: Record<string, string> = {
   umrah: 'Umrah', hajj: 'Hajj', study_abroad: 'Study Abroad',
@@ -24,6 +25,7 @@ const TABS = [
   { id: 'notes', label: 'Notes', icon: StickyNote },
   { id: 'documents', label: 'Documents', icon: FolderOpen },
   { id: 'payments', label: 'Payments', icon: Receipt },
+  { id: 'history', label: 'Status History', icon: Clock },
 ];
 
 const STATUS_OPTIONS: TravelFileStatus[] = [
@@ -38,6 +40,9 @@ export default function TravelFileDetailPage() {
   const [newNote, setNewNote] = useState('');
   const [newTask, setNewTask] = useState({ title: '', priority: 'medium', dueDate: '' });
   const [copied, setCopied] = useState(false);
+  const [docCategory, setDocCategory] = useState('other');
+  const [docName, setDocName] = useState('');
+  const fileUploadRef = useRef<HTMLInputElement>(null);
 
   function copyTrackingLink() {
     if (!file) return;
@@ -50,6 +55,12 @@ export default function TravelFileDetailPage() {
   const { data: file, isLoading } = useQuery({
     queryKey: ['travel-files', id],
     queryFn: () => travelFilesApi.getById(id).then((r) => r.data.data as TravelFile),
+  });
+
+  const { data: health } = useQuery({
+    queryKey: ['travel-files', id, 'health'],
+    queryFn: () => travelFilesApi.getHealth(id).then((r) => r.data.data),
+    enabled: !!id,
   });
 
   const statusMutation = useMutation({
@@ -76,6 +87,39 @@ export default function TravelFileDetailPage() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['travel-files', id] }),
   });
 
+  const docUploadMutation = useMutation({
+    mutationFn: (file: File) => {
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('name', docName || file.name);
+      fd.append('category', docCategory);
+      return documentsApi.uploadForTravelFile(id, fd);
+    },
+    onSuccess: () => {
+      toast.success('Document uploaded');
+      setDocName('');
+      qc.invalidateQueries({ queryKey: ['travel-files', id] });
+      qc.invalidateQueries({ queryKey: ['travel-files', id, 'health'] });
+    },
+    onError: () => toast.error('Upload failed'),
+  });
+
+  const docDeleteMutation = useMutation({
+    mutationFn: (docId: string) => documentsApi.delete(docId),
+    onSuccess: () => {
+      toast.success('Document removed');
+      qc.invalidateQueries({ queryKey: ['travel-files', id] });
+      qc.invalidateQueries({ queryKey: ['travel-files', id, 'health'] });
+    },
+    onError: () => toast.error('Failed to remove document'),
+  });
+
+  function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (file) docUploadMutation.mutate(file);
+    e.target.value = '';
+  }
+
   if (isLoading) return <Skeleton className="h-96 w-full" />;
   if (!file) return <p className="text-gray-500">Travel file not found.</p>;
 
@@ -83,6 +127,7 @@ export default function TravelFileDetailPage() {
   const consultant = file.assignedConsultant as any;
   const officer = file.assignedVisaOfficer as any;
   const pkg = file.packageId as any;
+  const pendingTasks = file.tasks.filter((t) => t.status !== 'completed' && t.status !== 'cancelled').length;
 
   return (
     <div className="space-y-6">
@@ -145,15 +190,20 @@ export default function TravelFileDetailPage() {
             >
               <Icon className="h-4 w-4" />
               {label}
-              {tabId === 'tasks' && file.tasks.filter((t) => t.status !== 'done').length > 0 && (
+              {tabId === 'tasks' && pendingTasks > 0 && (
                 <span className="rounded-full bg-blue-100 px-1.5 py-0.5 text-xs font-bold text-blue-700">
-                  {file.tasks.filter((t) => t.status !== 'done').length}
+                  {pendingTasks}
                 </span>
               )}
             </button>
           ))}
         </nav>
       </div>
+
+      {/* Health Banner */}
+      {health && (
+        <TravelFileHealthBanner health={health.health} nextAction={health.nextAction} />
+      )}
 
       {/* Tab Content */}
       {activeTab === 'overview' && (
@@ -207,24 +257,31 @@ export default function TravelFileDetailPage() {
             <Card>
               <CardHeader><CardTitle>Progress</CardTitle></CardHeader>
               <CardContent className="space-y-3">
-                {[
-                  { label: 'Tasks Complete', done: file.tasks.filter((t) => t.status === 'done').length, total: file.tasks.length },
-                  { label: 'Documents', done: file.documentIds.length, total: file.documentIds.length || 1 },
-                  { label: 'Invoices', done: (file.invoiceIds as any[]).filter((i) => i.status === 'paid').length, total: file.invoiceIds.length || 1 },
-                ].map(({ label, done, total }) => (
-                  <div key={label}>
-                    <div className="mb-1 flex justify-between text-xs text-gray-500">
-                      <span>{label}</span>
-                      <span>{done}/{total}</span>
+                {health ? (
+                  [
+                    { label: 'Overall', pct: health.progress.overall },
+                    { label: 'Payments', pct: health.progress.payment },
+                    { label: 'Documents', pct: health.progress.documents },
+                    { label: 'Tasks', pct: health.progress.tasks },
+                  ].map(({ label, pct }) => (
+                    <div key={label}>
+                      <div className="mb-1 flex justify-between text-xs text-gray-500">
+                        <span>{label}</span>
+                        <span>{pct}%</span>
+                      </div>
+                      <div className="h-2 w-full rounded-full bg-gray-100">
+                        <div
+                          className={`h-2 rounded-full transition-all ${
+                            pct >= 80 ? 'bg-green-500' : pct >= 40 ? 'bg-blue-500' : 'bg-orange-400'
+                          }`}
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
                     </div>
-                    <div className="h-2 w-full rounded-full bg-gray-100">
-                      <div
-                        className="h-2 rounded-full bg-blue-500 transition-all"
-                        style={{ width: `${total > 0 ? (done / total) * 100 : 0}%` }}
-                      />
-                    </div>
-                  </div>
-                ))}
+                  ))
+                ) : (
+                  <Skeleton className="h-24 w-full" />
+                )}
               </CardContent>
             </Card>
           </div>
@@ -306,12 +363,12 @@ export default function TravelFileDetailPage() {
                     <li key={task._id} className="flex items-center gap-4 py-3">
                       <input
                         type="checkbox"
-                        checked={task.status === 'done'}
-                        onChange={() => taskUpdateMutation.mutate({ taskId: task._id, status: task.status === 'done' ? 'pending' : 'done' })}
+                        checked={task.status === 'completed'}
+                        onChange={() => taskUpdateMutation.mutate({ taskId: task._id, status: task.status === 'completed' ? 'todo' : 'completed' })}
                         className="h-4 w-4 rounded border-gray-300 text-blue-600"
                       />
                       <div className="flex-1 min-w-0">
-                        <p className={`text-sm font-medium ${task.status === 'done' ? 'line-through text-gray-400' : 'text-gray-900 dark:text-gray-100'}`}>
+                        <p className={`text-sm font-medium ${task.status === 'completed' ? 'line-through text-gray-400' : 'text-gray-900 dark:text-gray-100'}`}>
                           {task.title}
                         </p>
                         {task.dueDate && <p className="text-xs text-gray-400">Due {formatDate(task.dueDate)}</p>}
@@ -374,29 +431,89 @@ export default function TravelFileDetailPage() {
       )}
 
       {activeTab === 'documents' && (
-        <Card>
-          <CardHeader><CardTitle>Linked Documents ({file.documentIds.length})</CardTitle></CardHeader>
-          <CardContent>
-            {file.documentIds.length === 0 ? (
-              <p className="text-sm text-gray-400">No documents linked. Upload documents in the Documents module and link them here.</p>
-            ) : (
-              <ul className="divide-y divide-gray-50 dark:divide-gray-800">
-                {(file.documentIds as any[]).map((doc) => (
-                  <li key={doc._id} className="flex items-center justify-between py-3">
-                    <div>
-                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{doc.name || doc.originalName}</p>
-                      <p className="text-xs text-gray-500 capitalize">{doc.category} · {doc.fileType}</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {doc.expiryDate && <span className="text-xs text-gray-400">Expires {formatDate(doc.expiryDate)}</span>}
-                      <a href={doc.fileUrl} target="_blank" rel="noreferrer" className="text-xs text-blue-600 hover:underline">View</a>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </CardContent>
-        </Card>
+        <div className="space-y-4">
+          {/* Upload panel */}
+          <Card>
+            <CardHeader><CardTitle>Upload Document</CardTitle></CardHeader>
+            <CardContent>
+              <input ref={fileUploadRef} type="file" className="hidden" onChange={handleFileSelect}
+                accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" />
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <div>
+                  <Label>Document Name</Label>
+                  <Input placeholder="e.g. Umrah Visa" value={docName}
+                    onChange={(e) => setDocName(e.target.value)} />
+                </div>
+                <div>
+                  <Label>Category</Label>
+                  <Select value={docCategory} onChange={(e) => setDocCategory(e.target.value)}>
+                    <option value="visa">Visa</option>
+                    <option value="ticket">Ticket / Itinerary</option>
+                    <option value="passport">Passport</option>
+                    <option value="hotel">Hotel</option>
+                    <option value="insurance">Insurance</option>
+                    <option value="financial">Financial</option>
+                    <option value="photo">Photo</option>
+                    <option value="other">Other</option>
+                  </Select>
+                </div>
+                <div className="flex items-end">
+                  <Button
+                    className="w-full"
+                    loading={docUploadMutation.isPending}
+                    onClick={() => fileUploadRef.current?.click()}
+                  >
+                    <Upload className="h-4 w-4" /> Choose File
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Document list */}
+          <Card>
+            <CardHeader><CardTitle>Documents ({file.documentIds.length})</CardTitle></CardHeader>
+            <CardContent>
+              {file.documentIds.length === 0 ? (
+                <p className="text-sm text-gray-400">No documents uploaded yet. Use the form above to upload a visa, ticket, itinerary, or any other document.</p>
+              ) : (
+                <ul className="divide-y divide-gray-50 dark:divide-gray-800">
+                  {(file.documentIds as any[]).map((doc) => (
+                    <li key={doc._id} className="flex items-center justify-between gap-4 py-3">
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                          {doc.name || doc.originalName}
+                        </p>
+                        <p className="text-xs text-gray-500 capitalize">
+                          {doc.category} · {doc.fileType?.split('/')[1] || doc.fileType}
+                          {doc.expiryDate && ` · Expires ${formatDate(doc.expiryDate)}`}
+                        </p>
+                      </div>
+                      <div className="flex shrink-0 items-center gap-2">
+                        <a
+                          href={doc.fileUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          download
+                          className="flex items-center gap-1 rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs font-medium text-gray-600 hover:border-blue-400 hover:text-blue-600 transition-colors dark:border-gray-700 dark:text-gray-300"
+                        >
+                          <Download className="h-3.5 w-3.5" /> View
+                        </a>
+                        <button
+                          onClick={() => docDeleteMutation.mutate(doc._id)}
+                          className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors"
+                          title="Remove document"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </CardContent>
+          </Card>
+        </div>
       )}
 
       {activeTab === 'payments' && (
@@ -439,6 +556,40 @@ export default function TravelFileDetailPage() {
                   </div>
                 </div>
               </>
+            )}
+          </CardContent>
+        </Card>
+      )}
+      {activeTab === 'history' && (
+        <Card>
+          <CardHeader><CardTitle>Status History</CardTitle></CardHeader>
+          <CardContent>
+            {file.statusHistory.length === 0 ? (
+              <p className="text-sm text-gray-400">No status changes recorded yet.</p>
+            ) : (
+              <ol className="relative border-l border-gray-200 dark:border-gray-700 ml-3 space-y-5">
+                {[...file.statusHistory].reverse().map((entry) => {
+                  const user = entry.changedBy as any;
+                  return (
+                    <li key={entry._id} className="ml-6">
+                      <span className="absolute -left-3 flex h-6 w-6 items-center justify-center rounded-full bg-indigo-100 ring-4 ring-white dark:ring-gray-900">
+                        <Clock className="h-3 w-3 text-indigo-600" />
+                      </span>
+                      <div className="rounded-lg border border-gray-100 bg-gray-50 p-3 dark:border-gray-800 dark:bg-gray-900">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <StatusBadge status={entry.previousStatus} />
+                          <span className="text-xs text-gray-400">→</span>
+                          <StatusBadge status={entry.newStatus} />
+                        </div>
+                        {entry.reason && <p className="text-xs text-gray-500 mt-1">{entry.reason}</p>}
+                        <p className="mt-1 text-xs text-gray-400">
+                          {user?.firstName} {user?.lastName} · {formatRelativeTime(entry.changedAt)}
+                        </p>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ol>
             )}
           </CardContent>
         </Card>

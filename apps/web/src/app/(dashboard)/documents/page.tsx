@@ -1,33 +1,54 @@
 'use client';
 import { useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Upload, Trash2, AlertTriangle, Eye } from 'lucide-react';
+import { Upload, Trash2, AlertTriangle, Download, FolderOpen, Folder } from 'lucide-react';
 import { toast } from 'sonner';
 import { documentsApi } from '@/services/api.service';
 import { Document } from '@/types';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { SearchInput } from '@/components/shared/SearchInput';
 import { Button } from '@/components/ui/Button';
-import { Card } from '@/components/ui/Card';
+import { Card, Badge } from '@/components/ui/Card';
 import { DataTable, Column } from '@/components/ui/DataTable';
-import { Badge } from '@/components/ui/Card';
 import { formatDate } from '@/lib/utils';
-import { Select } from '@/components/ui/Input';
 import { ConfirmDialog } from '@/components/ui/Modal';
+import { cn } from '@/lib/utils';
 
-const CATEGORIES = ['', 'passport', 'visa', 'ticket', 'hotel', 'insurance', 'financial', 'photo', 'other'];
+const FOLDERS = [
+  { key: '', label: 'All Documents', color: 'text-gray-600', bg: 'bg-gray-100', activeBg: 'bg-gray-200' },
+  { key: 'visa', label: 'Visa', color: 'text-purple-700', bg: 'bg-purple-50', activeBg: 'bg-purple-100' },
+  { key: 'ticket', label: 'Tickets', color: 'text-blue-700', bg: 'bg-blue-50', activeBg: 'bg-blue-100' },
+  { key: 'passport', label: 'Passports', color: 'text-green-700', bg: 'bg-green-50', activeBg: 'bg-green-100' },
+  { key: 'hotel', label: 'Hotels', color: 'text-orange-700', bg: 'bg-orange-50', activeBg: 'bg-orange-100' },
+  { key: 'insurance', label: 'Insurance', color: 'text-teal-700', bg: 'bg-teal-50', activeBg: 'bg-teal-100' },
+  { key: 'financial', label: 'Financial', color: 'text-yellow-700', bg: 'bg-yellow-50', activeBg: 'bg-yellow-100' },
+  { key: 'photo', label: 'Photos', color: 'text-pink-700', bg: 'bg-pink-50', activeBg: 'bg-pink-100' },
+  { key: 'other', label: 'General', color: 'text-gray-700', bg: 'bg-gray-50', activeBg: 'bg-gray-100' },
+];
+
+const CATEGORY_BADGE: Record<string, string> = {
+  visa: 'purple', ticket: 'blue', passport: 'green', hotel: 'orange',
+  insurance: 'default', financial: 'yellow', photo: 'red', other: 'default',
+};
 
 export default function DocumentsPage() {
   const qc = useQueryClient();
   const fileRef = useRef<HTMLInputElement>(null);
+  const [activeFolder, setActiveFolder] = useState('');
   const [search, setSearch] = useState('');
-  const [category, setCategory] = useState('');
   const [page, setPage] = useState(1);
   const [deleteTarget, setDeleteTarget] = useState<Document | null>(null);
 
   const { data, isLoading } = useQuery({
-    queryKey: ['documents', { search, category, page }],
-    queryFn: () => documentsApi.list({ search, category: category || undefined, page, limit: 20 }).then((r) => r.data),
+    queryKey: ['documents', { search, category: activeFolder, page }],
+    queryFn: () =>
+      documentsApi.list({ search, category: activeFolder || undefined, page, limit: 20 }).then((r) => r.data),
+  });
+
+  // Count per folder
+  const { data: allCounts } = useQuery({
+    queryKey: ['documents', 'counts'],
+    queryFn: () => documentsApi.list({ limit: 1000 }).then((r) => r.data.data as Document[]),
   });
 
   const { data: expiring } = useQuery({
@@ -40,7 +61,7 @@ export default function DocumentsPage() {
       const fd = new FormData();
       fd.append('file', file);
       fd.append('name', file.name);
-      fd.append('category', 'other');
+      fd.append('category', activeFolder || 'other');
       return documentsApi.upload(fd);
     },
     onSuccess: () => {
@@ -66,6 +87,20 @@ export default function DocumentsPage() {
     e.target.value = '';
   }
 
+  function handleFolderClick(key: string) {
+    setActiveFolder(key);
+    setPage(1);
+    setSearch('');
+  }
+
+  function countForFolder(key: string) {
+    if (!allCounts) return 0;
+    if (!key) return allCounts.length;
+    return allCounts.filter((d) => d.category === key).length;
+  }
+
+  const activeFolderLabel = FOLDERS.find((f) => f.key === activeFolder)?.label || 'All Documents';
+
   const columns: Column<Document>[] = [
     {
       key: 'name',
@@ -73,49 +108,48 @@ export default function DocumentsPage() {
       render: (row) => (
         <div>
           <p className="font-medium text-gray-900 dark:text-gray-100">{row.name}</p>
-          <p className="text-xs text-gray-500">{row.fileType} · {(row.fileSize / 1024).toFixed(0)} KB</p>
+          <p className="text-xs text-gray-500">{row.fileType?.split('/')[1] || row.fileType} · {(row.fileSize / 1024).toFixed(0)} KB</p>
         </div>
       ),
     },
     {
       key: 'category',
-      header: 'Category',
-      render: (row) => <Badge variant="blue" className="capitalize">{row.category}</Badge>,
-    },
-    {
-      key: 'version',
-      header: 'Version',
-      render: (row) => <span className="text-xs text-gray-500">v{row.version}</span>,
+      header: 'Folder',
+      render: (row) => (
+        <Badge variant={CATEGORY_BADGE[row.category] || 'default'} className="capitalize">
+          {row.category}
+        </Badge>
+      ),
     },
     {
       key: 'expiryDate',
       header: 'Expiry',
       render: (row) => row.expiryDate ? (
-        <span className={row.isExpired ? 'text-red-600 font-medium' : ''}>
+        <span className={row.isExpired ? 'text-red-600 font-medium text-sm' : 'text-sm'}>
           {row.isExpired && <AlertTriangle className="mr-1 inline h-3 w-3" />}
           {formatDate(row.expiryDate)}
         </span>
-      ) : '—',
+      ) : <span className="text-gray-400">—</span>,
     },
-    {
-      key: 'aiValidation',
-      header: 'AI Status',
-      render: (row) => row.aiValidation?.isValid !== undefined ? (
-        <Badge variant={row.aiValidation.isValid ? 'green' : 'red'}>
-          {row.aiValidation.isValid ? 'Valid' : 'Issues'}
-        </Badge>
-      ) : <span className="text-xs text-gray-400">Not checked</span>,
-    },
-    { key: 'createdAt', header: 'Uploaded', render: (row) => formatDate(row.createdAt) },
+    { key: 'createdAt', header: 'Uploaded', render: (row) => <span className="text-sm">{formatDate(row.createdAt)}</span> },
     {
       key: 'actions',
       header: '',
       render: (row) => (
         <div className="flex items-center gap-1">
-          <a href={row.fileUrl} target="_blank" rel="noopener noreferrer" className="rounded p-1 text-gray-400 hover:text-blue-500">
-            <Eye className="h-4 w-4" />
+          <a
+            href={row.fileUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            download
+            className="flex items-center gap-1 rounded-lg border border-gray-200 px-2 py-1 text-xs text-gray-600 hover:border-blue-400 hover:text-blue-600 transition-colors dark:border-gray-700"
+          >
+            <Download className="h-3.5 w-3.5" /> View
           </a>
-          <button onClick={(e) => { e.stopPropagation(); setDeleteTarget(row); }} className="rounded p-1 text-gray-400 hover:text-red-500">
+          <button
+            onClick={(e) => { e.stopPropagation(); setDeleteTarget(row); }}
+            className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors"
+          >
             <Trash2 className="h-4 w-4" />
           </button>
         </div>
@@ -127,12 +161,14 @@ export default function DocumentsPage() {
     <div className="space-y-6">
       <PageHeader
         title="Documents"
-        description="Manage and track all uploaded documents"
+        description="Manage all documents organised by folder"
         actions={
           <>
-            <input ref={fileRef} type="file" className="hidden" onChange={handleFileChange} accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" />
+            <input ref={fileRef} type="file" className="hidden" onChange={handleFileChange}
+              accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" />
             <Button onClick={() => fileRef.current?.click()} loading={uploadMutation.isPending}>
-              <Upload className="h-4 w-4" /> Upload Document
+              <Upload className="h-4 w-4" />
+              Upload to {activeFolderLabel}
             </Button>
           </>
         }
@@ -149,27 +185,66 @@ export default function DocumentsPage() {
         </div>
       )}
 
-      <Card>
-        <div className="flex flex-wrap items-center gap-3 border-b border-gray-100 px-6 py-4 dark:border-gray-800">
-          <SearchInput value={search} onChange={(v) => { setSearch(v); setPage(1); }} placeholder="Search documents..." className="max-w-xs" />
-          <Select value={category} onChange={(e) => { setCategory(e.target.value); setPage(1); }} className="w-36">
-            {CATEGORIES.map((c) => (
-              <option key={c} value={c}>{c ? c.charAt(0).toUpperCase() + c.slice(1) : 'All Categories'}</option>
-            ))}
-          </Select>
+      <div className="flex gap-6">
+        {/* Folder sidebar */}
+        <div className="w-52 shrink-0 space-y-1">
+          {FOLDERS.map((folder) => {
+            const isActive = activeFolder === folder.key;
+            const count = countForFolder(folder.key);
+            return (
+              <button
+                key={folder.key}
+                onClick={() => handleFolderClick(folder.key)}
+                className={cn(
+                  'flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors',
+                  isActive
+                    ? `${folder.activeBg} ${folder.color}`
+                    : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800'
+                )}
+              >
+                {isActive
+                  ? <FolderOpen className="h-4 w-4 shrink-0" />
+                  : <Folder className="h-4 w-4 shrink-0" />
+                }
+                <span className="flex-1 text-left">{folder.label}</span>
+                {count > 0 && (
+                  <span className={cn(
+                    'rounded-full px-1.5 py-0.5 text-xs font-semibold',
+                    isActive ? 'bg-white/60' : 'bg-gray-100 text-gray-500 dark:bg-gray-800'
+                  )}>
+                    {count}
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </div>
-        <DataTable
-          columns={columns}
-          data={data?.data || []}
-          loading={isLoading}
-          total={data?.pagination?.total}
-          page={page}
-          limit={20}
-          onPageChange={setPage}
-          keyExtractor={(row) => row._id}
-          emptyMessage="No documents found. Upload your first document."
-        />
-      </Card>
+
+        {/* Document list */}
+        <div className="flex-1 min-w-0">
+          <Card>
+            <div className="flex flex-wrap items-center gap-3 border-b border-gray-100 px-6 py-4 dark:border-gray-800">
+              <SearchInput
+                value={search}
+                onChange={(v) => { setSearch(v); setPage(1); }}
+                placeholder={`Search in ${activeFolderLabel}...`}
+                className="max-w-xs"
+              />
+            </div>
+            <DataTable
+              columns={columns}
+              data={data?.data || []}
+              loading={isLoading}
+              total={data?.pagination?.total}
+              page={page}
+              limit={20}
+              onPageChange={setPage}
+              keyExtractor={(row) => row._id}
+              emptyMessage={`No documents in ${activeFolderLabel}. Upload one using the button above.`}
+            />
+          </Card>
+        </div>
+      </div>
 
       <ConfirmDialog
         open={!!deleteTarget}

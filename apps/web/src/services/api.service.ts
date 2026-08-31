@@ -77,6 +77,10 @@ export const documentsApi = {
   getById: (id: string) => api.get(`/documents/${id}`),
   upload: (formData: FormData) =>
     api.post('/documents', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  uploadForTravelFile: (travelFileId: string, formData: FormData) => {
+    formData.append('travelFileId', travelFileId);
+    return api.post('/documents', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+  },
   uploadVersion: (id: string, formData: FormData) =>
     api.post(`/documents/${id}/version`, formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
   delete: (id: string) => api.delete(`/documents/${id}`),
@@ -142,15 +146,20 @@ export const travelFilesApi = {
   getById: (id: string) => api.get(`/travel-files/${id}`),
   create: (data: Record<string, unknown>) => api.post('/travel-files', data),
   update: (id: string, data: Record<string, unknown>) => api.put(`/travel-files/${id}`, data),
-  updateStatus: (id: string, status: string, description?: string) =>
-    api.patch(`/travel-files/${id}/status`, { status, description }),
+  updateStatus: (id: string, status: string, reason?: string) =>
+    api.patch(`/travel-files/${id}/status`, { status, reason }),
   addTask: (id: string, data: Record<string, unknown>) => api.post(`/travel-files/${id}/tasks`, data),
   updateTask: (id: string, taskId: string, data: Record<string, unknown>) =>
     api.patch(`/travel-files/${id}/tasks/${taskId}`, data),
   addPayment: (id: string, data: Record<string, unknown>) => api.post(`/travel-files/${id}/payments`, data),
-  addNote: (id: string, content: string) => api.post(`/travel-files/${id}/notes`, { content }),
+  addNote: (id: string, content: string, visibility?: 'internal' | 'shared') =>
+    api.post(`/travel-files/${id}/notes`, { content, visibility }),
   linkDocument: (id: string, documentId: string) => api.post(`/travel-files/${id}/documents`, { documentId }),
   linkInvoice: (id: string, invoiceId: string) => api.post(`/travel-files/${id}/invoices`, { invoiceId }),
+  updatePhysicalFile: (id: string, data: Record<string, unknown>) =>
+    api.patch(`/travel-files/${id}/physical-file`, data),
+  getHealth: (id: string) => api.get(`/travel-files/${id}/health`),
   statusSummary: () => api.get('/travel-files/summary'),
+  attentionRequired: () => api.get('/travel-files/attention'),
   delete: (id: string) => api.delete(`/travel-files/${id}`),
 };

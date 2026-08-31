@@ -20,7 +20,7 @@ const schema = z.object({
   dateOfBirth: z.string().optional(),
   nationality: z.string().optional(),
 
-  travelType: z.enum(['umrah', 'hajj', 'study_abroad', 'tourist_visa', 'business', 'medical']),
+  travelType: z.enum(['umrah', 'hajj', 'study_abroad', 'tourist_visa', 'business', 'medical', 'other']),
   destination: z.string().min(1, 'Destination is required'),
   departureGroup: z.string().optional(),
   packageId: z.string().optional(),
@@ -43,6 +43,7 @@ export function TravelFileFormModal({ open, onClose }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [scanning, setScanning] = useState(false);
   const [passportPreview, setPassportPreview] = useState<string | null>(null);
+  const [extractFailed, setExtractFailed] = useState(false);
 
   const { data: packages } = useQuery({
     queryKey: ['packages', 'active'],
@@ -68,32 +69,51 @@ export function TravelFileFormModal({ open, onClose }: Props) {
   async function handlePassportUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-
     setPassportPreview(URL.createObjectURL(file));
-    setScanning(true);
+    await runExtraction(file);
+  }
 
+  async function runExtraction(file: File) {
+    setScanning(true);
+    setExtractFailed(false);
     try {
       const fd = new FormData();
       fd.append('passport', file);
       const res = await aiApi.extractPassport(fd);
       const data = res.data.data;
 
+      const filled = data.firstName || data.lastName || data.passportNumber;
       if (data.firstName) setValue('firstName', data.firstName);
       if (data.lastName) setValue('lastName', data.lastName);
       if (data.passportNumber) setValue('passportNumber', data.passportNumber);
       if (data.dateOfBirth) setValue('dateOfBirth', data.dateOfBirth);
       if (data.nationality) setValue('nationality', data.nationality);
 
-      toast.success('Passport scanned — please verify the details');
+      if (filled) {
+        toast.success('Passport scanned — please verify the details');
+      } else {
+        setExtractFailed(true);
+        toast.info('Could not extract data — please fill in manually or retry');
+      }
     } catch {
-      toast.error('Could not extract passport data, please fill in manually');
+      setExtractFailed(true);
+      toast.info('Scan failed — check your connection and retry');
     } finally {
       setScanning(false);
     }
   }
 
+  async function handleReExtract() {
+    if (!fileInputRef.current?.files?.[0]) {
+      fileInputRef.current?.click();
+      return;
+    }
+    await runExtraction(fileInputRef.current.files[0]);
+  }
+
   function clearPassport() {
     setPassportPreview(null);
+    setExtractFailed(false);
     if (fileInputRef.current) fileInputRef.current.value = '';
   }
 
@@ -184,6 +204,19 @@ export function TravelFileFormModal({ open, onClose }: Props) {
                   <span className="text-sm flex items-center gap-1"><ScanLine className="w-4 h-4" /> Scanning passport...</span>
                 </div>
               )}
+              {!scanning && extractFailed && (
+                <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center gap-3 text-white">
+                  <p className="text-sm font-medium">Extraction failed</p>
+                  <button
+                    type="button"
+                    onClick={handleReExtract}
+                    className="flex items-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold hover:bg-blue-700 transition-colors"
+                  >
+                    <ScanLine className="w-4 h-4" /> Retry Scan
+                  </button>
+                  <p className="text-xs opacity-70">or fill in manually below</p>
+                </div>
+              )}
               {!scanning && (
                 <button type="button" onClick={clearPassport}
                   className="absolute top-2 right-2 bg-black/60 text-white rounded-full p-1 hover:bg-black">
@@ -237,6 +270,7 @@ export function TravelFileFormModal({ open, onClose }: Props) {
               <option value="tourist_visa">Tourist Visa</option>
               <option value="business">Business</option>
               <option value="medical">Medical</option>
+              <option value="other">Other</option>
             </Select>
           </div>
           <div>

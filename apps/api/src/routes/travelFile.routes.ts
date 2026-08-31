@@ -4,12 +4,13 @@ import { authorize } from '../middleware/authorize';
 import { travelFileController } from '../controllers/travelFile.controller';
 
 const router = Router();
-
 router.use(authenticate);
 
 router.get('/', authorize('bookings:read'), travelFileController.list);
 router.get('/summary', authorize('bookings:read'), travelFileController.statusSummary);
+router.get('/attention', authorize('bookings:read'), travelFileController.attentionRequired);
 router.get('/:id', authorize('bookings:read'), travelFileController.getById);
+router.get('/:id/health', authorize('bookings:read'), travelFileController.getHealth);
 router.post('/', authorize('bookings:write'), travelFileController.create);
 router.put('/:id', authorize('bookings:write'), travelFileController.update);
 router.patch('/:id/status', authorize('bookings:write'), travelFileController.updateStatus);
@@ -19,6 +20,7 @@ router.post('/:id/payments', authorize('payments:write'), travelFileController.a
 router.post('/:id/notes', authorize('bookings:write'), travelFileController.addNote);
 router.post('/:id/documents', authorize('documents:write'), travelFileController.linkDocument);
 router.post('/:id/invoices', authorize('payments:write'), travelFileController.linkInvoice);
+router.patch('/:id/physical-file', authorize('bookings:write'), travelFileController.updatePhysicalFile);
 router.delete('/:id', authorize('bookings:delete'), travelFileController.delete);
 
 export default router;

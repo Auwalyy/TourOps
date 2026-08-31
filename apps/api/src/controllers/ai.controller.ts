@@ -16,7 +16,10 @@ export const aiController = {
       const base64 = req.file.buffer.toString('base64');
       const result = await aiDocumentService.extractPassport(base64, req.file.mimetype);
       sendSuccess(res, result);
-    } catch (e) { next(e); }
+    } catch (e: any) {
+      // Return 200 with empty data so frontend can show retry — not a server crash
+      res.status(200).json({ success: false, message: e?.message || 'Extraction failed', data: {} });
+    }
   },
 
   async validateDocument(req: AuthRequest, res: Response, next: NextFunction) {

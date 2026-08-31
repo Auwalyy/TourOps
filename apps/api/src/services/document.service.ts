@@ -11,6 +11,7 @@ export const documentService = {
       customerId: query.customerId as string,
       bookingId: query.bookingId as string,
       visaApplicationId: query.visaApplicationId as string,
+      travelFileId: query.travelFileId as string,
       category: query.category as string,
       search: query.search as string,
       page,
@@ -25,7 +26,7 @@ export const documentService = {
   },
 
   async upload(agencyId: string, userId: string, file: Express.Multer.File, metadata: Record<string, unknown>) {
-    return documentRepository.create({
+    const doc = await documentRepository.create({
       agencyId,
       uploadedBy: userId,
       name: metadata.name || file.originalname,
@@ -38,10 +39,21 @@ export const documentService = {
       customerId: metadata.customerId,
       bookingId: metadata.bookingId,
       visaApplicationId: metadata.visaApplicationId,
+      travelFileId: metadata.travelFileId,
       expiryDate: metadata.expiryDate,
       tags: metadata.tags ? String(metadata.tags).split(',') : [],
       notes: metadata.notes,
     } as any);
+
+    // Auto-link to travel file documentIds array
+    if (metadata.travelFileId) {
+      const { TravelFile } = await import('../models/TravelFile');
+      await TravelFile.findByIdAndUpdate(metadata.travelFileId, {
+        $addToSet: { documentIds: doc._id },
+      });
+    }
+
+    return doc;
   },
 
   async uploadNewVersion(agencyId: string, id: string, userId: string, file: Express.Multer.File) {

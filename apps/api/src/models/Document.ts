@@ -1,11 +1,26 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
+export type DocumentStatus =
+  | 'required'
+  | 'missing'
+  | 'submitted'
+  | 'under_review'
+  | 'approved'
+  | 'rejected'
+  | 'expired'
+  | 'not_applicable';
+
 export interface IDocument extends Document {
   agencyId: mongoose.Types.ObjectId;
   customerId?: mongoose.Types.ObjectId;
   bookingId?: mongoose.Types.ObjectId;
   visaApplicationId?: mongoose.Types.ObjectId;
+  travelFileId?: mongoose.Types.ObjectId;
   uploadedBy: mongoose.Types.ObjectId;
+  reviewedBy?: mongoose.Types.ObjectId;
+  reviewedAt?: Date;
+  reviewNote?: string;
+  status: DocumentStatus;
   name: string;
   originalName: string;
   category: 'passport' | 'visa' | 'ticket' | 'hotel' | 'insurance' | 'financial' | 'photo' | 'other';
@@ -40,7 +55,16 @@ const documentSchema = new Schema<IDocument>(
     customerId: { type: Schema.Types.ObjectId, ref: 'Customer' },
     bookingId: { type: Schema.Types.ObjectId, ref: 'Booking' },
     visaApplicationId: { type: Schema.Types.ObjectId, ref: 'VisaApplication' },
+    travelFileId: { type: Schema.Types.ObjectId, ref: 'TravelFile' },
     uploadedBy: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    reviewedBy: { type: Schema.Types.ObjectId, ref: 'User' },
+    reviewedAt: Date,
+    reviewNote: String,
+    status: {
+      type: String,
+      enum: ['required', 'missing', 'submitted', 'under_review', 'approved', 'rejected', 'expired', 'not_applicable'],
+      default: 'submitted',
+    },
     name: { type: String, required: true },
     originalName: { type: String, required: true },
     category: {
@@ -76,6 +100,7 @@ const documentSchema = new Schema<IDocument>(
 );
 
 documentSchema.index({ agencyId: 1, customerId: 1 });
+documentSchema.index({ agencyId: 1, travelFileId: 1 });
 documentSchema.index({ agencyId: 1, category: 1 });
 documentSchema.index({ expiryDate: 1, isExpired: 1 });
 
