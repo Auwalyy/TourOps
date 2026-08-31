@@ -75,7 +75,7 @@ export default function AIPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label>Customer Budget (USD)</Label>
+              <Label>Customer Budget (NGN)</Label>
               <Input type="number" placeholder="e.g. 2000" value={budget} onChange={(e) => setBudget(e.target.value)} />
             </div>
             <div>

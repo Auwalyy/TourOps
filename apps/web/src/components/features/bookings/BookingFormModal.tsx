@@ -20,7 +20,7 @@ const schema = z.discriminatedUnion('customerMode', [
     returnDate: z.string().optional(),
     numberOfTravelers: z.coerce.number().min(1),
     totalAmount: z.coerce.number().min(0),
-    currency: z.string().default('USD'),
+    currency: z.string().default('NGN'),
     notes: z.string().optional(),
   }),
   z.object({
@@ -34,7 +34,7 @@ const schema = z.discriminatedUnion('customerMode', [
     returnDate: z.string().optional(),
     numberOfTravelers: z.coerce.number().min(1),
     totalAmount: z.coerce.number().min(0),
-    currency: z.string().default('USD'),
+    currency: z.string().default('NGN'),
     notes: z.string().optional(),
   }),
 ]);
@@ -61,7 +61,7 @@ export function BookingFormModal({ open, onClose }: Props) {
 
   const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: { customerMode: 'existing', bookingType: 'custom', numberOfTravelers: 1, currency: 'USD' } as any,
+    defaultValues: { customerMode: 'existing', bookingType: 'custom', numberOfTravelers: 1, currency: 'NGN' } as any,
   });
 
   async function onSubmit(data: FormData) {
@@ -193,8 +193,8 @@ export function BookingFormModal({ open, onClose }: Props) {
           <div>
             <Label>Currency</Label>
             <Select {...register('currency')}>
+              <option value="NGN">NGN — Naira</option>
               <option value="USD">USD</option>
-              <option value="NGN">NGN</option>
               <option value="GHS">GHS</option>
               <option value="KES">KES</option>
               <option value="ZAR">ZAR</option>

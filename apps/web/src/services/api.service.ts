@@ -120,12 +120,37 @@ export const reportsApi = {
     api.get('/reports/export/bookings', { params, responseType: 'blob' }),
 };
 
-// ─── AI ──────────────────────────────────────────────────────────────────────
+// ─── Public Portal ───────────────────────────────────────────────────────────
+export const portalApi = {
+  trackFile: (fileNumber: string) => api.get(`/portal/track/${fileNumber}`),
+};
+
 export const aiApi = {
+  extractPassport: (formData: FormData) =>
+    api.post('/ai/passport/extract', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
   validateDocument: (id: string) => api.post(`/ai/documents/${id}/validate`),
   detectMissingDocuments: (data: Record<string, unknown>) => api.post('/ai/documents/missing', data),
   getBusinessSummary: () => api.get('/ai/reports/summary'),
   getPackageRecommendations: (data: Record<string, unknown>) =>
     api.post('/ai/recommendations/packages', data),
   getSimilarPackages: (id: string) => api.get(`/ai/recommendations/similar/${id}`),
+};
+
+// ─── Travel Files ─────────────────────────────────────────────────────────────
+export const travelFilesApi = {
+  list: (params?: Record<string, unknown>) => api.get('/travel-files', { params }),
+  getById: (id: string) => api.get(`/travel-files/${id}`),
+  create: (data: Record<string, unknown>) => api.post('/travel-files', data),
+  update: (id: string, data: Record<string, unknown>) => api.put(`/travel-files/${id}`, data),
+  updateStatus: (id: string, status: string, description?: string) =>
+    api.patch(`/travel-files/${id}/status`, { status, description }),
+  addTask: (id: string, data: Record<string, unknown>) => api.post(`/travel-files/${id}/tasks`, data),
+  updateTask: (id: string, taskId: string, data: Record<string, unknown>) =>
+    api.patch(`/travel-files/${id}/tasks/${taskId}`, data),
+  addPayment: (id: string, data: Record<string, unknown>) => api.post(`/travel-files/${id}/payments`, data),
+  addNote: (id: string, content: string) => api.post(`/travel-files/${id}/notes`, { content }),
+  linkDocument: (id: string, documentId: string) => api.post(`/travel-files/${id}/documents`, { documentId }),
+  linkInvoice: (id: string, invoiceId: string) => api.post(`/travel-files/${id}/invoices`, { invoiceId }),
+  statusSummary: () => api.get('/travel-files/summary'),
+  delete: (id: string) => api.delete(`/travel-files/${id}`),
 };

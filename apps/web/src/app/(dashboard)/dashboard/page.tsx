@@ -1,9 +1,9 @@
 'use client';
 import { useQuery } from '@tanstack/react-query';
-import { dashboardApi } from '@/services/api.service';
+import { dashboardApi, travelFilesApi } from '@/services/api.service';
 import { formatCurrency, formatRelativeTime } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle, SkeletonCard } from '@/components/ui/Card';
-import { Users, FileText, Globe, TrendingUp, AlertCircle, Calendar } from 'lucide-react';
+import { Users, FileText, Globe, TrendingUp, AlertCircle, Calendar, FolderKanban } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { formatDate } from '@/lib/utils';
@@ -48,6 +48,14 @@ export default function DashboardPage() {
     queryFn: () => dashboardApi.getRecentActivity().then((r) => r.data.data),
   });
 
+  const { data: travelSummary } = useQuery({
+    queryKey: ['travel-files', 'summary'],
+    queryFn: () => travelFilesApi.statusSummary().then((r) => r.data.data),
+  });
+
+  const travelMap = Object.fromEntries((travelSummary || []).map((s: any) => [s._id, s.count]));
+  const activeTravelFiles = (travelSummary || []).filter((s: any) => !['completed', 'cancelled'].includes(s._id)).reduce((sum: number, s: any) => sum + s.count, 0);
+
   const chartData = MONTHS.map((month, i) => {
     const found = revenueData?.find((d: any) => d._id === i + 1);
     return { month, revenue: found?.revenue || 0, outstanding: found?.outstanding || 0 };
@@ -66,10 +74,11 @@ export default function DashboardPage() {
           {Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)}
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
           <KPICard title="Active Customers" value={kpis?.totalCustomers ?? 0} icon={Users} color="bg-blue-500" />
           <KPICard title="Active Bookings" value={kpis?.activeBookings ?? 0} icon={FileText} color="bg-purple-500" />
           <KPICard title="Pending Visas" value={kpis?.pendingVisas ?? 0} icon={Globe} color="bg-orange-500" />
+          <KPICard title="Active Travel Files" value={activeTravelFiles} icon={FolderKanban} color="bg-indigo-500" sub={`${travelMap['ready_for_departure'] ?? 0} ready to depart`} />
           <KPICard
             title="Total Revenue"
             value={formatCurrency(kpis?.totalRevenue ?? 0)}
@@ -97,7 +106,7 @@ export default function DashboardPage() {
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                 <XAxis dataKey="month" tick={{ fontSize: 11 }} />
-                <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} />
+                <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `₦${(v / 1000).toFixed(0)}k`} />
                 <Tooltip formatter={(v: number) => formatCurrency(v)} />
                 <Area type="monotone" dataKey="revenue" stroke="#2563eb" fill="url(#revenue)" strokeWidth={2} name="Revenue" />
               </AreaChart>

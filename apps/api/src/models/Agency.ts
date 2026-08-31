@@ -41,7 +41,7 @@ const agencySchema = new Schema<IAgency>(
       expiresAt: Date,
     },
     settings: {
-      currency: { type: String, default: 'USD' },
+      currency: { type: String, default: 'NGN' },
       timezone: { type: String, default: 'Africa/Lagos' },
       dateFormat: { type: String, default: 'DD/MM/YYYY' },
     },

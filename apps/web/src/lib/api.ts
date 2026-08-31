@@ -1,9 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL
-    ? `${process.env.NEXT_PUBLIC_API_URL}/api/v1`
-    : '/api/v1',
+  baseURL: '/api/v1',
   withCredentials: true,
   headers: { 'Content-Type': 'application/json' },
 });
@@ -22,11 +20,12 @@ api.interceptors.response.use(
   (res) => res,
   async (error) => {
     const original = error.config;
-    if (error.response?.status === 401 && !original._retry) {
+    const isAuthRoute = original?.url?.startsWith('/auth/');
+    if (error.response?.status === 401 && !original._retry && !isAuthRoute) {
       original._retry = true;
       try {
         const { data } = await axios.post(
-          `${process.env.NEXT_PUBLIC_API_URL || ''}/api/v1/auth/refresh`,
+          '/api/v1/auth/refresh',
           {},
           { withCredentials: true }
         );
@@ -35,7 +34,7 @@ api.interceptors.response.use(
         return api(original);
       } catch {
         localStorage.removeItem('accessToken');
-        window.location.href = '/login';
+        if (typeof window !== 'undefined') window.location.href = '/login';
       }
     }
     return Promise.reject(error);

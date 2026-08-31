@@ -21,7 +21,7 @@ const baseSchema = z.object({
   lineItems: z.array(lineItemSchema).min(1, 'At least one item required'),
   taxRate: z.coerce.number().min(0).max(100).default(0),
   discount: z.coerce.number().min(0).default(0),
-  currency: z.string().default('USD'),
+  currency: z.string().default('NGN'),
   dueDate: z.string().optional(),
   notes: z.string().optional(),
 });
@@ -60,7 +60,7 @@ export function InvoiceFormModal({ open, onClose }: Props) {
       lineItems: [{ description: '', quantity: 1, unitPrice: 0 }],
       taxRate: 0,
       discount: 0,
-      currency: 'USD',
+      currency: 'NGN',
     } as any,
   });
 
@@ -168,8 +168,8 @@ export function InvoiceFormModal({ open, onClose }: Props) {
           <div>
             <Label>Currency</Label>
             <Select {...register('currency')}>
+              <option value="NGN">NGN — Naira</option>
               <option value="USD">USD</option>
-              <option value="NGN">NGN</option>
               <option value="GHS">GHS</option>
               <option value="KES">KES</option>
               <option value="ZAR">ZAR</option>
@@ -224,11 +224,11 @@ export function InvoiceFormModal({ open, onClose }: Props) {
 
         {/* Totals */}
         <div className="rounded-lg bg-gray-50 p-4 text-sm dark:bg-gray-800">
-          <div className="flex justify-between"><span className="text-gray-500">Subtotal</span><span>${subtotal.toFixed(2)}</span></div>
-          <div className="flex justify-between"><span className="text-gray-500">Tax ({taxRate}%)</span><span>${tax.toFixed(2)}</span></div>
-          <div className="flex justify-between"><span className="text-gray-500">Discount</span><span>-${Number(discount).toFixed(2)}</span></div>
+          <div className="flex justify-between"><span className="text-gray-500">Subtotal</span><span>₦{subtotal.toFixed(2)}</span></div>
+          <div className="flex justify-between"><span className="text-gray-500">Tax ({taxRate}%)</span><span>₦{tax.toFixed(2)}</span></div>
+          <div className="flex justify-between"><span className="text-gray-500">Discount</span><span>-₦{Number(discount).toFixed(2)}</span></div>
           <div className="flex justify-between border-t border-gray-200 pt-2 font-bold dark:border-gray-700">
-            <span>Total</span><span>${total.toFixed(2)}</span>
+            <span>Total</span><span>₦{total.toFixed(2)}</span>
           </div>
         </div>
 

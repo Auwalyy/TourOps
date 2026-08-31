@@ -71,7 +71,7 @@ const tourPackageSchema = new Schema<ITourPackage>(
     },
     pricing: {
       basePrice: { type: Number, required: true },
-      currency: { type: String, default: 'USD' },
+      currency: { type: String, default: 'NGN' },
       pricePerPerson: { type: Boolean, default: true },
       discountedPrice: Number,
     },

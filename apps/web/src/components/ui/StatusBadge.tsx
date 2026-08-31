@@ -22,6 +22,12 @@ const statusMap: Record<string, { label: string; variant: string }> = {
   partially_paid: { label: 'Partial', variant: 'yellow' },
   paid: { label: 'Paid', variant: 'green' },
   overdue: { label: 'Overdue', variant: 'red' },
+  // Travel File
+  open: { label: 'Open', variant: 'blue' },
+  pending_payment: { label: 'Pending Payment', variant: 'yellow' },
+  awaiting_documents: { label: 'Awaiting Docs', variant: 'orange' },
+  visa_processing: { label: 'Visa Processing', variant: 'purple' },
+  ready_for_departure: { label: 'Ready to Depart', variant: 'green' },
   // Customer
   active: { label: 'Active', variant: 'green' },
   inactive: { label: 'Inactive', variant: 'default' },

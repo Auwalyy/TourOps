@@ -75,7 +75,7 @@ const invoiceSchema = new Schema<IInvoice>(
     totalAmount: { type: Number, required: true },
     amountPaid: { type: Number, default: 0 },
     outstandingBalance: { type: Number, required: true },
-    currency: { type: String, default: 'USD' },
+    currency: { type: String, default: 'NGN' },
     status: {
       type: String,
       enum: ['draft', 'sent', 'partially_paid', 'paid', 'overdue', 'cancelled', 'refunded'],

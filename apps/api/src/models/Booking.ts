@@ -88,7 +88,7 @@ const bookingSchema = new Schema<IBooking>(
       notes: String,
     },
     totalAmount: { type: Number, default: 0 },
-    currency: { type: String, default: 'USD' },
+    currency: { type: String, default: 'NGN' },
     notes: { type: String, default: '' },
     documents: [{ type: Schema.Types.ObjectId, ref: 'Document' }],
   },

@@ -172,6 +172,66 @@ export interface Notification {
   createdAt: string;
 }
 
+export type TravelType = 'umrah' | 'hajj' | 'study_abroad' | 'tourist_visa' | 'business' | 'medical';
+
+export type TravelFileStatus =
+  | 'open'
+  | 'pending_payment'
+  | 'awaiting_documents'
+  | 'visa_processing'
+  | 'ready_for_departure'
+  | 'completed'
+  | 'cancelled';
+
+export interface TravelFileTask {
+  _id: string;
+  title: string;
+  assignedTo?: User | string;
+  dueDate?: string;
+  priority: 'low' | 'medium' | 'high';
+  status: 'pending' | 'in_progress' | 'done';
+  notes?: string;
+  createdAt: string;
+}
+
+export interface TravelFileNote {
+  _id: string;
+  content: string;
+  createdBy: User | string;
+  createdAt: string;
+}
+
+export interface TravelFileTimeline {
+  _id: string;
+  action: string;
+  description: string;
+  performedBy: User | string;
+  performedAt: string;
+}
+
+export interface TravelFile {
+  _id: string;
+  fileNumber: string;
+  customerId: Customer | string;
+  travelType: TravelType;
+  packageId?: TourPackage | string;
+  bookingId?: Booking | string;
+  visaApplicationId?: VisaApplication | string;
+  destination: string;
+  departureGroup?: string;
+  assignedConsultant?: User | string;
+  assignedVisaOfficer?: User | string;
+  status: TravelFileStatus;
+  priority: 'low' | 'normal' | 'high' | 'urgent';
+  timeline: TravelFileTimeline[];
+  tasks: TravelFileTask[];
+  notes: TravelFileNote[];
+  invoiceIds: Invoice[];
+  documentIds: Document[];
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface PaginatedResponse<T> {
   success: boolean;
   data: T[];

@@ -1,3 +1,4 @@
+import multer from 'multer';
 import { Response, NextFunction } from 'express';
 import { AuthRequest } from '../types/express';
 import { aiDocumentService } from '../services/ai/document.ai.service';
@@ -5,7 +6,19 @@ import { aiReportingService } from '../services/ai/reporting.ai.service';
 import { aiRecommendationService } from '../services/ai/recommendations.ai.service';
 import { sendSuccess } from '../utils/response';
 
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
+export const passportUpload = upload.single('passport');
+
 export const aiController = {
+  async extractPassport(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      if (!req.file) return res.status(400).json({ success: false, message: 'No file uploaded' }) as any;
+      const base64 = req.file.buffer.toString('base64');
+      const result = await aiDocumentService.extractPassport(base64, req.file.mimetype);
+      sendSuccess(res, result);
+    } catch (e) { next(e); }
+  },
+
   async validateDocument(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const result = await aiDocumentService.validateDocument(req.user!.agencyId!.toString(), req.params.id);

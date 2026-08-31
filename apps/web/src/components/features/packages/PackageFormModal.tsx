@@ -17,7 +17,7 @@ const schema = z.object({
   durationDays: z.coerce.number().min(1),
   durationNights: z.coerce.number().min(0),
   basePrice: z.coerce.number().min(0),
-  currency: z.string().default('USD'),
+  currency: z.string().default('NGN'),
   status: z.enum(['draft', 'active', 'inactive']).default('draft'),
 });
 
@@ -30,7 +30,7 @@ export function PackageFormModal({ open, onClose }: Props) {
 
   const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: { category: 'tour', currency: 'USD', status: 'draft', durationNights: 0 },
+    defaultValues: { category: 'tour', currency: 'NGN', status: 'draft', durationNights: 0 },
   });
 
   async function onSubmit(data: FormData) {
@@ -98,8 +98,8 @@ export function PackageFormModal({ open, onClose }: Props) {
           <div>
             <Label>Currency</Label>
             <Select {...register('currency')}>
+              <option value="NGN">NGN — Naira</option>
               <option value="USD">USD</option>
-              <option value="NGN">NGN</option>
               <option value="GHS">GHS</option>
               <option value="KES">KES</option>
               <option value="ZAR">ZAR</option>

@@ -58,10 +58,10 @@ export const authService = {
   },
 
   async login(input: LoginInput): Promise<TokenPair> {
-    const user = await userRepository.findByEmail(input.email, true);
+    const user = await userRepository.findByEmail(input.email.trim(), true);
     if (!user || !user.isActive) throw new UnauthorizedError('Invalid credentials');
 
-    const valid = await user.comparePassword(input.password);
+    const valid = await user.comparePassword(input.password.trim());
     if (!valid) throw new UnauthorizedError('Invalid credentials');
 
     return this._issueTokens(user);

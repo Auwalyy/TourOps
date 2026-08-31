@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, Users, FileText, Globe, Package, Receipt,
-  FolderOpen, BarChart3, Bell, Settings, Bot, UserCog, LogOut,
+  FolderOpen, BarChart3, Bell, Settings, Bot, UserCog, LogOut, FolderKanban,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/stores/auth.store';
@@ -13,6 +13,7 @@ import { useRouter } from 'next/navigation';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/travel-files', label: 'Travel Files', icon: FolderKanban },
   { href: '/customers', label: 'Customers', icon: Users },
   { href: '/bookings', label: 'Bookings', icon: FileText },
   { href: '/visas', label: 'Visa Applications', icon: Globe },

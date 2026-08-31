@@ -22,8 +22,8 @@ export class BaseRepository<T extends Document> {
     return this.model.create(data);
   }
 
-  async updateById(id: string, update: UpdateQuery<T>): Promise<T | null> {
-    return this.model.findByIdAndUpdate(id, update, { new: true, runValidators: true }).exec();
+  async updateById(id: string, update: UpdateQuery<T>, options?: QueryOptions): Promise<T | null> {
+    return this.model.findByIdAndUpdate(id, update, { new: true, runValidators: true, ...options }).exec();
   }
 
   async deleteById(id: string): Promise<T | null> {

@@ -2,17 +2,13 @@
 import { ReactNode, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { Globe, LayoutDashboard, FileText, Globe2, FolderOpen, Receipt, LogOut } from 'lucide-react';
+import { Globe, LayoutDashboard, LogOut } from 'lucide-react';
 import { useAuthStore } from '@/stores/auth.store';
 import { authApi } from '@/services/api.service';
 import { cn } from '@/lib/utils';
 
 const portalNav = [
   { href: '/portal/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/portal/bookings', label: 'My Bookings', icon: FileText },
-  { href: '/portal/visas', label: 'Visa Status', icon: Globe2 },
-  { href: '/portal/documents', label: 'Documents', icon: FolderOpen },
-  { href: '/portal/invoices', label: 'Invoices', icon: Receipt },
 ];
 
 export default function PortalLayout({ children }: { children: ReactNode }) {
@@ -21,10 +17,10 @@ export default function PortalLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
 
   useEffect(() => {
-    if (!isAuthenticated) router.replace('/portal/login');
-  }, [isAuthenticated, router]);
+    if (!isAuthenticated && !pathname.startsWith('/portal/track')) router.replace('/portal/login');
+  }, [isAuthenticated, pathname, router]);
 
-  if (!isAuthenticated) return null;
+  if (!isAuthenticated && !pathname.startsWith('/portal/track')) return null;
 
   async function handleLogout() {
     try { await authApi.logout(); } catch {}

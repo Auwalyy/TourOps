@@ -27,7 +27,7 @@ export default function LoginPage() {
 
   async function onSubmit(data: FormData) {
     try {
-      const res = await authApi.login(data.email, data.password);
+      const res = await authApi.login(data.email.trim(), data.password.trim());
       setAuth(res.data.data.user, res.data.data.accessToken);
       router.push('/dashboard');
     } catch (err: any) {
