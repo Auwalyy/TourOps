@@ -6,7 +6,7 @@ import { logger } from '../../utils/logger';
 function getGemini() {
   const key = (config as any).gemini?.apiKey || '';
   if (!key) throw new Error('GEMINI_API_KEY not configured');
-  return new GoogleGenerativeAI(key).getGenerativeModel({ model: 'gemini-1.5-flash' });
+  return new GoogleGenerativeAI(key).getGenerativeModel({ model: 'gemini-3.6-flash' });
 }
 
 function parseJSON(text: string): any {

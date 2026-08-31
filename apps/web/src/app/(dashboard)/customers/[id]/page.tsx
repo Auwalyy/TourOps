@@ -54,6 +54,8 @@ export default function CustomerDetailPage() {
 
   if (!customer) return <p className="text-gray-500">Customer not found.</p>;
 
+  const customerTags = customer.tags ?? [];
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
@@ -84,9 +86,9 @@ export default function CustomerDetailPage() {
                 value={`${customer.passport.number}${customer.passport.expiryDate ? ` (exp: ${formatDate(customer.passport.expiryDate)})` : ''}`}
               />
             )}
-            {customer.tags?.length > 0 && (
+            {customerTags.length > 0 && (
               <div className="flex flex-wrap gap-1 pt-1">
-                {customer.tags.map((tag) => (
+                {customerTags.map((tag: string) => (
                   <span key={tag} className="rounded-full bg-blue-50 px-2 py-0.5 text-xs text-blue-700 dark:bg-blue-900/20 dark:text-blue-400">
                     {tag}
                   </span>
