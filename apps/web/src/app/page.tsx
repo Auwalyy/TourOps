@@ -98,7 +98,7 @@ export default function LandingPage() {
 
       {/* Nav */}
       <header className="sticky top-0 z-50 border-b border-gray-100 bg-white/90 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-4 sm:px-6">
           <div className="flex items-center gap-2">
             <span className="text-2xl">✈️</span>
             <span className="text-xl font-bold tracking-tight text-blue-600">TourOps</span>
@@ -108,11 +108,11 @@ export default function LandingPage() {
             <a href="#how" className="hover:text-blue-600 transition-colors">How It Works</a>
             <a href="#roles" className="hover:text-blue-600 transition-colors">Who It's For</a>
           </nav>
-          <div className="flex items-center gap-3">
-            <Link href="/login" className="rounded-full border border-gray-300 px-5 py-2 text-sm font-medium text-gray-700 hover:border-blue-500 hover:text-blue-600 transition-colors">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Link href="/login" className="rounded-full border border-gray-300 px-3 py-2 text-xs font-medium text-gray-700 hover:border-blue-500 hover:text-blue-600 transition-colors sm:px-5 sm:text-sm">
               Log in
             </Link>
-            <Link href="/register" className="rounded-full bg-blue-600 px-5 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors">
+            <Link href="/register" className="rounded-full bg-blue-600 px-3 py-2 text-xs font-medium text-white hover:bg-blue-700 transition-colors sm:px-5 sm:text-sm">
               Get Started
             </Link>
           </div>
@@ -125,32 +125,32 @@ export default function LandingPage() {
         <div className="pointer-events-none absolute bottom-0 right-0 h-72 w-72 rounded-full bg-indigo-100 opacity-30 blur-2xl" />
         <div className="pointer-events-none absolute left-0 top-1/2 h-64 w-64 rounded-full bg-cyan-100 opacity-20 blur-2xl" />
 
-        <div className="relative mx-auto max-w-3xl px-6">
-          <span className="mb-4 inline-block rounded-full bg-blue-100 px-4 py-1 text-xs font-semibold uppercase tracking-widest text-blue-700">
+        <div className="relative mx-auto max-w-3xl px-4 sm:px-6">
+          <span className="mb-4 inline-block rounded-full bg-blue-100 px-4 py-1 text-[10px] font-semibold uppercase tracking-widest text-blue-700 sm:text-xs">
             B2B SaaS · Travel & Visa
           </span>
-          <h1 className="mt-4 text-5xl font-extrabold leading-tight tracking-tight text-gray-900 md:text-6xl">
+          <h1 className="mt-4 text-4xl font-extrabold leading-tight tracking-tight text-gray-900 sm:text-5xl md:text-6xl">
             The Complete Operations Platform for{' '}
             <span className="bg-gradient-to-r from-blue-600 to-indigo-500 bg-clip-text text-transparent">
               Travel Businesses
             </span>
           </h1>
-          <p className="mt-6 text-lg text-gray-500 leading-relaxed">
+          <p className="mt-6 text-base text-gray-500 leading-relaxed sm:text-lg">
             Manage tours, visas, bookings, payments, and customers — all in one place.
             Built for African travel agencies, Hajj &amp; Umrah operators, and study-abroad consultants.
           </p>
           <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <Link href="/register" className="inline-flex items-center gap-2 rounded-full bg-blue-600 px-8 py-3.5 text-base font-semibold text-white shadow-md hover:bg-blue-700 transition-colors">
+            <Link href="/register" className="inline-flex items-center gap-2 rounded-full bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-md hover:bg-blue-700 transition-colors sm:px-8 sm:text-base">
               Get Started — it's free <ArrowRight size={16} />
             </Link>
-            <Link href="/login" className="rounded-full border border-gray-300 px-8 py-3.5 text-base font-semibold text-gray-700 hover:border-blue-500 hover:text-blue-600 transition-colors">
+            <Link href="/login" className="rounded-full border border-gray-300 px-6 py-3 text-sm font-semibold text-gray-700 hover:border-blue-500 hover:text-blue-600 transition-colors sm:px-8 sm:text-base">
               Log in to your account
             </Link>
           </div>
         </div>
 
         {/* Mock dashboard preview */}
-        <div className="relative mx-auto mt-16 max-w-4xl px-6">
+        <div className="relative mx-auto mt-16 max-w-4xl px-4 sm:px-6">
           <div className="overflow-hidden rounded-t-2xl border border-gray-200 bg-white shadow-2xl shadow-blue-100">
             {/* browser bar */}
             <div className="flex items-center gap-2 border-b border-gray-100 bg-gray-50 px-4 py-3">
@@ -160,7 +160,7 @@ export default function LandingPage() {
               <div className="ml-4 flex-1 rounded-md bg-gray-200 px-3 py-1 text-xs text-gray-400">app.tourops.com/dashboard</div>
             </div>
             {/* mock content */}
-            <div className="grid grid-cols-4 gap-4 bg-gray-50 p-6">
+            <div className="grid grid-cols-1 gap-4 bg-gray-50 p-4 sm:grid-cols-2 sm:p-6 lg:grid-cols-4">
               {[
                 { label: 'Active Bookings', val: '142', color: 'text-blue-600' },
                 { label: 'Visa Applications', val: '38', color: 'text-violet-600' },
@@ -173,8 +173,8 @@ export default function LandingPage() {
                 </div>
               ))}
             </div>
-            <div className="grid grid-cols-3 gap-4 bg-gray-50 px-6 pb-6">
-              <div className="col-span-2 rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
+            <div className="grid grid-cols-1 gap-4 bg-gray-50 px-4 pb-4 sm:px-6 sm:pb-6 lg:grid-cols-3">
+              <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm lg:col-span-2">
                 <div className="mb-3 text-xs font-semibold text-gray-400 uppercase tracking-wide">Revenue Overview</div>
                 <div className="flex items-end gap-2 h-16">
                   {[40, 65, 50, 80, 60, 90, 75].map((h, i) => (

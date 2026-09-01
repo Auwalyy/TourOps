@@ -53,11 +53,11 @@ export function DataTable<T>({
   return (
     <div>
       <div className="overflow-x-auto">
-        <table className="w-full text-sm">
+        <table className="min-w-[720px] w-full text-sm sm:min-w-full">
           <thead>
             <tr className="border-b border-gray-100 dark:border-gray-800">
               {columns.map((col) => (
-                <th key={col.key} className={cn('px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400', col.className)}>
+                <th key={col.key} className={cn('px-3 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-gray-500 sm:px-4 sm:text-xs dark:text-gray-400', col.className)}>
                   {col.header}
                 </th>
               ))}
@@ -71,7 +71,7 @@ export function DataTable<T>({
                 className={cn('transition-colors hover:bg-gray-50 dark:hover:bg-gray-800/50', onRowClick && 'cursor-pointer')}
               >
                 {columns.map((col) => (
-                  <td key={col.key} className={cn('px-4 py-3 text-gray-700 dark:text-gray-300', col.className)}>
+                  <td key={col.key} className={cn('px-3 py-3 text-gray-700 sm:px-4 dark:text-gray-300', col.className)}>
                     {col.render ? col.render(row) : String((row as any)[col.key] ?? '')}
                   </td>
                 ))}
@@ -82,7 +82,7 @@ export function DataTable<T>({
       </div>
 
       {totalPages > 1 && (
-        <div className="flex items-center justify-between border-t border-gray-100 px-4 py-3 dark:border-gray-800">
+        <div className="flex flex-col gap-3 border-t border-gray-100 px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-4 dark:border-gray-800">
           <p className="text-xs text-gray-500">
             Showing {(page - 1) * limit + 1}–{Math.min(page * limit, total)} of {total}
           </p>

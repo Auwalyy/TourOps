@@ -52,8 +52,8 @@ export function Sidebar({ open, onClose }: SidebarProps) {
       )}
 
       <aside className={cn(
-        'flex h-screen w-64 flex-col border-r border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-950 transition-transform duration-200',
-        'fixed inset-y-0 left-0 z-30 lg:static lg:translate-x-0',
+        'flex h-screen w-[85vw] max-w-64 flex-col border-r border-gray-200 bg-white shadow-xl shadow-black/10 transition-transform duration-200 dark:border-gray-800 dark:bg-gray-950',
+        'fixed inset-y-0 left-0 z-30 lg:static lg:w-64 lg:translate-x-0 lg:shadow-none',
         open ? 'translate-x-0' : '-translate-x-full'
       )}>
       {/* Logo */}
