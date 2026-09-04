@@ -1,7 +1,7 @@
 'use client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, Download } from 'lucide-react';
+import { ArrowLeft, Download, Receipt } from 'lucide-react';
 import { toast } from 'sonner';
 import { invoicesApi } from '@/services/api.service';
 import { Card, CardContent, CardHeader, CardTitle, Skeleton } from '@/components/ui/Card';
@@ -44,6 +44,16 @@ export default function InvoiceDetailPage() {
     } catch { toast.error('Failed to download PDF'); }
   }
 
+  async function downloadReceipt() {
+    try {
+      const res = await invoicesApi.downloadReceipt(id);
+      const url = URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
+      const a = document.createElement('a');
+      a.href = url; a.download = `receipt-${invoice?.invoiceNumber}.pdf`; a.click();
+      URL.revokeObjectURL(url);
+    } catch { toast.error('Failed to download receipt'); }
+  }
+
   if (isLoading) return <Skeleton className="h-64 w-full" />;
   if (!invoice) return <p className="text-gray-500">Invoice not found.</p>;
 
@@ -59,7 +69,10 @@ export default function InvoiceDetailPage() {
           <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{invoice.invoiceNumber}</h1>
           <StatusBadge status={invoice.status} />
         </div>
-        <Button variant="outline" onClick={downloadPDF}><Download className="h-4 w-4" /> PDF</Button>
+        <Button variant="outline" onClick={downloadPDF}><Download className="h-4 w-4" /> Invoice PDF</Button>
+        {invoice.amountPaid > 0 && (
+          <Button variant="outline" onClick={downloadReceipt}><Receipt className="h-4 w-4" /> Receipt PDF</Button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">

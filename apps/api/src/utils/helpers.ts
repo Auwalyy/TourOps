@@ -42,3 +42,11 @@ export function generateTravelFileNumber(): string {
   const random = Math.floor(Math.random() * 90000) + 10000;
   return `TF-${year}${month}-${random}`;
 }
+
+export function generateReceiptNumber(): string {
+  const date = new Date();
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const random = Math.floor(Math.random() * 9000) + 1000;
+  return `RCP-${year}${month}-${random}`;
+}

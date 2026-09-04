@@ -14,6 +14,7 @@ import aiRoutes from './ai.routes';
 import travelFileRoutes from './travelFile.routes';
 import portalRoutes from './portal.routes';
 import agencyRoutes from './agency.routes';
+import receiptRoutes from './receipt.routes';
 
 export function registerRoutes(app: Express): void {
   const API = '/api/v1';
@@ -35,4 +36,5 @@ export function registerRoutes(app: Express): void {
   app.use(`${API}/travel-files`, travelFileRoutes);
   app.use(`${API}/portal`, portalRoutes);
   app.use(`${API}/agency`, agencyRoutes);
+  app.use(`${API}/receipts`, receiptRoutes);
 }

@@ -28,4 +28,25 @@ router.put('/branding', authenticate, authorizeRoles('agency_owner', 'system_adm
   } catch (err) { next(err); }
 });
 
+// Protected — get full agency profile (for settings page)
+router.get('/profile', authenticate, authorizeRoles('agency_owner', 'system_admin'), async (req: any, res, next) => {
+  try {
+    const agency = await Agency.findById(req.user.agencyId).lean();
+    sendSuccess(res, agency ?? {});
+  } catch (err) { next(err); }
+});
+
+// Protected — update company details
+router.put('/profile', authenticate, authorizeRoles('agency_owner', 'system_admin'), async (req: any, res, next) => {
+  try {
+    const { name, email, phone, address, country, website, licenseNumber, rcNumber, whatsappNumber, bankDetails } = req.body;
+    const agency = await Agency.findByIdAndUpdate(
+      req.user.agencyId,
+      { $set: { name, email, phone, address, country, website, licenseNumber, rcNumber, whatsappNumber, bankDetails } },
+      { new: true, runValidators: true }
+    );
+    sendSuccess(res, agency, 'Company profile updated');
+  } catch (err) { next(err); }
+});
+
 export default router;

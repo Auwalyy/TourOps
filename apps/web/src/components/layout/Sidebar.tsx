@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, Users, FileText, Package, Receipt,
-  FolderOpen, BarChart3, Bell, Settings, Bot, UserCog, LogOut, FolderKanban, Globe,
+  FolderOpen, BarChart3, Bell, Settings, Bot, UserCog, LogOut, FolderKanban, Globe, ClipboardCheck,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/stores/auth.store';
@@ -20,6 +20,7 @@ const navItems = [
   { href: '/bookings', label: 'Bookings', icon: FileText },
   { href: '/packages', label: 'Travel Deals', icon: Package },
   { href: '/invoices', label: 'Invoices', icon: Receipt },
+  { href: '/receipts', label: 'Receipts', icon: ClipboardCheck },
   { href: '/documents', label: 'Documents', icon: FolderOpen },
   { href: '/reports', label: 'Reports', icon: BarChart3 },
   { href: '/ai', label: 'AI Insights', icon: Bot },

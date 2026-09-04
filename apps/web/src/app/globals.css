@@ -7,13 +7,14 @@
 }
 
 :root {
-  --background: #f9fafb;
-  --foreground: #111827;
+  --background: #f1f5f9;
+  --foreground: #0f172a;
+  --color-primary: #2563eb;
 }
 
 .dark {
-  --background: #030712;
-  --foreground: #f9fafb;
+  --background: #0a0f1e;
+  --foreground: #f1f5f9;
 }
 
 html {
@@ -38,16 +39,16 @@ canvas {
 }
 
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #d1d5db;
-  border-radius: 3px;
+  background: #cbd5e1;
+  border-radius: 99px;
 }
 .dark ::-webkit-scrollbar-thumb {
-  background: #374151;
+  background: #1e293b;
 }

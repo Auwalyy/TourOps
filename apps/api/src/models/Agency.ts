@@ -9,6 +9,13 @@ export interface IAgency extends Document {
   logo?: string;
   website?: string;
   licenseNumber?: string;
+  rcNumber?: string;
+  whatsappNumber?: string;
+  bankDetails?: {
+    bankName: string;
+    accountName: string;
+    accountNumber: string;
+  };
   isActive: boolean;
   subscription: {
     plan: 'trial' | 'starter' | 'professional' | 'enterprise';
@@ -41,6 +48,13 @@ const agencySchema = new Schema<IAgency>(
     logo: String,
     website: String,
     licenseNumber: String,
+    rcNumber: String,
+    whatsappNumber: String,
+    bankDetails: {
+      bankName: { type: String, default: '' },
+      accountName: { type: String, default: '' },
+      accountNumber: { type: String, default: '' },
+    },
     isActive: { type: Boolean, default: true },
     subscription: {
       plan: { type: String, enum: ['trial', 'starter', 'professional', 'enterprise'], default: 'trial' },

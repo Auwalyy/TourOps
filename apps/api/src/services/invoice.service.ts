@@ -1,7 +1,7 @@
 import { invoiceRepository } from '../repositories/invoice.repository';
 import { NotFoundError, AppError } from '../utils/errors';
 import { getPaginationParams, generateInvoiceNumber } from '../utils/helpers';
-import { generateInvoicePDF } from './pdf.service';
+import { generateInvoicePDF, generateReceiptPDF } from './pdf.service';
 import { Agency } from '../models/Agency';
 import { Customer } from '../models/Customer';
 import { IPaymentRecord } from '../models/Invoice';
@@ -107,6 +107,16 @@ export const invoiceService = {
     if (!invoice) throw new NotFoundError('Invoice');
     if (!agency) throw new NotFoundError('Agency');
     return generateInvoicePDF(invoice, agency);
+  },
+
+  async generateReceiptPDF(agencyId: string, id: string, paymentIndex?: number): Promise<Buffer> {
+    const [invoice, agency] = await Promise.all([
+      invoiceRepository.findOne({ _id: id, agencyId }),
+      Agency.findById(agencyId),
+    ]);
+    if (!invoice) throw new NotFoundError('Invoice');
+    if (!agency) throw new NotFoundError('Agency');
+    return generateReceiptPDF(invoice, agency, paymentIndex);
   },
 
   async getFinancialSummary(agencyId: string) {

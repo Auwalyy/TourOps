@@ -5,6 +5,17 @@ import { ApiResponse, PaginatedResponse } from '@/types';
 export const agencyApi = {
   getBranding: (agencyId?: string) => api.get('/agency/branding', { params: agencyId ? { agencyId } : {} }),
   updateBranding: (data: Record<string, unknown>) => api.put('/agency/branding', data),
+  getProfile: () => api.get('/agency/profile'),
+  updateProfile: (data: Record<string, unknown>) => api.put('/agency/profile', data),
+};
+
+// ─── Receipts ──────────────────────────────────────────────────────────────────
+export const receiptsApi = {
+  list: (params?: Record<string, unknown>) => api.get('/receipts', { params }),
+  getById: (id: string) => api.get(`/receipts/${id}`),
+  create: (data: Record<string, unknown>) => api.post('/receipts', data),
+  delete: (id: string) => api.delete(`/receipts/${id}`),
+  downloadPDF: (id: string) => api.get(`/receipts/${id}/pdf`, { responseType: 'blob' }),
 };
 
 // ─── Auth ────────────────────────────────────────────────────────────────────
@@ -74,6 +85,8 @@ export const invoicesApi = {
   recordPayment: (id: string, data: Record<string, unknown>) => api.post(`/invoices/${id}/payments`, data),
   downloadPDF: (id: string) =>
     api.get(`/invoices/${id}/pdf`, { responseType: 'blob' }),
+  downloadReceipt: (id: string, paymentIndex?: number) =>
+    api.get(`/invoices/${id}/receipt`, { responseType: 'blob', params: paymentIndex !== undefined ? { payment: paymentIndex } : {} }),
   getFinancialSummary: () => api.get('/invoices/summary'),
 };
 

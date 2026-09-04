@@ -10,6 +10,7 @@ router.get('/', authorize('payments:read'), invoiceController.list);
 router.get('/summary', authorize('payments:read'), invoiceController.getFinancialSummary);
 router.get('/:id', authorize('payments:read'), invoiceController.getById);
 router.get('/:id/pdf', authorize('payments:read'), invoiceController.downloadPDF);
+router.get('/:id/receipt', authorize('payments:read'), invoiceController.downloadReceipt);
 router.post('/', authorize('payments:write'), invoiceController.create);
 router.post('/:id/payments', authorize('payments:write'), invoiceController.recordPayment);
 
