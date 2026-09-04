@@ -43,6 +43,7 @@ export const useBrandingStore = create<BrandingState>((set) => ({
           primaryColor: d?.branding?.primaryColor || DEFAULTS.primaryColor,
           logoUrl: d?.branding?.logoUrl || d?.logo || '',
           faviconUrl: d?.branding?.faviconUrl || '',
+          whatsappNumber: d?.branding?.whatsappNumber || '',
           agencyName: d?.name || '',
         },
         loaded: true,
