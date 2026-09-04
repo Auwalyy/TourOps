@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { Agency } from '../models/Agency';
 import { authenticate } from '../middleware/authenticate';
-import { authorize } from '../middleware/authorize';
+import { authorizeRoles } from '../middleware/authorize';
 import { sendSuccess } from '../utils/response';
 
 const router = Router();
@@ -17,7 +17,7 @@ router.get('/branding', async (req, res, next) => {
 });
 
 // Protected — agency_owner updates their own branding
-router.put('/branding', authenticate, authorize('agency_owner', 'system_admin'), async (req: any, res, next) => {
+router.put('/branding', authenticate, authorizeRoles('agency_owner', 'system_admin'), async (req: any, res, next) => {
   try {
     const agency = await Agency.findByIdAndUpdate(
       req.user.agencyId,

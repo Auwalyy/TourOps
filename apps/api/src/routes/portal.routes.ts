@@ -4,7 +4,7 @@ import { TourPackage } from '../models/TourPackage';
 import { Agency } from '../models/Agency';
 import { sendSuccess } from '../utils/response';
 import { NotFoundError } from '../utils/errors';
-import cloudinary from '../config/cloudinary';
+import { cloudinary } from '../config/cloudinary';
 import multer from 'multer';
 import { Readable } from 'stream';
 
@@ -13,7 +13,7 @@ const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 
 
 function uploadToCloudinary(buffer: Buffer, folder: string): Promise<string> {
   return new Promise((resolve, reject) => {
-    const stream = cloudinary.uploader.upload_stream({ folder, resource_type: 'auto' }, (err, result) => {
+    const stream = cloudinary.uploader.upload_stream({ folder, resource_type: 'auto' }, (err: any, result: any) => {
       if (err || !result) return reject(err);
       resolve(result.secure_url);
     });
