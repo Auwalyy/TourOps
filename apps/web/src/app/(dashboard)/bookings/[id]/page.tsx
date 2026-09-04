@@ -1,7 +1,7 @@
 'use client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, FolderOpen } from 'lucide-react';
 import { toast } from 'sonner';
 import { bookingsApi } from '@/services/api.service';
 import { Card, CardContent, CardHeader, CardTitle, Skeleton } from '@/components/ui/Card';
@@ -11,6 +11,7 @@ import { Select } from '@/components/ui/Input';
 import { formatDate, formatCurrency } from '@/lib/utils';
 import { BookingStatus } from '@/types';
 import { useState } from 'react';
+import { TravelFileFormModal } from '@/components/features/travel-files/TravelFileFormModal';
 
 const STATUSES: BookingStatus[] = ['enquiry', 'quoted', 'confirmed', 'in_progress', 'completed', 'cancelled', 'refunded'];
 
@@ -20,10 +21,17 @@ export default function BookingDetailPage() {
   const qc = useQueryClient();
   const [newStatus, setNewStatus] = useState('');
   const [note, setNote] = useState('');
+  const [showTravelFileForm, setShowTravelFileForm] = useState(false);
 
   const { data: booking, isLoading } = useQuery({
     queryKey: ['bookings', id],
     queryFn: () => bookingsApi.getById(id).then((r) => r.data.data),
+  });
+
+  const { data: linkedTravelFile } = useQuery({
+    queryKey: ['bookings', id, 'travel-file'],
+    queryFn: () => bookingsApi.getLinkedTravelFile(id).then((r) => r.data.data),
+    enabled: !!id,
   });
 
   const statusMutation = useMutation({
@@ -52,6 +60,11 @@ export default function BookingDetailPage() {
           <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{booking.referenceNumber}</h1>
           <StatusBadge status={booking.status} />
         </div>
+        {booking.status === 'confirmed' && !linkedTravelFile && (
+          <Button onClick={() => setShowTravelFileForm(true)}>
+            <FolderOpen className="h-4 w-4" /> Open Travel File
+          </Button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -69,6 +82,39 @@ export default function BookingDetailPage() {
               {booking.notes && <div className="col-span-2"><Detail label="Notes" value={booking.notes} /></div>}
             </CardContent>
           </Card>
+
+          {/* Linked Travel File */}
+          {linkedTravelFile ? (
+            <Card>
+              <CardHeader><CardTitle>Linked Travel File</CardTitle></CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between">
+                  <div className="space-y-1">
+                    <p className="font-mono text-sm font-semibold text-blue-600">{linkedTravelFile.fileNumber}</p>
+                    <div className="flex items-center gap-2">
+                      <StatusBadge status={linkedTravelFile.status} />
+                      <span className="text-xs text-gray-500 capitalize">{linkedTravelFile.travelType?.replace(/_/g, ' ')} · {linkedTravelFile.destination}</span>
+                    </div>
+                  </div>
+                  <Button variant="outline" size="sm" onClick={() => router.push(`/travel-files/${linkedTravelFile._id}`)}>
+                    <FolderOpen className="h-4 w-4" /> View File
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ) : booking.status === 'confirmed' ? (
+            <Card className="border-dashed border-blue-200 bg-blue-50 dark:bg-blue-900/10">
+              <CardContent className="flex items-center justify-between py-5">
+                <div>
+                  <p className="text-sm font-medium text-blue-700 dark:text-blue-400">No travel file yet</p>
+                  <p className="text-xs text-blue-500">Booking is confirmed — open a travel file to begin operations</p>
+                </div>
+                <Button onClick={() => setShowTravelFileForm(true)}>
+                  <FolderOpen className="h-4 w-4" /> Open Travel File
+                </Button>
+              </CardContent>
+            </Card>
+          ) : null}
 
           {/* Status History */}
           <Card>
@@ -118,6 +164,20 @@ export default function BookingDetailPage() {
           </CardContent>
         </Card>
       </div>
+
+      <TravelFileFormModal
+        open={showTravelFileForm}
+        onClose={() => {
+          setShowTravelFileForm(false);
+          qc.invalidateQueries({ queryKey: ['bookings', id, 'travel-file'] });
+        }}
+        bookingId={id}
+        prefill={{
+          customerId: typeof booking.customerId === 'object' ? (booking.customerId as any)._id : booking.customerId,
+          travelDate: booking.travelDate,
+          returnDate: booking.returnDate,
+        }}
+      />
     </div>
   );
 }

@@ -6,7 +6,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { useRef, useState } from 'react';
 import { Loader2, ScanLine, UploadCloud, X } from 'lucide-react';
-import { travelFilesApi, customersApi, packagesApi, usersApi, aiApi } from '@/services/api.service';
+import { travelFilesApi, customersApi, packagesApi, usersApi, aiApi, bookingsApi } from '@/services/api.service';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Input, Label, Select } from '@/components/ui/Input';
@@ -36,14 +36,26 @@ const schema = z.object({
 
 type FormData = z.infer<typeof schema>;
 
-interface Props { open: boolean; onClose: () => void; }
+interface Props {
+  open: boolean;
+  onClose: () => void;
+  bookingId?: string;
+  prefill?: { customerId?: string; travelDate?: string; returnDate?: string };
+}
 
-export function TravelFileFormModal({ open, onClose }: Props) {
+export function TravelFileFormModal({ open, onClose, bookingId, prefill }: Props) {
   const qc = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [scanning, setScanning] = useState(false);
   const [passportPreview, setPassportPreview] = useState<string | null>(null);
   const [extractFailed, setExtractFailed] = useState(false);
+  const [selectedBookingId, setSelectedBookingId] = useState(bookingId || '');
+
+  const { data: bookings } = useQuery({
+    queryKey: ['bookings', 'confirmed-list'],
+    queryFn: () => bookingsApi.list({ status: 'confirmed', limit: 100 }).then((r) => r.data.data),
+    enabled: open && !bookingId,
+  });
 
   const { data: packages } = useQuery({
     queryKey: ['packages', 'active'],
@@ -59,7 +71,15 @@ export function TravelFileFormModal({ open, onClose }: Props) {
 
   const { register, handleSubmit, reset, setValue, watch, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: { travelType: 'umrah', priority: 'normal', totalCost: 0, initialDeposit: 0, depositMethod: 'cash' },
+    defaultValues: {
+      travelType: 'umrah',
+      priority: 'normal',
+      totalCost: 0,
+      initialDeposit: 0,
+      depositMethod: 'cash',
+      ...(prefill?.travelDate && { travelDate: prefill.travelDate.slice(0, 10) }),
+      ...(prefill?.returnDate && { returnDate: prefill.returnDate.slice(0, 10) }),
+    },
   });
 
   const totalCost = watch('totalCost') || 0;
@@ -142,6 +162,7 @@ export function TravelFileFormModal({ open, onClose }: Props) {
         assignedVisaOfficer: data.assignedVisaOfficer || undefined,
         priority: data.priority,
         totalCost: data.totalCost,
+        bookingId: selectedBookingId || undefined,
       });
 
       if (data.initialDeposit > 0) {
@@ -155,6 +176,7 @@ export function TravelFileFormModal({ open, onClose }: Props) {
 
       toast.success('Travel file created');
       qc.invalidateQueries({ queryKey: ['travel-files'] });
+      if (selectedBookingId) qc.invalidateQueries({ queryKey: ['bookings'] });
       reset();
       clearPassport();
       onClose();
@@ -163,7 +185,7 @@ export function TravelFileFormModal({ open, onClose }: Props) {
     }
   }
 
-  function handleClose() { reset(); clearPassport(); onClose(); }
+  function handleClose() { reset(); clearPassport(); setSelectedBookingId(bookingId || ''); onClose(); }
 
   const consultants = Array.isArray(staff) ? staff.filter((u: any) => ['travel_consultant', 'agency_owner', 'system_admin'].includes(u.role)) : [];
   const officers = Array.isArray(staff) ? staff.filter((u: any) => ['visa_officer', 'agency_owner', 'system_admin'].includes(u.role)) : [];
@@ -258,6 +280,30 @@ export function TravelFileFormModal({ open, onClose }: Props) {
             <Input placeholder="Auto-filled from scan" {...register('nationality')} />
           </div>
         </div>
+
+        {/* ── Link to Booking ── */}
+        {!bookingId && (
+          <div>
+            <Label>Link to Booking (optional)</Label>
+            <select
+              value={selectedBookingId}
+              onChange={(e) => setSelectedBookingId(e.target.value)}
+              className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
+            >
+              <option value="">None</option>
+              {Array.isArray(bookings) && bookings.map((b: any) => (
+                <option key={b._id} value={b._id}>
+                  {b.referenceNumber} — {(b.customerId as any)?.fullName || '—'}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+        {bookingId && (
+          <div className="rounded-lg border border-blue-200 bg-blue-50 dark:bg-blue-900/20 px-4 py-2.5 text-sm text-blue-700 dark:text-blue-300">
+            This travel file will be linked to the booking automatically.
+          </div>
+        )}
 
         {/* ── Travel Details ── */}
         <div className="grid grid-cols-2 gap-4">

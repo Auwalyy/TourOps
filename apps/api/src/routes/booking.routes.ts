@@ -7,6 +7,7 @@ const router = Router();
 router.use(authenticate);
 
 router.get('/', authorize('bookings:read'), bookingController.list);
+router.get('/:id/travel-file', authorize('bookings:read'), bookingController.getLinkedTravelFile);
 router.get('/:id', authorize('bookings:read'), bookingController.getById);
 router.post('/', authorize('bookings:write'), bookingController.create);
 router.put('/:id', authorize('bookings:write'), bookingController.update);

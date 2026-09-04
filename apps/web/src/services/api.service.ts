@@ -46,6 +46,7 @@ export const customersApi = {
 export const bookingsApi = {
   list: (params?: Record<string, unknown>) => api.get('/bookings', { params }),
   getById: (id: string) => api.get(`/bookings/${id}`),
+  getLinkedTravelFile: (id: string) => api.get(`/bookings/${id}/travel-file`),
   create: (data: Record<string, unknown>) => api.post('/bookings', data),
   update: (id: string, data: Record<string, unknown>) => api.put(`/bookings/${id}`, data),
   updateStatus: (id: string, status: string, note?: string) =>

@@ -6,6 +6,7 @@ import { getPaginationParams, generateTravelFileNumber } from '../utils/helpers'
 import { TravelFileStatus } from '../models/TravelFile';
 import { Invoice } from '../models/Invoice';
 import { DocumentFile } from '../models/Document';
+import { Booking } from '../models/Booking';
 
 // ─── Next Action Engine ───────────────────────────────────────────────────────
 // Pure business rules — no AI dependency
@@ -194,6 +195,24 @@ export const travelFileService = {
         },
       ],
     } as any);
+
+    // Auto-update linked booking to in_progress
+    if (data.bookingId) {
+      await Booking.findOneAndUpdate(
+        { _id: data.bookingId, agencyId },
+        {
+          status: 'in_progress',
+          $push: {
+            statusHistory: {
+              status: 'in_progress',
+              changedBy: new mongoose.Types.ObjectId(userId),
+              changedAt: new Date(),
+              note: `Travel file ${fileNumber} opened`,
+            },
+          },
+        }
+      );
+    }
 
     await notificationService.notifyAgencyStaff(new mongoose.Types.ObjectId(agencyId), {
       title: 'New Travel File Created',

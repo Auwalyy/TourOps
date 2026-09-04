@@ -5,6 +5,7 @@ import { NotFoundError } from '../utils/errors';
 import { getPaginationParams, generateBookingReference } from '../utils/helpers';
 import { BookingStatus } from '../models/Booking';
 import { Customer } from '../models/Customer';
+import { TravelFile } from '../models/TravelFile';
 
 export const bookingService = {
   async list(agencyId: string, query: Record<string, unknown>) {
@@ -97,6 +98,12 @@ export const bookingService = {
     );
 
     return updated;
+  },
+
+  async getLinkedTravelFile(agencyId: string, bookingId: string) {
+    return TravelFile.findOne({ agencyId, bookingId })
+      .select('fileNumber status travelType destination priority createdAt')
+      .lean();
   },
 
   async delete(agencyId: string, id: string) {

@@ -6,18 +6,18 @@ export { cn };
 export function Card({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={cn('rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900', className)}
+      className={cn('rounded-2xl border border-slate-200/60 bg-white shadow-sm dark:border-white/5 dark:bg-slate-800/50', className)}
       {...props}
     />
   );
 }
 
 export function CardHeader({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn('flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800', className)} {...props} />;
+  return <div className={cn('flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-white/5', className)} {...props} />;
 }
 
 export function CardTitle({ className, ...props }: HTMLAttributes<HTMLHeadingElement>) {
-  return <h3 className={cn('text-base font-semibold text-gray-900 dark:text-gray-100', className)} {...props} />;
+  return <h3 className={cn('text-base font-semibold text-slate-900 dark:text-white', className)} {...props} />;
 }
 
 export function CardContent({ className, ...props }: HTMLAttributes<HTMLDivElement>) {

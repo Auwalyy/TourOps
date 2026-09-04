@@ -3,7 +3,8 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, Users, FileText, Package, Receipt,
-  FolderOpen, BarChart3, Bell, Settings, Bot, UserCog, LogOut, FolderKanban, Globe, ClipboardCheck,
+  FolderOpen, BarChart3, Settings, Bot, UserCog, LogOut,
+  FolderKanban, Globe, ClipboardCheck, Bell,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/stores/auth.store';
@@ -39,6 +40,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
   const { branding } = useBrandingStore();
   const router = useRouter();
   const displayName = branding.companyName || branding.agencyName || 'Operations';
+  const primaryColor = branding.primaryColor || '#2563eb';
 
   async function handleLogout() {
     try { await authApi.logout(); } catch {}
@@ -50,71 +52,73 @@ export function Sidebar({ open, onClose }: SidebarProps) {
     <>
       {/* Mobile backdrop */}
       {open && (
-        <div
-          className="fixed inset-0 z-20 bg-black/50 lg:hidden"
-          onClick={onClose}
-        />
+        <div className="fixed inset-0 z-20 bg-black/60 backdrop-blur-sm lg:hidden" onClick={onClose} />
       )}
 
       <aside className={cn(
-        'flex h-screen w-[85vw] max-w-64 flex-col border-r border-gray-200 bg-white shadow-xl shadow-black/10 transition-transform duration-200 dark:border-gray-800 dark:bg-gray-950',
-        'fixed inset-y-0 left-0 z-30 lg:static lg:w-64 lg:translate-x-0 lg:shadow-none',
+        'flex h-screen w-[85vw] max-w-[260px] flex-col',
+        'bg-[#0f172a] dark:bg-[#080d1a]',
+        'fixed inset-y-0 left-0 z-30 transition-transform duration-200',
+        'lg:static lg:w-[260px] lg:translate-x-0',
         open ? 'translate-x-0' : '-translate-x-full'
       )}>
-      {/* Logo */}
-      <div className="flex h-16 items-center gap-2 border-b border-gray-100 px-6 dark:border-gray-800">
-        {branding.logoUrl ? (
-          <Image src={branding.logoUrl} alt={displayName} width={32} height={32} className="h-8 w-8 rounded-lg object-contain" />
-        ) : (
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--color-primary,#2563eb)]">
-            <Globe className="h-4 w-4 text-white" />
-          </div>
-        )}
-        <span className="text-lg font-bold text-gray-900 dark:text-gray-100">{displayName}</span>
-      </div>
 
-      {/* Nav */}
-      <nav className="flex-1 overflow-y-auto px-3 py-4">
-        <ul className="space-y-0.5">
+        {/* Logo */}
+        <div className="flex h-16 items-center gap-3 border-b border-white/5 px-5">
+          {branding.logoUrl ? (
+            <Image src={branding.logoUrl} alt={displayName} width={32} height={32} className="h-8 w-8 rounded-lg object-contain" />
+          ) : (
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg" style={{ backgroundColor: primaryColor }}>
+              <Globe className="h-4 w-4 text-white" />
+            </div>
+          )}
+          <span className="text-[15px] font-bold text-white truncate">{displayName}</span>
+        </div>
+
+        {/* Nav */}
+        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-0.5">
           {navItems.map(({ href, label, icon: Icon }) => {
             const active = pathname === href || pathname.startsWith(`${href}/`);
             return (
-              <li key={href}>
-                <Link
-                  href={href}
-                  onClick={onClose}
-                  className={cn(
-                    'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-                    active
-                      ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400'
-                      : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100'
-                  )}
-                >
-                  <Icon className="h-4 w-4 shrink-0" />
-                  {label}
-                </Link>
-              </li>
+              <Link
+                key={href}
+                href={href}
+                onClick={onClose}
+                className={cn(
+                  'group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-150',
+                  active
+                    ? 'text-white shadow-lg'
+                    : 'text-slate-400 hover:bg-white/5 hover:text-white'
+                )}
+                style={active ? { backgroundColor: primaryColor } : {}}
+              >
+                <Icon className={cn('h-4 w-4 shrink-0 transition-transform group-hover:scale-110', active ? 'text-white' : 'text-slate-500 group-hover:text-white')} />
+                {label}
+              </Link>
             );
           })}
-        </ul>
-      </nav>
+        </nav>
 
-      {/* User */}
-      {user && (
-        <div className="border-t border-gray-100 p-4 dark:border-gray-800">
-          <div className="flex items-center gap-3">
-            <Avatar name={user.fullName} src={user.avatar} size="sm" />
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium text-gray-900 dark:text-gray-100">{user.fullName}</p>
-              <p className="truncate text-xs text-gray-500 capitalize">{user.role.replace(/_/g, ' ')}</p>
+        {/* User footer */}
+        {user && (
+          <div className="border-t border-white/5 p-4">
+            <div className="flex items-center gap-3">
+              <Avatar name={user.fullName} src={user.avatar} size="sm" />
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-semibold text-white">{user.fullName}</p>
+                <p className="truncate text-xs text-slate-500 capitalize">{user.role.replace(/_/g, ' ')}</p>
+              </div>
+              <button
+                onClick={handleLogout}
+                className="rounded-lg p-1.5 text-slate-500 hover:bg-white/10 hover:text-white transition-colors"
+                title="Sign out"
+              >
+                <LogOut className="h-4 w-4" />
+              </button>
             </div>
-            <button onClick={handleLogout} className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800">
-              <LogOut className="h-4 w-4" />
-            </button>
           </div>
-        </div>
-      )}
-    </aside>
+        )}
+      </aside>
     </>
   );
 }

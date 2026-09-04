@@ -39,6 +39,13 @@ export const bookingController = {
     } catch (e) { next(e); }
   },
 
+  async getLinkedTravelFile(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const file = await bookingService.getLinkedTravelFile(req.user!.agencyId!.toString(), req.params.id);
+      sendSuccess(res, file);
+    } catch (e) { next(e); }
+  },
+
   async delete(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       await bookingService.delete(req.user!.agencyId!.toString(), req.params.id);
