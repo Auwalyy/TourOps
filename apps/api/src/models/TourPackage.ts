@@ -36,6 +36,9 @@ export interface ITourPackage extends Document {
   };
   status: 'draft' | 'active' | 'inactive' | 'archived';
   tags: string[];
+  isFeatured: boolean;
+  eventDate?: Date;
+  whatsappNumber?: string;
   createdBy: mongoose.Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
@@ -92,6 +95,9 @@ const tourPackageSchema = new Schema<ITourPackage>(
       default: 'draft',
     },
     tags: [String],
+    isFeatured: { type: Boolean, default: false },
+    eventDate: Date,
+    whatsappNumber: String,
     createdBy: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   },
   { timestamps: true }

@@ -46,7 +46,7 @@ export default function RegisterPage() {
     <div>
       <div className="mb-6">
         <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Create your agency</h2>
-        <p className="mt-1 text-sm text-gray-500">Get started with TourOps in minutes</p>
+        <p className="mt-1 text-sm text-gray-500">Get started in minutes</p>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">

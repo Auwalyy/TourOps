@@ -33,7 +33,7 @@ export const useAuthStore = create<AuthState>()(
         set((state) => ({ user: state.user ? { ...state.user, ...partial } : null })),
     }),
     {
-      name: 'tourops-auth',
+      name: 'ops-auth',
       partialize: (state) => ({ user: state.user, isAuthenticated: state.isAuthenticated }),
     }
   )

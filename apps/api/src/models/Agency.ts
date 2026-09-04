@@ -20,6 +20,13 @@ export interface IAgency extends Document {
     timezone: string;
     dateFormat: string;
   };
+  branding: {
+    companyName: string;
+    tagline: string;
+    primaryColor: string;
+    logoUrl: string;
+    faviconUrl: string;
+  };
   createdAt: Date;
   updatedAt: Date;
 }
@@ -44,6 +51,13 @@ const agencySchema = new Schema<IAgency>(
       currency: { type: String, default: 'NGN' },
       timezone: { type: String, default: 'Africa/Lagos' },
       dateFormat: { type: String, default: 'DD/MM/YYYY' },
+    },
+    branding: {
+      companyName: { type: String, default: '' },
+      tagline: { type: String, default: '' },
+      primaryColor: { type: String, default: '#2563eb' },
+      logoUrl: { type: String, default: '' },
+      faviconUrl: { type: String, default: '' },
     },
   },
   { timestamps: true }

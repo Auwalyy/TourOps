@@ -3,12 +3,23 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
-import { authApi, usersApi } from '@/services/api.service';
+import { authApi, usersApi, agencyApi } from '@/services/api.service';
 import { useAuthStore } from '@/stores/auth.store';
+import { useBrandingStore } from '@/stores/branding.store';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Input, Label } from '@/components/ui/Input';
+
+const brandingSchema = z.object({
+  companyName: z.string().min(1, 'Required'),
+  tagline: z.string().optional(),
+  primaryColor: z.string().regex(/^#[0-9a-fA-F]{6}$/, 'Must be a valid hex color e.g. #2563eb'),
+  logoUrl: z.string().url('Must be a valid URL').or(z.literal('')).optional(),
+  faviconUrl: z.string().url('Must be a valid URL').or(z.literal('')).optional(),
+});
+
+type BrandingData = z.infer<typeof brandingSchema>;
 
 const profileSchema = z.object({
   firstName: z.string().min(1, 'Required'),
@@ -27,6 +38,28 @@ type PasswordData = z.infer<typeof passwordSchema>;
 
 export default function SettingsPage() {
   const { user, updateUser } = useAuthStore();
+  const { branding, update: updateBranding } = useBrandingStore();
+  const isOwner = user?.role === 'agency_owner' || user?.role === 'system_admin';
+
+  const brandingForm = useForm<BrandingData>({
+    resolver: zodResolver(brandingSchema),
+    defaultValues: {
+      companyName: branding.companyName,
+      tagline: branding.tagline,
+      primaryColor: branding.primaryColor,
+      logoUrl: branding.logoUrl,
+      faviconUrl: branding.faviconUrl,
+    },
+  });
+
+  async function onBrandingSave(data: BrandingData) {
+    try {
+      await agencyApi.updateBranding(data);
+      updateBranding(data);
+      document.documentElement.style.setProperty('--color-primary', data.primaryColor);
+      toast.success('Branding updated');
+    } catch { toast.error('Failed to update branding'); }
+  }
 
   const profileForm = useForm<ProfileData>({
     resolver: zodResolver(profileSchema),
@@ -58,6 +91,42 @@ export default function SettingsPage() {
       <PageHeader title="Settings" description="Manage your account and preferences" />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        {/* Branding — owners only */}
+        {isOwner && (
+          <Card className="lg:col-span-2">
+            <CardHeader><CardTitle>Company Branding</CardTitle></CardHeader>
+            <CardContent>
+              <form onSubmit={brandingForm.handleSubmit(onBrandingSave)} className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                  <Label>Company Display Name</Label>
+                  <Input placeholder="Sunrise Travel" error={brandingForm.formState.errors.companyName?.message} {...brandingForm.register('companyName')} />
+                </div>
+                <div>
+                  <Label>Primary Color (hex)</Label>
+                  <div className="flex gap-2">
+                    <Input placeholder="#2563eb" error={brandingForm.formState.errors.primaryColor?.message} {...brandingForm.register('primaryColor')} />
+                    <input type="color" {...brandingForm.register('primaryColor')} className="h-10 w-10 cursor-pointer rounded border border-gray-200 p-0.5" />
+                  </div>
+                </div>
+                <div className="sm:col-span-2">
+                  <Label>Tagline</Label>
+                  <Input placeholder="Your trusted travel partner" {...brandingForm.register('tagline')} />
+                </div>
+                <div>
+                  <Label>Logo URL</Label>
+                  <Input placeholder="https://cdn.example.com/logo.png" error={brandingForm.formState.errors.logoUrl?.message} {...brandingForm.register('logoUrl')} />
+                </div>
+                <div>
+                  <Label>Favicon URL</Label>
+                  <Input placeholder="https://cdn.example.com/favicon.ico" error={brandingForm.formState.errors.faviconUrl?.message} {...brandingForm.register('faviconUrl')} />
+                </div>
+                <div className="flex justify-end sm:col-span-2">
+                  <Button type="submit" loading={brandingForm.formState.isSubmitting}>Save Branding</Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        )}
         {/* Profile */}
         <Card>
           <CardHeader><CardTitle>Profile Information</CardTitle></CardHeader>

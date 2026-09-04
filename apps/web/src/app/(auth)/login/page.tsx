@@ -39,7 +39,7 @@ export default function LoginPage() {
     <div>
       <div className="mb-8">
         <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Welcome back</h2>
-        <p className="mt-1 text-sm text-gray-500">Sign in to your TourOps account</p>
+        <p className="mt-1 text-sm text-gray-500">Sign in to your account</p>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">

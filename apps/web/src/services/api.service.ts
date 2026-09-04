@@ -1,6 +1,12 @@
 import api from '@/lib/api';
 import { ApiResponse, PaginatedResponse } from '@/types';
 
+// ─── Agency ──────────────────────────────────────────────────────────────────
+export const agencyApi = {
+  getBranding: (agencyId?: string) => api.get('/agency/branding', { params: agencyId ? { agencyId } : {} }),
+  updateBranding: (data: Record<string, unknown>) => api.put('/agency/branding', data),
+};
+
 // ─── Auth ────────────────────────────────────────────────────────────────────
 export const authApi = {
   register: (data: Record<string, unknown>) => api.post('/auth/register', data),
@@ -127,6 +133,11 @@ export const reportsApi = {
 // ─── Public Portal ───────────────────────────────────────────────────────────
 export const portalApi = {
   trackFile: (fileNumber: string) => api.get(`/portal/track/${fileNumber}`),
+  uploadReceipt: (fileNumber: string, formData: FormData) =>
+    api.post(`/portal/track/${fileNumber}/receipt`, formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  sendNote: (fileNumber: string, content: string) =>
+    api.post(`/portal/track/${fileNumber}/note`, { content }),
+  getDeals: (agencyId: string) => api.get(`/portal/deals/${agencyId}`),
 };
 
 export const aiApi = {

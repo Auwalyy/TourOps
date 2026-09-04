@@ -7,16 +7,18 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/stores/auth.store';
+import { useBrandingStore } from '@/stores/branding.store';
 import { Avatar } from '@/components/ui/Card';
 import { authApi } from '@/services/api.service';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/travel-files', label: 'Travel Files', icon: FolderKanban },
   { href: '/customers', label: 'Customers', icon: Users },
   { href: '/bookings', label: 'Bookings', icon: FileText },
-  { href: '/packages', label: 'Tour Packages', icon: Package },
+  { href: '/packages', label: 'Travel Deals', icon: Package },
   { href: '/invoices', label: 'Invoices', icon: Receipt },
   { href: '/documents', label: 'Documents', icon: FolderOpen },
   { href: '/reports', label: 'Reports', icon: BarChart3 },
@@ -33,7 +35,9 @@ interface SidebarProps {
 export function Sidebar({ open, onClose }: SidebarProps) {
   const pathname = usePathname();
   const { user, clearAuth } = useAuthStore();
+  const { branding } = useBrandingStore();
   const router = useRouter();
+  const displayName = branding.companyName || branding.agencyName || 'Operations';
 
   async function handleLogout() {
     try { await authApi.logout(); } catch {}
@@ -58,10 +62,14 @@ export function Sidebar({ open, onClose }: SidebarProps) {
       )}>
       {/* Logo */}
       <div className="flex h-16 items-center gap-2 border-b border-gray-100 px-6 dark:border-gray-800">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600">
-          <Globe className="h-4 w-4 text-white" />
-        </div>
-        <span className="text-lg font-bold text-gray-900 dark:text-gray-100">TourOps</span>
+        {branding.logoUrl ? (
+          <Image src={branding.logoUrl} alt={displayName} width={32} height={32} className="h-8 w-8 rounded-lg object-contain" />
+        ) : (
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--color-primary,#2563eb)]">
+            <Globe className="h-4 w-4 text-white" />
+          </div>
+        )}
+        <span className="text-lg font-bold text-gray-900 dark:text-gray-100">{displayName}</span>
       </div>
 
       {/* Nav */}
