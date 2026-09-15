@@ -37,7 +37,7 @@ export const reportService = {
         $group: {
           _id: '$status',
           count: { $sum: 1 },
-          totalValue: { $sum: '$totalAmount' },
+          totalValue: { $sum: '$cost' },
         },
       },
     ]);
@@ -88,16 +88,16 @@ export const reportService = {
       .populate('customerId', 'firstName lastName email')
       .lean();
 
-    const header = 'Reference,Customer,Type,Status,Total,Travel Date,Created\n';
+    const header = 'Booking Number,Customer,Type,Status,Cost,Start Date,Created\n';
     const rows = bookings.map((b) => {
       const customer = b.customerId as any;
       return [
-        b.referenceNumber,
+        b.bookingNumber,
         `${customer?.firstName} ${customer?.lastName}`,
         b.bookingType,
         b.status,
-        b.totalAmount,
-        b.travelDate ? new Date(b.travelDate).toLocaleDateString() : '',
+        b.cost,
+        b.startDate ? new Date(b.startDate).toLocaleDateString() : '',
         new Date(b.createdAt).toLocaleDateString(),
       ].join(',');
     });
