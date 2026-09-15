@@ -293,7 +293,7 @@ export function TravelFileFormModal({ open, onClose, bookingId, prefill }: Props
               <option value="">None</option>
               {Array.isArray(bookings) && bookings.map((b: any) => (
                 <option key={b._id} value={b._id}>
-                  {b.referenceNumber} — {(b.customerId as any)?.fullName || '—'}
+                  {b.bookingNumber} — {(b.customerId as any)?.fullName || '—'}
                 </option>
               ))}
             </select>

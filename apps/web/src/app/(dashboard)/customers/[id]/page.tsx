@@ -110,7 +110,7 @@ export default function CustomerDetailPage() {
                   {bookings.map((b: any) => (
                     <li key={b._id} className="flex items-center justify-between py-3">
                       <div>
-                        <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{b.referenceNumber}</p>
+                        <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{b.bookingNumber}</p>
                         <p className="text-xs text-gray-500">{b.bookingType} · {formatDate(b.createdAt)}</p>
                       </div>
                       <StatusBadge status={b.status} />

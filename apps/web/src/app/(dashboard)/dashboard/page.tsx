@@ -20,8 +20,8 @@ import Link from 'next/link';
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 const BOOKING_COLORS: Record<string, string> = {
-  enquiry: '#94a3b8', quoted: '#60a5fa', confirmed: '#34d399',
-  in_progress: '#a78bfa', completed: '#10b981', cancelled: '#f87171',
+  draft: '#94a3b8', pending: '#facc15', reserved: '#60a5fa', confirmed: '#34d399',
+  ticketed: '#a78bfa', completed: '#10b981', cancelled: '#f87171',
 };
 
 const STAT_CONFIGS = [

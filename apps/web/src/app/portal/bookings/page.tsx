@@ -24,16 +24,16 @@ export default function PortalBookingsPage() {
             <Card key={b._id}>
               <CardContent className="flex items-center justify-between py-4">
                 <div>
-                  <p className="font-mono text-sm font-medium text-blue-600">{b.referenceNumber}</p>
+                  <p className="font-mono text-sm font-medium text-blue-600">{b.bookingNumber}</p>
                   <p className="text-sm text-gray-700 dark:text-gray-300 capitalize">{b.bookingType} booking</p>
                   <p className="text-xs text-gray-500">
-                    {b.travelDate ? `Travel: ${formatDate(b.travelDate)}` : `Created: ${formatDate(b.createdAt)}`}
+                    {b.startDate ? `Travel: ${formatDate(b.startDate)}` : `Created: ${formatDate(b.createdAt)}`}
                   </p>
                 </div>
                 <div className="text-right">
                   <StatusBadge status={b.status} />
                   <p className="mt-1 text-sm font-medium text-gray-900 dark:text-gray-100">
-                    {formatCurrency(b.totalAmount, b.currency)}
+                    {formatCurrency(b.cost, b.currency)}
                   </p>
                 </div>
               </CardContent>

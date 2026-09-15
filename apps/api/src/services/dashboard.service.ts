@@ -21,7 +21,7 @@ export const dashboardService = {
       visaStatusCounts,
     ] = await Promise.all([
       Customer.countDocuments({ agencyId, status: 'active' }),
-      Booking.countDocuments({ agencyId, status: { $in: ['confirmed', 'in_progress'] } }),
+      Booking.countDocuments({ agencyId, status: { $in: ['reserved', 'confirmed', 'ticketed'] } }),
       VisaApplication.countDocuments({ agencyId, status: { $in: ['documents_pending', 'documents_submitted', 'appointment_scheduled', 'under_review'] } }),
       invoiceRepository.getFinancialSummary(agencyId),
       bookingRepository.getStatusCounts(agencyId),

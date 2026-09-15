@@ -56,6 +56,14 @@ export interface INote {
   createdAt: Date;
 }
 
+export interface ITravelFilePayment {
+  amount: number;
+  method: 'cash' | 'bank_transfer' | 'card' | 'mobile_money' | 'other';
+  reference?: string;
+  note?: string;
+  paidAt: Date;
+}
+
 export interface IPhysicalFile {
   physicalFileNumber?: string;
   cabinetLocation?: string;
@@ -94,6 +102,7 @@ export interface ITravelFile extends Document {
   physicalFile: IPhysicalFile;
   totalCost: number;
   amountPaid: number;
+  payments: ITravelFilePayment[];
   invoiceIds: mongoose.Types.ObjectId[];
   documentIds: mongoose.Types.ObjectId[];
   createdAt: Date;
@@ -148,6 +157,21 @@ const noteSchema = new Schema<INote>(
   { _id: true }
 );
 
+const travelFilePaymentSchema = new Schema<ITravelFilePayment>(
+  {
+    amount: { type: Number, required: true },
+    method: {
+      type: String,
+      enum: ['cash', 'bank_transfer', 'card', 'mobile_money', 'other'],
+      required: true,
+    },
+    reference: String,
+    note: String,
+    paidAt: { type: Date, default: Date.now },
+  },
+  { _id: false }
+);
+
 const physicalFileSchema = new Schema<IPhysicalFile>(
   {
     physicalFileNumber: String,
@@ -198,6 +222,7 @@ const travelFileSchema = new Schema<ITravelFile>(
     priority: { type: String, enum: ['low', 'normal', 'high', 'urgent'], default: 'normal' },
     totalCost: { type: Number, default: 0, min: 0 },
     amountPaid: { type: Number, default: 0, min: 0 },
+    payments: { type: [travelFilePaymentSchema], default: [] },
     timeline: { type: [timelineSchema], default: [] },
     tasks: { type: [taskSchema], default: [] },
     notes: { type: [noteSchema], default: [] },

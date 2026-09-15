@@ -38,7 +38,7 @@ export default function PortalDashboardPage() {
       <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
         <SummaryCard
           title="Active Bookings"
-          count={bookings?.filter((b: any) => ['confirmed', 'in_progress'].includes(b.status)).length || 0}
+          count={bookings?.filter((b: any) => ['reserved', 'confirmed', 'ticketed'].includes(b.status)).length || 0}
           icon={FileText}
           href="/portal/bookings"
           color="bg-blue-500"
@@ -75,7 +75,7 @@ export default function PortalDashboardPage() {
                 {bookings.map((b: any) => (
                   <li key={b._id} className="flex items-center justify-between py-3">
                     <div>
-                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{b.referenceNumber}</p>
+                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{b.bookingNumber}</p>
                       <p className="text-xs text-gray-500">{b.bookingType} · {formatDate(b.createdAt)}</p>
                     </div>
                     <StatusBadge status={b.status} />

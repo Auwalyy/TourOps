@@ -1,9 +1,16 @@
 @import "tailwindcss";
 
+/* The blue tokens below are tied to --color-primary, set at runtime from
+   agency branding, so blue utility classes used across the app follow the
+   brand color instead of staying pinned to a fixed blue. */
 @theme {
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --color-blue-600: #2563eb;
-  --color-blue-700: #1d4ed8;
+  --color-blue-50: color-mix(in srgb, var(--color-primary) 6%, white);
+  --color-blue-100: color-mix(in srgb, var(--color-primary) 12%, white);
+  --color-blue-200: color-mix(in srgb, var(--color-primary) 25%, white);
+  --color-blue-500: color-mix(in srgb, var(--color-primary) 82%, white);
+  --color-blue-600: var(--color-primary);
+  --color-blue-700: color-mix(in srgb, var(--color-primary) 85%, black);
 }
 
 :root {

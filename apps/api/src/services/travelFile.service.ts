@@ -395,6 +395,13 @@ export const travelFileService = {
     return travelFileRepository.updateById(id, {
       $inc: { amountPaid: amount },
       $push: {
+        payments: {
+          amount,
+          method: payment.method || 'cash',
+          reference: payment.reference,
+          note: payment.note,
+          paidAt: new Date(),
+        },
         timeline: {
           action: 'Payment Recorded',
           description: `Payment of ${amount.toLocaleString()} recorded`,
