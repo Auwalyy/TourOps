@@ -2,16 +2,17 @@
 import { useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, Clock, CheckSquare, StickyNote, FolderOpen, Receipt, AlertCircle, Copy, Check, Upload, Trash2, Download } from 'lucide-react';
+import { ArrowLeft, Clock, CheckSquare, StickyNote, FolderOpen, Receipt, AlertCircle, Copy, Check, Upload, Trash2, Download, Plane } from 'lucide-react';
 import { toast } from 'sonner';
-import { travelFilesApi, documentsApi } from '@/services/api.service';
-import { TravelFile, TravelFileStatus } from '@/types';
+import { travelFilesApi, documentsApi, bookingsApi } from '@/services/api.service';
+import { TravelFile, TravelFileStatus, Booking } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle, Skeleton } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { Select, Input, Label, Textarea } from '@/components/ui/Input';
 import { formatDate, formatCurrency, formatRelativeTime } from '@/lib/utils';
 import { TravelFileHealthBanner } from '@/components/features/travel-files/TravelFileHealthBanner';
+import { BookingFormModal } from '@/components/features/bookings/BookingFormModal';
 
 const TRAVEL_TYPE_LABELS: Record<string, string> = {
   umrah: 'Umrah', hajj: 'Hajj', study_abroad: 'Study Abroad',
@@ -20,6 +21,7 @@ const TRAVEL_TYPE_LABELS: Record<string, string> = {
 
 const TABS = [
   { id: 'overview', label: 'Overview', icon: AlertCircle },
+  { id: 'bookings', label: 'Bookings', icon: Plane },
   { id: 'timeline', label: 'Timeline', icon: Clock },
   { id: 'tasks', label: 'Tasks', icon: CheckSquare },
   { id: 'notes', label: 'Notes', icon: StickyNote },
@@ -43,6 +45,7 @@ export default function TravelFileDetailPage() {
   const [docCategory, setDocCategory] = useState('other');
   const [docName, setDocName] = useState('');
   const fileUploadRef = useRef<HTMLInputElement>(null);
+  const [showBookingForm, setShowBookingForm] = useState(false);
 
   function copyTrackingLink() {
     if (!file) return;
@@ -60,6 +63,12 @@ export default function TravelFileDetailPage() {
   const { data: health } = useQuery({
     queryKey: ['travel-files', id, 'health'],
     queryFn: () => travelFilesApi.getHealth(id).then((r) => r.data.data),
+    enabled: !!id,
+  });
+
+  const { data: bookings } = useQuery({
+    queryKey: ['travel-files', id, 'bookings'],
+    queryFn: () => travelFilesApi.getBookings(id).then((r) => r.data.data as Booking[]),
     enabled: !!id,
   });
 
@@ -195,6 +204,11 @@ export default function TravelFileDetailPage() {
                   {pendingTasks}
                 </span>
               )}
+              {tabId === 'bookings' && (bookings?.length ?? 0) > 0 && (
+                <span className="rounded-full bg-indigo-100 px-1.5 py-0.5 text-xs font-bold text-indigo-700">
+                  {bookings!.length}
+                </span>
+              )}
             </button>
           ))}
         </nav>
@@ -285,6 +299,73 @@ export default function TravelFileDetailPage() {
               </CardContent>
             </Card>
           </div>
+        </div>
+      )}
+
+      {activeTab === 'bookings' && (
+        <div className="space-y-4">
+          <div className="flex justify-end">
+            <Button onClick={() => setShowBookingForm(true)}>
+              <Plane className="h-4 w-4" /> Add Booking
+            </Button>
+          </div>
+          {!bookings || bookings.length === 0 ? (
+            <Card>
+              <CardContent className="py-12 text-center">
+                <Plane className="mx-auto h-10 w-10 text-gray-300 mb-3" />
+                <p className="text-sm font-medium text-gray-500">No bookings yet</p>
+                <p className="text-xs text-gray-400 mt-1">Add a flight, hotel, transport or other arrangement to this travel file.</p>
+                <Button className="mt-4" onClick={() => setShowBookingForm(true)}>Add First Booking</Button>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card>
+              <CardContent className="p-0">
+                <ul className="divide-y divide-gray-50 dark:divide-gray-800">
+                  {bookings.map((bk) => {
+                    const TYPE_ICON: Record<string, string> = {
+                      flight: '✈️', hotel: '🏨', transport: '🚌', tour: '🗺️',
+                      activity: '🎯', package: '📦', other: '📋',
+                    };
+                    return (
+                      <li
+                        key={bk._id}
+                        className="flex items-center gap-4 px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer transition-colors"
+                        onClick={() => router.push(`/bookings/${bk._id}`)}
+                      >
+                        <span className="text-2xl">{TYPE_ICON[bk.bookingType] || '📋'}</span>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono text-sm font-semibold text-blue-600">{bk.bookingNumber}</span>
+                            <span className="text-xs text-gray-400 capitalize">{bk.bookingType}</span>
+                          </div>
+                          <p className="text-sm text-gray-700 dark:text-gray-300 truncate">{bk.title}</p>
+                          {bk.provider && <p className="text-xs text-gray-400">{bk.provider}</p>}
+                        </div>
+                        <div className="text-right shrink-0">
+                          <StatusBadge status={bk.status} />
+                          {bk.startDate && (
+                            <p className="text-xs text-gray-400 mt-1">{formatDate(bk.startDate)}</p>
+                          )}
+                        </div>
+                        <div className="text-right shrink-0">
+                          <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                            {formatCurrency(bk.cost, bk.currency)}
+                          </p>
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+                <div className="border-t border-gray-100 dark:border-gray-800 px-6 py-3 flex justify-between text-sm">
+                  <span className="text-gray-500">Total booking cost</span>
+                  <span className="font-semibold">
+                    {formatCurrency(bookings.reduce((s, b) => s + (b.cost || 0), 0))}
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
       )}
 
@@ -560,6 +641,14 @@ export default function TravelFileDetailPage() {
           </CardContent>
         </Card>
       )}
+      <BookingFormModal
+        open={showBookingForm}
+        onClose={() => setShowBookingForm(false)}
+        travelFileId={id}
+        customerId={typeof file.customerId === 'object' ? (file.customerId as any)._id : file.customerId}
+        onCreated={() => qc.invalidateQueries({ queryKey: ['travel-files', id, 'bookings'] })}
+      />
+
       {activeTab === 'history' && (
         <Card>
           <CardHeader><CardTitle>Status History</CardTitle></CardHeader>

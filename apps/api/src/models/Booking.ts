@@ -1,58 +1,125 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
-export type BookingStatus =
-  | 'enquiry'
-  | 'quoted'
-  | 'confirmed'
-  | 'in_progress'
-  | 'completed'
-  | 'cancelled'
-  | 'refunded';
+export type BookingType = 'flight' | 'hotel' | 'transport' | 'tour' | 'activity' | 'package' | 'other';
+
+export type BookingStatus = 'draft' | 'pending' | 'reserved' | 'confirmed' | 'ticketed' | 'cancelled' | 'completed';
 
 export interface IBookingStatusHistory {
-  status: BookingStatus;
+  from: BookingStatus;
+  to: BookingStatus;
+  reason?: string;
   changedBy: mongoose.Types.ObjectId;
   changedAt: Date;
-  note?: string;
+}
+
+export interface IBookingDocument {
+  documentId: mongoose.Types.ObjectId;
+  visibleToCustomer: boolean;
+}
+
+export interface IBookingDetails {
+  // Flight
+  airline?: string;
+  flightNumber?: string;
+  departureLocation?: string;
+  arrivalLocation?: string;
+  departureDateTime?: Date;
+  arrivalDateTime?: Date;
+  returnDepartureDateTime?: Date;
+  returnArrivalDateTime?: Date;
+  ticketNumber?: string;
+  pnr?: string;
+  baggageAllowance?: string;
+  seatNumber?: string;
+  // Hotel
+  hotelName?: string;
+  hotelAddress?: string;
+  city?: string;
+  checkInDate?: Date;
+  checkOutDate?: Date;
+  roomType?: string;
+  numberOfRooms?: number;
+  numberOfNights?: number;
+  guestCount?: number;
+  // Transport
+  vehicleType?: string;
+  driverName?: string;
+  driverPhone?: string;
+  pickupLocation?: string;
+  dropoffLocation?: string;
+  pickupDateTime?: Date;
+  // Tour / Activity
+  tourName?: string;
+  location?: string;
+  startDateTime?: Date;
+  endDateTime?: Date;
+  numberOfParticipants?: number;
+  // Shared
+  providerName?: string;
+  passengerCount?: number;
+  bookingReference?: string;
+  notes?: string;
 }
 
 export interface IBooking extends Document {
   agencyId: mongoose.Types.ObjectId;
-  referenceNumber: string;
+  bookingNumber: string;
+  travelFileId: mongoose.Types.ObjectId;
   customerId: mongoose.Types.ObjectId;
-  packageId?: mongoose.Types.ObjectId;
-  assignedTo?: mongoose.Types.ObjectId;
-  bookingType: 'package' | 'visa' | 'custom';
+  bookingType: BookingType;
+  title: string;
   status: BookingStatus;
   statusHistory: IBookingStatusHistory[];
-  travelDate?: Date;
-  returnDate?: Date;
-  numberOfTravelers: number;
-  travelers: Array<{
-    firstName: string;
-    lastName: string;
-    passportNumber?: string;
-  }>;
-  quotation?: {
-    amount: number;
-    currency: string;
-    validUntil?: Date;
-    notes?: string;
-  };
-  totalAmount: number;
+  provider?: string;
+  startDate?: Date;
+  endDate?: Date;
+  cost: number;
   currency: string;
-  notes: string;
-  documents: mongoose.Types.ObjectId[];
+  tourPackageId?: mongoose.Types.ObjectId;
+  details: IBookingDetails;
+  documents: IBookingDocument[];
+  createdBy: mongoose.Types.ObjectId;
+  updatedBy?: mongoose.Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 }
 
-const bookingStatusHistorySchema = new Schema<IBookingStatusHistory>(
+const statusHistorySchema = new Schema<IBookingStatusHistory>(
   {
-    status: { type: String, required: true },
+    from: { type: String, required: true },
+    to: { type: String, required: true },
+    reason: String,
     changedBy: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     changedAt: { type: Date, default: Date.now },
-    note: String,
+  },
+  { _id: false }
+);
+
+const bookingDocumentSchema = new Schema<IBookingDocument>(
+  {
+    documentId: { type: Schema.Types.ObjectId, ref: 'Document', required: true },
+    visibleToCustomer: { type: Boolean, default: false },
+  },
+  { _id: false }
+);
+
+const detailsSchema = new Schema<IBookingDetails>(
+  {
+    airline: String, flightNumber: String,
+    departureLocation: String, arrivalLocation: String,
+    departureDateTime: Date, arrivalDateTime: Date,
+    returnDepartureDateTime: Date, returnArrivalDateTime: Date,
+    ticketNumber: String, pnr: String,
+    baggageAllowance: String, seatNumber: String,
+    hotelName: String, hotelAddress: String, city: String,
+    checkInDate: Date, checkOutDate: Date,
+    roomType: String, numberOfRooms: Number, numberOfNights: Number, guestCount: Number,
+    vehicleType: String, driverName: String, driverPhone: String,
+    pickupLocation: String, dropoffLocation: String, pickupDateTime: Date,
+    tourName: String, location: String,
+    startDateTime: Date, endDateTime: Date, numberOfParticipants: Number,
+    providerName: String, passengerCount: Number,
+    bookingReference: String, notes: String,
   },
   { _id: false }
 );
@@ -60,42 +127,38 @@ const bookingStatusHistorySchema = new Schema<IBookingStatusHistory>(
 const bookingSchema = new Schema<IBooking>(
   {
     agencyId: { type: Schema.Types.ObjectId, ref: 'Agency', required: true },
-    referenceNumber: { type: String, required: true, unique: true },
+    bookingNumber: { type: String, required: true, unique: true },
+    travelFileId: { type: Schema.Types.ObjectId, ref: 'TravelFile', required: true },
     customerId: { type: Schema.Types.ObjectId, ref: 'Customer', required: true },
-    packageId: { type: Schema.Types.ObjectId, ref: 'TourPackage' },
-    assignedTo: { type: Schema.Types.ObjectId, ref: 'User' },
-    bookingType: { type: String, enum: ['package', 'visa', 'custom'], required: true },
+    bookingType: {
+      type: String,
+      enum: ['flight', 'hotel', 'transport', 'tour', 'activity', 'package', 'other'],
+      required: true,
+    },
+    title: { type: String, required: true },
     status: {
       type: String,
-      enum: ['enquiry', 'quoted', 'confirmed', 'in_progress', 'completed', 'cancelled', 'refunded'],
-      default: 'enquiry',
+      enum: ['draft', 'pending', 'reserved', 'confirmed', 'ticketed', 'cancelled', 'completed'],
+      default: 'pending',
     },
-    statusHistory: { type: [bookingStatusHistorySchema], default: [] },
-    travelDate: Date,
-    returnDate: Date,
-    numberOfTravelers: { type: Number, default: 1 },
-    travelers: [
-      {
-        firstName: String,
-        lastName: String,
-        passportNumber: String,
-      },
-    ],
-    quotation: {
-      amount: Number,
-      currency: String,
-      validUntil: Date,
-      notes: String,
-    },
-    totalAmount: { type: Number, default: 0 },
+    statusHistory: { type: [statusHistorySchema], default: [] },
+    provider: String,
+    startDate: Date,
+    endDate: Date,
+    cost: { type: Number, default: 0, min: 0 },
     currency: { type: String, default: 'NGN' },
-    notes: { type: String, default: '' },
-    documents: [{ type: Schema.Types.ObjectId, ref: 'Document' }],
+    tourPackageId: { type: Schema.Types.ObjectId, ref: 'TourPackage' },
+    details: { type: detailsSchema, default: () => ({}) },
+    documents: { type: [bookingDocumentSchema], default: [] },
+    createdBy: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    updatedBy: { type: Schema.Types.ObjectId, ref: 'User' },
   },
   { timestamps: true }
 );
 
 bookingSchema.index({ agencyId: 1, status: 1 });
+bookingSchema.index({ agencyId: 1, travelFileId: 1 });
 bookingSchema.index({ agencyId: 1, customerId: 1 });
+bookingSchema.index({ agencyId: 1, bookingType: 1 });
 
 export const Booking = mongoose.model<IBooking>('Booking', bookingSchema);

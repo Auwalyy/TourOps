@@ -46,11 +46,14 @@ export const customersApi = {
 export const bookingsApi = {
   list: (params?: Record<string, unknown>) => api.get('/bookings', { params }),
   getById: (id: string) => api.get(`/bookings/${id}`),
-  getLinkedTravelFile: (id: string) => api.get(`/bookings/${id}/travel-file`),
   create: (data: Record<string, unknown>) => api.post('/bookings', data),
+  createForTravelFile: (travelFileId: string, data: Record<string, unknown>) =>
+    api.post(`/travel-files/${travelFileId}/bookings`, data),
   update: (id: string, data: Record<string, unknown>) => api.put(`/bookings/${id}`, data),
-  updateStatus: (id: string, status: string, note?: string) =>
-    api.patch(`/bookings/${id}/status`, { status, note }),
+  updateStatus: (id: string, status: string, reason?: string) =>
+    api.patch(`/bookings/${id}/status`, { status, reason }),
+  linkDocument: (id: string, documentId: string, visibleToCustomer?: boolean) =>
+    api.post(`/bookings/${id}/documents`, { documentId, visibleToCustomer }),
   delete: (id: string) => api.delete(`/bookings/${id}`),
 };
 
@@ -186,5 +189,6 @@ export const travelFilesApi = {
   getHealth: (id: string) => api.get(`/travel-files/${id}/health`),
   statusSummary: () => api.get('/travel-files/summary'),
   attentionRequired: () => api.get('/travel-files/attention'),
+  getBookings: (id: string) => api.get(`/travel-files/${id}/bookings`),
   delete: (id: string) => api.delete(`/travel-files/${id}`),
 };

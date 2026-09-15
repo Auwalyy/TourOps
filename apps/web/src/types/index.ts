@@ -53,24 +53,83 @@ export interface Customer {
   createdAt: string;
 }
 
-export type BookingStatus = 'enquiry' | 'quoted' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled' | 'refunded';
+export type BookingType = 'flight' | 'hotel' | 'transport' | 'tour' | 'activity' | 'package' | 'other';
+
+export type BookingStatus = 'draft' | 'pending' | 'reserved' | 'confirmed' | 'ticketed' | 'cancelled' | 'completed';
+
+export interface BookingDetails {
+  // Flight
+  airline?: string;
+  flightNumber?: string;
+  departureLocation?: string;
+  arrivalLocation?: string;
+  departureDateTime?: string;
+  arrivalDateTime?: string;
+  returnDepartureDateTime?: string;
+  returnArrivalDateTime?: string;
+  ticketNumber?: string;
+  pnr?: string;
+  baggageAllowance?: string;
+  seatNumber?: string;
+  // Hotel
+  hotelName?: string;
+  hotelAddress?: string;
+  city?: string;
+  checkInDate?: string;
+  checkOutDate?: string;
+  roomType?: string;
+  numberOfRooms?: number;
+  numberOfNights?: number;
+  guestCount?: number;
+  // Transport
+  vehicleType?: string;
+  driverName?: string;
+  driverPhone?: string;
+  pickupLocation?: string;
+  dropoffLocation?: string;
+  pickupDateTime?: string;
+  // Tour / Activity
+  tourName?: string;
+  location?: string;
+  startDateTime?: string;
+  endDateTime?: string;
+  numberOfParticipants?: number;
+  // Shared
+  providerName?: string;
+  passengerCount?: number;
+  bookingReference?: string;
+  notes?: string;
+}
+
+export interface BookingStatusHistory {
+  from: BookingStatus;
+  to: BookingStatus;
+  reason?: string;
+  changedBy: User | string;
+  changedAt: string;
+}
 
 export interface Booking {
   _id: string;
-  referenceNumber: string;
+  bookingNumber: string;
+  travelFileId: TravelFile | string;
   customerId: Customer | string;
-  packageId?: TourPackage | string;
-  assignedTo?: User;
-  bookingType: 'package' | 'visa' | 'custom';
+  bookingType: BookingType;
+  title: string;
   status: BookingStatus;
-  statusHistory: Array<{ status: BookingStatus; changedAt: string; note?: string }>;
-  travelDate?: string;
-  returnDate?: string;
-  numberOfTravelers: number;
-  totalAmount: number;
+  statusHistory: BookingStatusHistory[];
+  provider?: string;
+  startDate?: string;
+  endDate?: string;
+  cost: number;
   currency: string;
-  notes: string;
+  tourPackageId?: TourPackage | string;
+  details: BookingDetails;
+  documents: Array<{ documentId: Document | string; visibleToCustomer: boolean }>;
+  createdBy: User | string;
+  updatedBy?: User | string;
   createdAt: string;
+  updatedAt: string;
 }
 
 export type VisaStatus =

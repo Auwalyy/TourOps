@@ -35,6 +35,11 @@ export function generateBookingReference(): string {
   return ref;
 }
 
+export function generateBookingNumber(agencyPrefix: string, sequence: number): string {
+  const year = String(new Date().getFullYear()).slice(-2);
+  return `${agencyPrefix}-BKG-${year}-${String(sequence).padStart(6, '0')}`;
+}
+
 export function generateTravelFileNumber(): string {
   const date = new Date();
   const year = date.getFullYear();

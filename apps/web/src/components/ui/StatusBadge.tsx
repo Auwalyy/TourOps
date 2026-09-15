@@ -1,16 +1,19 @@
 import { Badge } from './Card';
 
 const statusMap: Record<string, { label: string; variant: string }> = {
-  // Booking
+  // Booking (new model)
+  draft: { label: 'Draft', variant: 'default' },
+  pending: { label: 'Pending', variant: 'yellow' },
+  reserved: { label: 'Reserved', variant: 'blue' },
+  confirmed: { label: 'Confirmed', variant: 'green' },
+  ticketed: { label: 'Ticketed', variant: 'purple' },
+  cancelled: { label: 'Cancelled', variant: 'red' },
+  completed: { label: 'Completed', variant: 'green' },
+  // Booking (legacy — kept for backwards compat)
   enquiry: { label: 'Enquiry', variant: 'default' },
   quoted: { label: 'Quoted', variant: 'blue' },
-  confirmed: { label: 'Confirmed', variant: 'green' },
   in_progress: { label: 'In Progress', variant: 'purple' },
-  completed: { label: 'Completed', variant: 'green' },
-  cancelled: { label: 'Cancelled', variant: 'red' },
   refunded: { label: 'Refunded', variant: 'orange' },
-  // Visa
-  draft: { label: 'Draft', variant: 'default' },
   documents_pending: { label: 'Docs Pending', variant: 'yellow' },
   documents_submitted: { label: 'Docs Submitted', variant: 'blue' },
   appointment_scheduled: { label: 'Appointment', variant: 'purple' },

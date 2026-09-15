@@ -1,16 +1,15 @@
 import mongoose from 'mongoose';
 import { travelFileRepository } from '../repositories/travelFile.repository';
+import { bookingRepository } from '../repositories/booking.repository';
 import { notificationService } from './notification.service';
 import { NotFoundError, AppError } from '../utils/errors';
 import { getPaginationParams, generateTravelFileNumber } from '../utils/helpers';
 import { TravelFileStatus } from '../models/TravelFile';
 import { Invoice } from '../models/Invoice';
 import { DocumentFile } from '../models/Document';
-import { Booking } from '../models/Booking';
 
 // ─── Next Action Engine ───────────────────────────────────────────────────────
-// Pure business rules — no AI dependency
-function computeNextAction(file: any): { action: string; urgency: 'info' | 'warning' | 'critical' } {
+function computeNextAction(file: any, bookings: any[]): { action: string; urgency: 'info' | 'warning' | 'critical' } {
   const now = new Date();
 
   // Overdue tasks
@@ -19,6 +18,30 @@ function computeNextAction(file: any): { action: string; urgency: 'info' | 'warn
   );
   if (overdueTasks.length > 0) {
     return { action: `${overdueTasks.length} overdue task(s) — action required`, urgency: 'critical' };
+  }
+
+  // Booking-aware checks
+  if (bookings.length > 0) {
+    const cancelledFlight = bookings.find((b) => b.bookingType === 'flight' && b.status === 'cancelled');
+    if (cancelledFlight) {
+      return { action: `Flight booking ${cancelledFlight.bookingNumber} has been cancelled — action required`, urgency: 'critical' };
+    }
+    const noConfirmedFlight = !bookings.some((b) => b.bookingType === 'flight' && ['confirmed', 'ticketed'].includes(b.status));
+    const hasFlight = bookings.some((b) => b.bookingType === 'flight');
+    if (hasFlight && noConfirmedFlight && file.status !== 'completed') {
+      return { action: 'No flight booking has been confirmed', urgency: 'critical' };
+    }
+    if (file.departureDate) {
+      const daysUntilDeparture = Math.floor((new Date(file.departureDate).getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+      const pendingHotel = bookings.find((b) => b.bookingType === 'hotel' && b.status === 'pending');
+      if (pendingHotel && daysUntilDeparture <= 5) {
+        return { action: `Hotel booking is still pending and departure is in ${daysUntilDeparture} days`, urgency: 'warning' };
+      }
+    }
+    const ticketedFlight = bookings.find((b) => b.bookingType === 'flight' && b.status === 'ticketed' && b.documents?.length > 0);
+    if (ticketedFlight) {
+      return { action: `Flight ticket uploaded for ${ticketedFlight.bookingNumber} — review and share with customer`, urgency: 'info' };
+    }
   }
 
   // Outstanding payment
@@ -54,7 +77,6 @@ function computeNextAction(file: any): { action: string; urgency: 'info' | 'warn
     }
   }
 
-  // Status-based next actions
   const statusActions: Record<string, { action: string; urgency: 'info' | 'warning' | 'critical' }> = {
     draft: { action: 'File is in draft — open file to begin processing', urgency: 'info' },
     open: { action: 'File opened — collect customer documents and initial payment', urgency: 'info' },
@@ -71,7 +93,7 @@ function computeNextAction(file: any): { action: string; urgency: 'info' | 'warn
 }
 
 // ─── Health Score Engine ──────────────────────────────────────────────────────
-function computeHealth(file: any, invoices: any[], documents: any[]): {
+function computeHealth(file: any, invoices: any[], documents: any[], bookings: any[]): {
   score: 'green' | 'yellow' | 'red';
   issues: string[];
 } {
@@ -115,6 +137,15 @@ function computeHealth(file: any, invoices: any[], documents: any[]): {
     if (daysUntilDeparture >= 0 && daysUntilDeparture <= 7 && file.status !== 'completed') {
       issues.push(`Departure in ${daysUntilDeparture} days`);
     }
+  }
+
+  // Booking health checks
+  const cancelledBookings = bookings.filter((b) => b.status === 'cancelled');
+  if (cancelledBookings.length > 0) issues.push(`${cancelledBookings.length} cancelled booking(s)`);
+  const pendingBookings = bookings.filter((b) => b.status === 'pending');
+  if (pendingBookings.length > 0 && file.departureDate) {
+    const days = Math.floor((new Date(file.departureDate).getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    if (days <= 7) issues.push(`${pendingBookings.length} unconfirmed booking(s) close to departure`);
   }
 
   if (issues.length === 0) return { score: 'green', issues: [] };
@@ -431,14 +462,15 @@ export const travelFileService = {
     const file = await travelFileRepository.findFullById(agencyId, id);
     if (!file) throw new NotFoundError('Travel File');
 
-    const [invoices, documents] = await Promise.all([
+    const [invoices, documents, bookings] = await Promise.all([
       Invoice.find({ _id: { $in: file.invoiceIds } }).lean(),
       DocumentFile.find({ _id: { $in: file.documentIds } }).lean(),
+      bookingRepository.getByTravelFile(agencyId, id),
     ]);
 
     return {
-      health: computeHealth(file, invoices, documents),
-      nextAction: computeNextAction(file),
+      health: computeHealth(file, invoices, documents, bookings),
+      nextAction: computeNextAction(file, bookings),
       progress: computeProgress(file, invoices, documents),
     };
   },

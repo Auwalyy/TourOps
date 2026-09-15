@@ -1,184 +1,319 @@
 'use client';
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, FolderOpen } from 'lucide-react';
+import { ArrowLeft, FolderOpen, Clock, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 import { bookingsApi } from '@/services/api.service';
 import { Card, CardContent, CardHeader, CardTitle, Skeleton } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { Select } from '@/components/ui/Input';
-import { formatDate, formatCurrency } from '@/lib/utils';
-import { BookingStatus } from '@/types';
-import { useState } from 'react';
-import { TravelFileFormModal } from '@/components/features/travel-files/TravelFileFormModal';
+import { formatDate, formatCurrency, formatRelativeTime } from '@/lib/utils';
+import { Booking, BookingStatus, BookingType } from '@/types';
 
-const STATUSES: BookingStatus[] = ['enquiry', 'quoted', 'confirmed', 'in_progress', 'completed', 'cancelled', 'refunded'];
+const BOOKING_STATUSES: BookingStatus[] = ['draft', 'pending', 'reserved', 'confirmed', 'ticketed', 'cancelled', 'completed'];
+
+const TYPE_LABEL: Record<BookingType, string> = {
+  flight: 'Flight', hotel: 'Hotel', transport: 'Transport',
+  tour: 'Tour', activity: 'Activity', package: 'Package', other: 'Other',
+};
 
 export default function BookingDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const qc = useQueryClient();
-  const [newStatus, setNewStatus] = useState('');
-  const [note, setNote] = useState('');
-  const [showTravelFileForm, setShowTravelFileForm] = useState(false);
+  const [newStatus, setNewStatus] = useState<BookingStatus | ''>('');
+  const [reason, setReason] = useState('');
 
   const { data: booking, isLoading } = useQuery({
     queryKey: ['bookings', id],
-    queryFn: () => bookingsApi.getById(id).then((r) => r.data.data),
-  });
-
-  const { data: linkedTravelFile } = useQuery({
-    queryKey: ['bookings', id, 'travel-file'],
-    queryFn: () => bookingsApi.getLinkedTravelFile(id).then((r) => r.data.data),
-    enabled: !!id,
+    queryFn: () => bookingsApi.getById(id).then((r) => r.data.data as Booking),
   });
 
   const statusMutation = useMutation({
-    mutationFn: () => bookingsApi.updateStatus(id, newStatus, note || undefined),
+    mutationFn: () => bookingsApi.updateStatus(id, newStatus as string, reason || undefined),
     onSuccess: () => {
       toast.success('Status updated');
       qc.invalidateQueries({ queryKey: ['bookings', id] });
       setNewStatus('');
-      setNote('');
+      setReason('');
     },
     onError: () => toast.error('Failed to update status'),
   });
 
-  if (isLoading) return <Skeleton className="h-64 w-full" />;
+  const deleteMutation = useMutation({
+    mutationFn: () => bookingsApi.delete(id),
+    onSuccess: () => { toast.success('Booking deleted'); router.push('/bookings'); },
+    onError: (err: any) => toast.error(err.response?.data?.message || 'Cannot delete this booking'),
+  });
+
+  if (isLoading) return <Skeleton className="h-96 w-full" />;
   if (!booking) return <p className="text-gray-500">Booking not found.</p>;
 
   const customer = booking.customerId as any;
+  const travelFile = booking.travelFileId as any;
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
+      {/* Header */}
+      <div className="flex flex-wrap items-start gap-4">
         <Button variant="ghost" size="icon" onClick={() => router.back()}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
-        <div className="flex-1">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{booking.referenceNumber}</h1>
-          <StatusBadge status={booking.status} />
+        <div className="flex-1 min-w-0">
+          <div className="flex flex-wrap items-center gap-3">
+            <h1 className="text-2xl font-bold font-mono text-gray-900 dark:text-gray-100">{booking.bookingNumber}</h1>
+            <span className="rounded-full bg-indigo-100 px-3 py-0.5 text-sm font-medium text-indigo-700">
+              {TYPE_LABEL[booking.bookingType]} Booking
+            </span>
+            <StatusBadge status={booking.status} />
+          </div>
+          <p className="mt-1 text-sm text-gray-500">{booking.title}</p>
         </div>
-        {booking.status === 'confirmed' && !linkedTravelFile && (
-          <Button onClick={() => setShowTravelFileForm(true)}>
-            <FolderOpen className="h-4 w-4" /> Open Travel File
+        {travelFile?.fileNumber && (
+          <Button variant="outline" onClick={() => router.push(`/travel-files/${travelFile._id}`)}>
+            <FolderOpen className="h-4 w-4" /> View Travel File
           </Button>
         )}
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
-          {/* Details */}
+          {/* Booking Info */}
           <Card>
-            <CardHeader><CardTitle>Booking Details</CardTitle></CardHeader>
+            <CardHeader><CardTitle>Booking Information</CardTitle></CardHeader>
             <CardContent className="grid grid-cols-2 gap-4 text-sm">
-              <Detail label="Customer" value={customer?.fullName || '—'} />
-              <Detail label="Type" value={booking.bookingType} />
-              <Detail label="Travel Date" value={booking.travelDate ? formatDate(booking.travelDate) : '—'} />
-              <Detail label="Return Date" value={booking.returnDate ? formatDate(booking.returnDate) : '—'} />
-              <Detail label="Travelers" value={String(booking.numberOfTravelers)} />
-              <Detail label="Total Amount" value={formatCurrency(booking.totalAmount, booking.currency)} />
-              {booking.notes && <div className="col-span-2"><Detail label="Notes" value={booking.notes} /></div>}
+              <Detail label="Booking Number" value={booking.bookingNumber} />
+              <Detail label="Type" value={TYPE_LABEL[booking.bookingType]} />
+              <Detail label="Title" value={booking.title} />
+              <Detail label="Provider" value={booking.provider || '—'} />
+              <Detail label="Start Date" value={booking.startDate ? formatDate(booking.startDate) : '—'} />
+              <Detail label="End Date" value={booking.endDate ? formatDate(booking.endDate) : '—'} />
+              <Detail label="Cost" value={formatCurrency(booking.cost, booking.currency)} />
+              <Detail label="Status" value={booking.status} />
             </CardContent>
           </Card>
 
-          {/* Linked Travel File */}
-          {linkedTravelFile ? (
-            <Card>
-              <CardHeader><CardTitle>Linked Travel File</CardTitle></CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between">
-                  <div className="space-y-1">
-                    <p className="font-mono text-sm font-semibold text-blue-600">{linkedTravelFile.fileNumber}</p>
-                    <div className="flex items-center gap-2">
-                      <StatusBadge status={linkedTravelFile.status} />
-                      <span className="text-xs text-gray-500 capitalize">{linkedTravelFile.travelType?.replace(/_/g, ' ')} · {linkedTravelFile.destination}</span>
-                    </div>
-                  </div>
-                  <Button variant="outline" size="sm" onClick={() => router.push(`/travel-files/${linkedTravelFile._id}`)}>
-                    <FolderOpen className="h-4 w-4" /> View File
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ) : booking.status === 'confirmed' ? (
-            <Card className="border-dashed border-blue-200 bg-blue-50 dark:bg-blue-900/10">
-              <CardContent className="flex items-center justify-between py-5">
-                <div>
-                  <p className="text-sm font-medium text-blue-700 dark:text-blue-400">No travel file yet</p>
-                  <p className="text-xs text-blue-500">Booking is confirmed — open a travel file to begin operations</p>
-                </div>
-                <Button onClick={() => setShowTravelFileForm(true)}>
-                  <FolderOpen className="h-4 w-4" /> Open Travel File
-                </Button>
-              </CardContent>
-            </Card>
-          ) : null}
+          {/* Customer & Travel File */}
+          <Card>
+            <CardHeader><CardTitle>Customer & Travel File</CardTitle></CardHeader>
+            <CardContent className="grid grid-cols-2 gap-4 text-sm">
+              <Detail label="Customer" value={customer?.fullName || `${customer?.firstName || ''} ${customer?.lastName || ''}`.trim() || '—'} />
+              <Detail label="Phone" value={customer?.phone || '—'} />
+              <Detail label="Travel File" value={travelFile?.fileNumber || '—'} />
+              <Detail label="Destination" value={travelFile?.destination || '—'} />
+              <Detail label="Travel Type" value={travelFile?.travelType?.replace(/_/g, ' ') || '—'} />
+              <Detail label="File Status" value={travelFile?.status || '—'} />
+            </CardContent>
+          </Card>
+
+          {/* Type-specific details */}
+          <BookingDetailsCard booking={booking} />
 
           {/* Status History */}
           <Card>
-            <CardHeader><CardTitle>Status Timeline</CardTitle></CardHeader>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Clock className="h-4 w-4" /> Status History
+              </CardTitle>
+            </CardHeader>
             <CardContent>
-              <ol className="relative border-l border-gray-200 dark:border-gray-700 pl-4 space-y-4">
-                {[...booking.statusHistory].reverse().map((h: any, i: number) => (
-                  <li key={i} className="ml-2">
-                    <div className="absolute -left-1.5 mt-1.5 h-3 w-3 rounded-full border-2 border-white bg-blue-500 dark:border-gray-900" />
-                    <div className="flex items-center gap-2">
-                      <StatusBadge status={h.status} />
-                      <span className="text-xs text-gray-400">{formatDate(h.changedAt)}</span>
-                    </div>
-                    {h.note && <p className="mt-1 text-xs text-gray-500">{h.note}</p>}
-                  </li>
-                ))}
-              </ol>
+              {booking.statusHistory.length === 0 ? (
+                <p className="text-sm text-gray-400">No status changes recorded.</p>
+              ) : (
+                <ol className="relative border-l border-gray-200 dark:border-gray-700 ml-3 space-y-4">
+                  {[...booking.statusHistory].reverse().map((h, i) => {
+                    const user = h.changedBy as any;
+                    return (
+                      <li key={i} className="ml-6">
+                        <span className="absolute -left-3 flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 ring-4 ring-white dark:ring-gray-900">
+                          <Clock className="h-3 w-3 text-blue-600" />
+                        </span>
+                        <div className="rounded-lg border border-gray-100 bg-gray-50 p-3 dark:border-gray-800 dark:bg-gray-900">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <StatusBadge status={h.from} />
+                            <span className="text-xs text-gray-400">→</span>
+                            <StatusBadge status={h.to} />
+                          </div>
+                          {h.reason && <p className="text-xs text-gray-500 mt-1">{h.reason}</p>}
+                          <p className="mt-1 text-xs text-gray-400">
+                            {user?.firstName} {user?.lastName} · {formatRelativeTime(h.changedAt)}
+                          </p>
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ol>
+              )}
             </CardContent>
           </Card>
+
+          {/* Documents */}
+          {booking.documents.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="h-4 w-4" /> Documents
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="divide-y divide-gray-50 dark:divide-gray-800">
+                  {booking.documents.map((d, i) => {
+                    const doc = d.documentId as any;
+                    return (
+                      <li key={i} className="flex items-center justify-between py-3">
+                        <div>
+                          <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{doc?.name || doc?.originalName || 'Document'}</p>
+                          <p className="text-xs text-gray-500 capitalize">{doc?.category}</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {d.visibleToCustomer && (
+                            <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs text-green-700">Visible to customer</span>
+                          )}
+                          {doc?.fileUrl && (
+                            <a href={doc.fileUrl} target="_blank" rel="noreferrer"
+                              className="text-xs text-blue-600 hover:underline">View</a>
+                          )}
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </CardContent>
+            </Card>
+          )}
         </div>
 
-        {/* Update Status */}
-        <Card className="h-fit">
-          <CardHeader><CardTitle>Update Status</CardTitle></CardHeader>
-          <CardContent className="space-y-3">
-            <Select value={newStatus} onChange={(e) => setNewStatus(e.target.value)}>
-              <option value="">Select new status</option>
-              {STATUSES.filter((s) => s !== booking.status).map((s) => (
-                <option key={s} value={s}>{s.replace(/_/g, ' ')}</option>
-              ))}
-            </Select>
-            <textarea
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              placeholder="Add a note (optional)"
-              rows={3}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
-            />
-            <Button
-              className="w-full"
-              disabled={!newStatus}
-              loading={statusMutation.isPending}
-              onClick={() => statusMutation.mutate()}
-            >
-              Update Status
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
+        {/* Sidebar */}
+        <div className="space-y-6">
+          {/* Update Status */}
+          <Card>
+            <CardHeader><CardTitle>Update Status</CardTitle></CardHeader>
+            <CardContent className="space-y-3">
+              <Select value={newStatus} onChange={(e) => setNewStatus(e.target.value as BookingStatus)}>
+                <option value="">Select new status...</option>
+                {BOOKING_STATUSES.filter((s) => s !== booking.status).map((s) => (
+                  <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
+                ))}
+              </Select>
+              <textarea
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                placeholder="Reason (optional)"
+                rows={3}
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
+              />
+              <Button
+                className="w-full"
+                disabled={!newStatus}
+                loading={statusMutation.isPending}
+                onClick={() => statusMutation.mutate()}
+              >
+                Update Status
+              </Button>
+            </CardContent>
+          </Card>
 
-      <TravelFileFormModal
-        open={showTravelFileForm}
-        onClose={() => {
-          setShowTravelFileForm(false);
-          qc.invalidateQueries({ queryKey: ['bookings', id, 'travel-file'] });
-        }}
-        bookingId={id}
-        prefill={{
-          customerId: typeof booking.customerId === 'object' ? (booking.customerId as any)._id : booking.customerId,
-          travelDate: booking.travelDate,
-          returnDate: booking.returnDate,
-        }}
-      />
+          {/* Financial */}
+          <Card>
+            <CardHeader><CardTitle>Financial</CardTitle></CardHeader>
+            <CardContent className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-gray-500">Booking Cost</span>
+                <span className="font-semibold">{formatCurrency(booking.cost, booking.currency)}</span>
+              </div>
+              <p className="text-xs text-gray-400 pt-1">
+                Payments are managed in the Invoices & Payments module linked to this Travel File.
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Danger zone */}
+          {['draft', 'cancelled'].includes(booking.status) && (
+            <Card className="border-red-200 dark:border-red-900">
+              <CardHeader><CardTitle className="text-red-600">Danger Zone</CardTitle></CardHeader>
+              <CardContent>
+                <Button
+                  variant="outline"
+                  className="w-full border-red-300 text-red-600 hover:bg-red-50"
+                  loading={deleteMutation.isPending}
+                  onClick={() => { if (confirm('Delete this booking? This cannot be undone.')) deleteMutation.mutate(); }}
+                >
+                  Delete Booking
+                </Button>
+                <p className="mt-2 text-xs text-gray-400">Only draft or cancelled bookings can be deleted.</p>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      </div>
     </div>
+  );
+}
+
+// ─── Type-specific details card ───────────────────────────────────────────────
+
+function BookingDetailsCard({ booking }: { booking: Booking }) {
+  const d = booking.details;
+  if (!d) return null;
+
+  const rows: [string, string | number | undefined][] = [];
+
+  if (booking.bookingType === 'flight') {
+    rows.push(
+      ['Airline', d.airline], ['Flight Number', d.flightNumber],
+      ['From', d.departureLocation], ['To', d.arrivalLocation],
+      ['Departure', d.departureDateTime ? formatDate(d.departureDateTime) : undefined],
+      ['Arrival', d.arrivalDateTime ? formatDate(d.arrivalDateTime) : undefined],
+      ['PNR', d.pnr], ['Ticket Number', d.ticketNumber],
+      ['Baggage', d.baggageAllowance], ['Seat', d.seatNumber],
+      ['Passengers', d.passengerCount],
+    );
+  } else if (booking.bookingType === 'hotel') {
+    rows.push(
+      ['Hotel', d.hotelName], ['City', d.city], ['Address', d.hotelAddress],
+      ['Check-in', d.checkInDate ? formatDate(d.checkInDate) : undefined],
+      ['Check-out', d.checkOutDate ? formatDate(d.checkOutDate) : undefined],
+      ['Room Type', d.roomType], ['Rooms', d.numberOfRooms],
+      ['Nights', d.numberOfNights], ['Guests', d.guestCount],
+      ['Booking Ref', d.bookingReference],
+    );
+  } else if (booking.bookingType === 'transport') {
+    rows.push(
+      ['Vehicle', d.vehicleType], ['Passengers', d.passengerCount],
+      ['Pickup', d.pickupLocation], ['Drop-off', d.dropoffLocation],
+      ['Pickup Time', d.pickupDateTime ? formatDate(d.pickupDateTime) : undefined],
+      ['Driver', d.driverName], ['Driver Phone', d.driverPhone],
+      ['Booking Ref', d.bookingReference],
+    );
+  } else if (booking.bookingType === 'tour' || booking.bookingType === 'activity') {
+    rows.push(
+      ['Name', d.tourName], ['Location', d.location],
+      ['Participants', d.numberOfParticipants],
+      ['Booking Ref', d.bookingReference],
+    );
+  } else {
+    rows.push(['Booking Reference', d.bookingReference]);
+  }
+
+  const filled = rows.filter(([, v]) => v !== undefined && v !== '' && v !== null);
+  if (filled.length === 0) return null;
+
+  const typeLabel: Record<BookingType, string> = {
+    flight: 'Flight Details', hotel: 'Hotel Details', transport: 'Transport Details',
+    tour: 'Tour Details', activity: 'Activity Details', package: 'Package Details', other: 'Details',
+  };
+
+  return (
+    <Card>
+      <CardHeader><CardTitle>{typeLabel[booking.bookingType]}</CardTitle></CardHeader>
+      <CardContent className="grid grid-cols-2 gap-4 text-sm">
+        {filled.map(([label, value]) => (
+          <Detail key={label} label={label} value={String(value)} />
+        ))}
+      </CardContent>
+    </Card>
   );
 }
 

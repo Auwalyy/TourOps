@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { authenticate } from '../middleware/authenticate';
 import { authorize } from '../middleware/authorize';
 import { travelFileController } from '../controllers/travelFile.controller';
+import { bookingController } from '../controllers/booking.controller';
 
 const router = Router();
 router.use(authenticate);
@@ -22,5 +23,9 @@ router.post('/:id/documents', authorize('documents:write'), travelFileController
 router.post('/:id/invoices', authorize('payments:write'), travelFileController.linkInvoice);
 router.patch('/:id/physical-file', authorize('bookings:write'), travelFileController.updatePhysicalFile);
 router.delete('/:id', authorize('bookings:delete'), travelFileController.delete);
+
+// Travel File → Bookings sub-routes
+router.get('/:id/bookings', authorize('bookings:read'), bookingController.getByTravelFile);
+router.post('/:id/bookings', authorize('bookings:write'), bookingController.createForTravelFile);
 
 export default router;
