@@ -176,13 +176,8 @@ function TypeFields({ type, register }: { type: BookingType; register: any }) {
   if (type === 'flight') return (
     <div className="grid grid-cols-2 gap-4">
       <div><Label>Airline</Label><Input placeholder="Qatar Airways" {...register('details.airline')} /></div>
-      <div><Label>Flight Number</Label><Input placeholder="QR123" {...register('details.flightNumber')} /></div>
       <div><Label>From (Departure)</Label><Input placeholder="Kano (KAN)" {...register('details.departureLocation')} /></div>
       <div><Label>To (Arrival)</Label><Input placeholder="Jeddah (JED)" {...register('details.arrivalLocation')} /></div>
-      <div><Label>PNR / Booking Ref</Label><Input placeholder="ABC123" {...register('details.pnr')} /></div>
-      <div><Label>Baggage Allowance</Label><Input placeholder="2 × 23kg" {...register('details.baggageAllowance')} /></div>
-      <div><Label>Passenger Count</Label><Input type="number" min={1} {...register('details.passengerCount')} /></div>
-      <div><Label>Seat Number</Label><Input placeholder="12A" {...register('details.seatNumber')} /></div>
     </div>
   );
 

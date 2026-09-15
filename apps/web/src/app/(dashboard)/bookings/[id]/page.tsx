@@ -262,13 +262,11 @@ function BookingDetailsCard({ booking }: { booking: Booking }) {
 
   if (booking.bookingType === 'flight') {
     rows.push(
-      ['Airline', d.airline], ['Flight Number', d.flightNumber],
+      ['Airline', d.airline],
       ['From', d.departureLocation], ['To', d.arrivalLocation],
       ['Departure', d.departureDateTime ? formatDate(d.departureDateTime) : undefined],
       ['Arrival', d.arrivalDateTime ? formatDate(d.arrivalDateTime) : undefined],
-      ['PNR', d.pnr], ['Ticket Number', d.ticketNumber],
-      ['Baggage', d.baggageAllowance], ['Seat', d.seatNumber],
-      ['Passengers', d.passengerCount],
+      ['Ticket Number', d.ticketNumber],
     );
   } else if (booking.bookingType === 'hotel') {
     rows.push(
