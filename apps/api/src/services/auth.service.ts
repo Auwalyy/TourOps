@@ -75,12 +75,15 @@ export const authService = {
       throw new UnauthorizedError('Invalid refresh token');
     }
 
-    const user = await userRepository.findById(payload.userId);
+    const user = await userRepository.findByIdWithTokens(payload.userId);
     if (!user || !user.isActive) throw new UnauthorizedError('User not found');
 
-    // Validate token is in user's stored list
-    const userWithTokens = await userRepository.findOne({ _id: user._id });
-    // Remove old, issue new
+    // Reject tokens that were already revoked (logout, password change/reset)
+    if (!user.refreshTokens.includes(refreshToken)) {
+      throw new UnauthorizedError('Refresh token has been revoked');
+    }
+
+    // Rotate: remove old, issue new
     await userRepository.removeRefreshToken(user.id, refreshToken);
     return this._issueTokens(user);
   },

@@ -28,11 +28,14 @@ app.use(
 );
 
 // Rate limiting
+// General ceiling — generous enough that a small office sharing one public IP
+// (common for agencies operating behind a single ISP connection) won't get
+// throttled during ordinary multi-staff use of the dashboard.
 app.use(
   '/api',
   rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 200,
+    max: 2000,
     message: 'Too many requests, please try again later.',
     standardHeaders: true,
     legacyHeaders: false,

@@ -1,15 +1,28 @@
 import { Router, Request, Response, NextFunction } from 'express';
+import rateLimit from 'express-rate-limit';
 import { TravelFile } from '../models/TravelFile';
 import { TourPackage } from '../models/TourPackage';
 import { Agency } from '../models/Agency';
 import { sendSuccess } from '../utils/response';
 import { NotFoundError } from '../utils/errors';
 import { cloudinary } from '../config/cloudinary';
-import multer from 'multer';
 import { Readable } from 'stream';
+import { createDocumentUpload } from '../utils/upload';
 
 const router = Router();
-const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
+const upload = createDocumentUpload();
+
+// This endpoint looks up a travel file by its human-readable file number with
+// no login required, so it needs its own tight limit — independent of the
+// general API ceiling — to make guessing another customer's file number
+// impractical.
+const trackLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 30,
+  message: 'Too many requests, please try again later.',
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 function uploadToCloudinary(buffer: Buffer, folder: string): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -22,7 +35,7 @@ function uploadToCloudinary(buffer: Buffer, folder: string): Promise<string> {
 }
 
 // Public — no authenticate middleware
-router.get('/track/:fileNumber', async (req: Request, res: Response, next: NextFunction) => {
+router.get('/track/:fileNumber', trackLimiter, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const file = await TravelFile.findOne({ fileNumber: req.params.fileNumber.toUpperCase() })
       .populate('customerId', 'firstName lastName phone email nationality passport dateOfBirth')
@@ -73,7 +86,7 @@ router.get('/deals/:agencyId', async (req: Request, res: Response, next: NextFun
 });
 
 // Public — customer uploads payment receipt for a travel file
-router.post('/track/:fileNumber/receipt', upload.single('receipt'), async (req: Request, res: Response, next: NextFunction) => {
+router.post('/track/:fileNumber/receipt', trackLimiter, upload.single('receipt'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const file = await TravelFile.findOne({ fileNumber: req.params.fileNumber.toUpperCase() });
     if (!file) throw new NotFoundError('Travel file not found');
@@ -106,7 +119,7 @@ router.post('/track/:fileNumber/receipt', upload.single('receipt'), async (req: 
 });
 
 // Public — customer sends a note on their travel file
-router.post('/track/:fileNumber/note', async (req: Request, res: Response, next: NextFunction) => {
+router.post('/track/:fileNumber/note', trackLimiter, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const file = await TravelFile.findOne({ fileNumber: req.params.fileNumber.toUpperCase() });
     if (!file) throw new NotFoundError('Travel file not found');

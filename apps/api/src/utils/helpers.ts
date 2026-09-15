@@ -44,7 +44,10 @@ export function generateTravelFileNumber(): string {
   const date = new Date();
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
-  const random = Math.floor(Math.random() * 90000) + 10000;
+  // Looked up via a public, unauthenticated portal endpoint (customer tracking),
+  // so this uses crypto-strong randomness with enough entropy that brute-forcing
+  // it to find other customers' files is impractical, even combined with rate limiting.
+  const random = crypto.randomInt(100000, 1000000);
   return `TF-${year}${month}-${random}`;
 }
 

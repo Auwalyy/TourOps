@@ -1,13 +1,12 @@
-import multer from 'multer';
 import { Response, NextFunction } from 'express';
 import { AuthRequest } from '../types/express';
 import { aiDocumentService } from '../services/ai/document.ai.service';
 import { aiReportingService } from '../services/ai/reporting.ai.service';
 import { aiRecommendationService } from '../services/ai/recommendations.ai.service';
 import { sendSuccess } from '../utils/response';
+import { createDocumentUpload } from '../utils/upload';
 
-const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
-export const passportUpload = upload.single('passport');
+export const passportUpload = createDocumentUpload().single('passport');
 
 export const aiController = {
   async extractPassport(req: AuthRequest, res: Response, next: NextFunction) {

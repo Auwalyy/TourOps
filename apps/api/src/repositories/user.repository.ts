@@ -25,6 +25,10 @@ class UserRepository extends BaseRepository<IUser> {
     return User.find({ agencyId, isActive: true }).select('-password').exec();
   }
 
+  async findByIdWithTokens(id: string): Promise<IUser | null> {
+    return User.findById(id).select('+refreshTokens').exec();
+  }
+
   async addRefreshToken(userId: string, token: string): Promise<void> {
     await User.findByIdAndUpdate(userId, {
       $push: { refreshTokens: token },

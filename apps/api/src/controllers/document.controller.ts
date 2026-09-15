@@ -3,10 +3,10 @@ import { AuthRequest } from '../types/express';
 import { documentService } from '../services/document.service';
 import { sendSuccess, sendCreated, sendPaginated } from '../utils/response';
 import { cloudinary } from '../config/cloudinary';
-import multer from 'multer';
 import { Readable } from 'stream';
+import { createDocumentUpload } from '../utils/upload';
 
-export const uploadMiddleware = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } }).single('file');
+export const uploadMiddleware = createDocumentUpload().single('file');
 
 async function uploadToCloudinary(file: Express.Multer.File): Promise<{ url: string; publicId: string }> {
   return new Promise((resolve, reject) => {
