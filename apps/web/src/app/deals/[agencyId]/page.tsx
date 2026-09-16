@@ -250,6 +250,19 @@ export default function DealsPage() {
       </div>
 
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
+        {/* Search */}
+        {(data?.deals.length || 0) > 3 && (
+          <div className="relative mb-5">
+            <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search by name or destination..."
+              className="w-full rounded-full border border-gray-200 bg-white py-3 pl-11 pr-4 text-sm shadow-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100"
+            />
+          </div>
+        )}
+
         {/* Category filter */}
         {categories.length > 2 && (
           <div className="mb-8 flex flex-wrap gap-2">
@@ -269,8 +282,12 @@ export default function DealsPage() {
         {filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 text-center">
             <Globe className="mb-4 h-12 w-12 text-gray-300" />
-            <p className="text-lg font-semibold text-gray-500">No deals available right now</p>
-            <p className="mt-1 text-sm text-gray-400">Check back soon for new packages and offers.</p>
+            <p className="text-lg font-semibold text-gray-500">
+              {search ? 'No deals match your search' : 'No deals available right now'}
+            </p>
+            <p className="mt-1 text-sm text-gray-400">
+              {search ? 'Try a different name or destination.' : 'Check back soon for new packages and offers.'}
+            </p>
           </div>
         ) : (
           <>
@@ -282,7 +299,7 @@ export default function DealsPage() {
                   <h2 className="text-lg font-bold text-gray-900">Featured Deals</h2>
                 </div>
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                  {featured.map((deal: any) => <DealCard key={deal._id} deal={deal} agencyWhatsapp={whatsapp} />)}
+                  {featured.map((deal: any) => <DealCard key={deal._id} deal={deal} agencyWhatsapp={whatsapp} agencyPhone={agencyPhone} />)}
                 </div>
               </div>
             )}
@@ -294,7 +311,7 @@ export default function DealsPage() {
                   <h2 className="mb-4 text-lg font-bold text-gray-900">All Packages</h2>
                 )}
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                  {regular.map((deal: any) => <DealCard key={deal._id} deal={deal} agencyWhatsapp={whatsapp} />)}
+                  {regular.map((deal: any) => <DealCard key={deal._id} deal={deal} agencyWhatsapp={whatsapp} agencyPhone={agencyPhone} />)}
                 </div>
               </div>
             )}
