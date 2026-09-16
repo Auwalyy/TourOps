@@ -2,7 +2,7 @@
 import { useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, Clock, CheckSquare, StickyNote, FolderOpen, Receipt, AlertCircle, Copy, Check, Upload, Trash2, Download, Plane } from 'lucide-react';
+import { ArrowLeft, Clock, CheckSquare, StickyNote, FolderOpen, Receipt, AlertCircle, Copy, Check, Upload, Trash2, Download, Plane, Pencil, Wallet } from 'lucide-react';
 import { toast } from 'sonner';
 import { travelFilesApi, documentsApi, bookingsApi } from '@/services/api.service';
 import { TravelFile, TravelFileStatus, Booking } from '@/types';
@@ -13,6 +13,7 @@ import { Select, Input, Label, Textarea } from '@/components/ui/Input';
 import { formatDate, formatCurrency, formatRelativeTime } from '@/lib/utils';
 import { TravelFileHealthBanner } from '@/components/features/travel-files/TravelFileHealthBanner';
 import { BookingFormModal } from '@/components/features/bookings/BookingFormModal';
+import { EditTravelFileModal } from '@/components/features/travel-files/EditTravelFileModal';
 
 const TRAVEL_TYPE_LABELS: Record<string, string> = {
   umrah: 'Umrah', hajj: 'Hajj', study_abroad: 'Study Abroad',
@@ -46,6 +47,8 @@ export default function TravelFileDetailPage() {
   const [docName, setDocName] = useState('');
   const fileUploadRef = useRef<HTMLInputElement>(null);
   const [showBookingForm, setShowBookingForm] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [payment, setPayment] = useState({ amount: '', method: 'cash', reference: '', note: '' });
 
   function copyTrackingLink() {
     if (!file) return;
@@ -113,6 +116,21 @@ export default function TravelFileDetailPage() {
     onError: () => toast.error('Upload failed'),
   });
 
+  const paymentMutation = useMutation({
+    mutationFn: () => travelFilesApi.addPayment(id, {
+      amount: Number(payment.amount),
+      method: payment.method,
+      reference: payment.reference || undefined,
+      note: payment.note || undefined,
+    }),
+    onSuccess: () => {
+      toast.success('Payment recorded');
+      setPayment({ amount: '', method: 'cash', reference: '', note: '' });
+      qc.invalidateQueries({ queryKey: ['travel-files', id] });
+    },
+    onError: (err: any) => toast.error(err.response?.data?.message || 'Failed to record payment'),
+  });
+
   const docDeleteMutation = useMutation({
     mutationFn: (docId: string) => documentsApi.delete(docId),
     onSuccess: () => {
@@ -172,6 +190,9 @@ export default function TravelFileDetailPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={() => setShowEditModal(true)}>
+            <Pencil className="h-4 w-4" /> Edit Details
+          </Button>
           <Select
             value={file.status}
             onChange={(e) => statusMutation.mutate(e.target.value as TravelFileStatus)}
@@ -258,6 +279,38 @@ export default function TravelFileDetailPage() {
           </div>
 
           <div className="space-y-6">
+            {/* Financial Summary */}
+            <Card>
+              <CardHeader><CardTitle>Financial Summary</CardTitle></CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500">Total Cost</span>
+                  <span className="font-semibold text-gray-900 dark:text-gray-100">{formatCurrency(file.totalCost)}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500">Amount Paid</span>
+                  <span className="font-semibold text-green-600">{formatCurrency(file.amountPaid)}</span>
+                </div>
+                <div className="flex justify-between border-t border-gray-100 pt-3 text-sm dark:border-gray-800">
+                  <span className="font-semibold text-gray-700 dark:text-gray-300">Balance</span>
+                  <span className={`font-bold ${file.balance > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                    {formatCurrency(file.balance)}
+                  </span>
+                </div>
+                {file.totalCost > 0 && (
+                  <div className="h-2 w-full rounded-full bg-gray-100 dark:bg-gray-800">
+                    <div
+                      className="h-2 rounded-full bg-green-500 transition-all"
+                      style={{ width: `${Math.min(100, Math.round((file.amountPaid / file.totalCost) * 100))}%` }}
+                    />
+                  </div>
+                )}
+                <Button variant="outline" className="w-full" size="sm" onClick={() => setActiveTab('payments')}>
+                  <Wallet className="h-3.5 w-3.5" /> Record a Payment
+                </Button>
+              </CardContent>
+            </Card>
+
             {/* Assigned Staff */}
             <Card>
               <CardHeader><CardTitle>Assigned Staff</CardTitle></CardHeader>
@@ -518,7 +571,7 @@ export default function TravelFileDetailPage() {
             <CardHeader><CardTitle>Upload Document</CardTitle></CardHeader>
             <CardContent>
               <input ref={fileUploadRef} type="file" className="hidden" onChange={handleFileSelect}
-                accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" />
+                accept=".pdf,.jpg,.jpeg,.png,.webp" />
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                 <div>
                   <Label>Document Name</Label>
@@ -548,6 +601,7 @@ export default function TravelFileDetailPage() {
                   </Button>
                 </div>
               </div>
+              <p className="mt-2 text-xs text-gray-400">JPG, PNG, WebP or PDF · Max 10MB</p>
             </CardContent>
           </Card>
 
@@ -598,8 +652,73 @@ export default function TravelFileDetailPage() {
       )}
 
       {activeTab === 'payments' && (
-        <Card>
-          <CardHeader><CardTitle>Payment Ledger ({file.invoiceIds.length} invoices)</CardTitle></CardHeader>
+        <div className="space-y-4">
+          <Card>
+            <CardHeader><CardTitle>Record a Payment</CardTitle></CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-4">
+                <div>
+                  <Label>Amount</Label>
+                  <Input type="number" min="0" placeholder="0" value={payment.amount}
+                    onChange={(e) => setPayment((p) => ({ ...p, amount: e.target.value }))} />
+                </div>
+                <div>
+                  <Label>Method</Label>
+                  <Select value={payment.method} onChange={(e) => setPayment((p) => ({ ...p, method: e.target.value }))}>
+                    <option value="cash">Cash</option>
+                    <option value="bank_transfer">Bank Transfer</option>
+                    <option value="card">Card</option>
+                    <option value="mobile_money">Mobile Money</option>
+                    <option value="other">Other</option>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Reference</Label>
+                  <Input placeholder="optional" value={payment.reference}
+                    onChange={(e) => setPayment((p) => ({ ...p, reference: e.target.value }))} />
+                </div>
+                <div>
+                  <Label>Note</Label>
+                  <Input placeholder="optional" value={payment.note}
+                    onChange={(e) => setPayment((p) => ({ ...p, note: e.target.value }))} />
+                </div>
+              </div>
+              <Button
+                className="mt-3"
+                disabled={!payment.amount || Number(payment.amount) <= 0}
+                loading={paymentMutation.isPending}
+                onClick={() => paymentMutation.mutate()}
+              >
+                <Wallet className="h-4 w-4" /> Record Payment
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader><CardTitle>Payment History ({file.payments?.length || 0})</CardTitle></CardHeader>
+            <CardContent>
+              {!file.payments || file.payments.length === 0 ? (
+                <p className="text-sm text-gray-400">No payments recorded yet.</p>
+              ) : (
+                <ul className="divide-y divide-gray-50 dark:divide-gray-800">
+                  {[...file.payments].reverse().map((p, i) => (
+                    <li key={i} className="flex items-center justify-between py-3">
+                      <div>
+                        <p className="text-sm text-gray-700 dark:text-gray-300 capitalize">{p.method.replace(/_/g, ' ')}</p>
+                        <p className="text-xs text-gray-400">
+                          {formatDate(p.paidAt)}{p.reference && ` · Ref: ${p.reference}`}{p.note && ` · ${p.note}`}
+                        </p>
+                      </div>
+                      <span className="font-semibold text-green-600">+{formatCurrency(p.amount)}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+          <CardHeader><CardTitle>Invoices ({file.invoiceIds.length})</CardTitle></CardHeader>
           <CardContent>
             {file.invoiceIds.length === 0 ? (
               <p className="text-sm text-gray-400">No invoices linked. Create invoices in the Invoices module and link them here.</p>
@@ -639,7 +758,8 @@ export default function TravelFileDetailPage() {
               </>
             )}
           </CardContent>
-        </Card>
+          </Card>
+        </div>
       )}
       <BookingFormModal
         open={showBookingForm}
@@ -648,6 +768,7 @@ export default function TravelFileDetailPage() {
         customerId={typeof file.customerId === 'object' ? (file.customerId as any)._id : file.customerId}
         onCreated={() => qc.invalidateQueries({ queryKey: ['travel-files', id, 'bookings'] })}
       />
+      <EditTravelFileModal open={showEditModal} onClose={() => setShowEditModal(false)} file={file} />
 
       {activeTab === 'history' && (
         <Card>

@@ -73,7 +73,7 @@ router.get('/track/:fileNumber', trackLimiter, async (req: Request, res: Respons
 router.get('/deals/:agencyId', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { agencyId } = req.params;
-    const agency = await Agency.findById(agencyId).select('name branding logo').lean();
+    const agency = await Agency.findById(agencyId).select('name branding logo phone').lean();
     if (!agency) throw new NotFoundError('Agency not found');
 
     const deals = await TourPackage.find({ agencyId, status: 'active' })

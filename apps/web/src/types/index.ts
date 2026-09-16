@@ -311,6 +311,7 @@ export interface TravelFile {
   physicalFile: PhysicalFile;
   totalCost: number;
   amountPaid: number;
+  payments: Array<{ amount: number; method: string; reference?: string; note?: string; paidAt: string }>;
   balance: number;
   invoiceIds: Invoice[];
   documentIds: Document[];

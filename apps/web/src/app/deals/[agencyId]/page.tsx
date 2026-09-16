@@ -1,7 +1,7 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { MapPin, Clock, Users, Star, Calendar, MessageCircle, ChevronDown, ChevronUp, Globe, Tag, Zap } from 'lucide-react';
+import { MapPin, Clock, Users, Star, Calendar, MessageCircle, ChevronDown, ChevronUp, Globe, Tag, Zap, Search, Phone, RefreshCw } from 'lucide-react';
 import { portalApi } from '@/services/api.service';
 import { format, isPast } from 'date-fns';
 
@@ -21,7 +21,7 @@ function formatPrice(price: number, currency: string) {
   return new Intl.NumberFormat('en-NG', { style: 'currency', currency: currency || 'NGN', maximumFractionDigits: 0 }).format(price);
 }
 
-function DealCard({ deal, agencyWhatsapp }: { deal: any; agencyWhatsapp?: string }) {
+function DealCard({ deal, agencyWhatsapp, agencyPhone }: { deal: any; agencyWhatsapp?: string; agencyPhone?: string }) {
   const [expanded, setExpanded] = useState(false);
   const whatsapp = deal.whatsappNumber || agencyWhatsapp;
   const hasDiscount = deal.pricing.discountedPrice && deal.pricing.discountedPrice < deal.pricing.basePrice;
@@ -128,10 +128,32 @@ function DealCard({ deal, agencyWhatsapp }: { deal: any; agencyWhatsapp?: string
               <MessageCircle className="h-4 w-4" />
               {spotsLeft === 0 ? 'Fully Booked' : 'Enquire on WhatsApp'}
             </button>
+          ) : agencyPhone ? (
+            <a
+              href={`tel:${agencyPhone.replace(/\s+/g, '')}`}
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-gray-900 px-4 py-3 text-sm font-bold text-white shadow-sm transition-all hover:bg-gray-800 active:scale-95"
+            >
+              <Phone className="h-4 w-4" /> Call to Enquire
+            </a>
           ) : (
             <div className="rounded-xl bg-gray-50 px-4 py-3 text-center text-xs text-gray-400">Contact agency for details</div>
           )}
         </div>
+      </div>
+    </div>
+  );
+}
+
+function DealCardSkeleton() {
+  return (
+    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm animate-pulse">
+      <div className="h-48 w-full bg-gray-200" />
+      <div className="p-5 space-y-3">
+        <div className="h-4 w-1/3 rounded bg-gray-200" />
+        <div className="h-5 w-2/3 rounded bg-gray-200" />
+        <div className="h-3 w-full rounded bg-gray-100" />
+        <div className="h-3 w-3/4 rounded bg-gray-100" />
+        <div className="h-11 w-full rounded-xl bg-gray-100 mt-4" />
       </div>
     </div>
   );
@@ -143,13 +165,17 @@ export default function DealsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [filter, setFilter] = useState('all');
+  const [search, setSearch] = useState('');
+  const [retryKey, setRetryKey] = useState(0);
 
   useEffect(() => {
+    setLoading(true);
+    setError('');
     portalApi.getDeals(agencyId)
       .then((r) => setData(r.data.data))
       .catch(() => setError('Could not load deals. Please try again.'))
       .finally(() => setLoading(false));
-  }, [agencyId]);
+  }, [agencyId, retryKey]);
 
   const agency = data?.agency;
   const branding = agency?.branding;
@@ -157,24 +183,45 @@ export default function DealsPage() {
   const companyName = branding?.companyName || agency?.name || 'Travel Deals';
   const logoUrl = branding?.logoUrl || agency?.logo;
   const whatsapp = branding?.whatsappNumber;
+  const agencyPhone = agency?.phone;
+
+  useEffect(() => {
+    if (companyName) document.title = `${companyName} — Travel Deals`;
+  }, [companyName]);
 
   const categories = ['all', ...Array.from(new Set((data?.deals || []).map((d: any) => d.category)))];
-  const filtered = filter === 'all' ? (data?.deals || []) : (data?.deals || []).filter((d: any) => d.category === filter);
+  const searched = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return data?.deals || [];
+    return (data?.deals || []).filter((d: any) =>
+      d.title?.toLowerCase().includes(q) ||
+      d.destinations?.some((dest: string) => dest.toLowerCase().includes(q))
+    );
+  }, [data?.deals, search]);
+  const filtered = filter === 'all' ? searched : searched.filter((d: any) => d.category === filter);
   const featured = filtered.filter((d: any) => d.isFeatured);
   const regular = filtered.filter((d: any) => !d.isFeatured);
 
   if (loading) return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50">
-      <div className="flex flex-col items-center gap-3">
-        <div className="h-10 w-10 animate-spin rounded-full border-4 border-blue-200 border-t-blue-600" />
-        <p className="text-sm text-gray-400">Loading deals...</p>
+    <div className="min-h-screen bg-gray-50">
+      <div className="h-52 w-full animate-pulse bg-gradient-to-br from-blue-400 to-indigo-500 opacity-80" />
+      <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, i) => <DealCardSkeleton key={i} />)}
+        </div>
       </div>
     </div>
   );
 
   if (error) return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50">
+    <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-gray-50 px-4 text-center">
       <p className="text-sm text-red-500">{error}</p>
+      <button
+        onClick={() => setRetryKey((k) => k + 1)}
+        className="flex items-center gap-2 rounded-full bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 transition-colors"
+      >
+        <RefreshCw className="h-4 w-4" /> Try Again
+      </button>
     </div>
   );
 
