@@ -45,13 +45,20 @@ async function seed() {
     { firstName: 'Demo',    lastName: 'Customer',   email: 'customer@tourops.com',    role: 'customer'           as const, agencyId },
   ];
 
+  const forceReset = process.argv.includes('--force') || process.env.SEED_FORCE === 'true';
   for (const u of users) {
     const exists = await User.findOne({ email: u.email });
     if (exists) {
-      // Force reset password through the model so bcrypt hook fires
-      exists.password = PASSWORD;
-      await exists.save();
-      console.log(`  reset   [${u.role}] ${u.email}`);
+      // Runs on every deploy/restart when wired into a start command, so we
+      // never touch a password that may have been changed since — unless
+      // explicitly asked to via --force (for local dev resets).
+      if (forceReset) {
+        exists.password = PASSWORD;
+        await exists.save();
+        console.log(`  reset   [${u.role}] ${u.email}`);
+      } else {
+        console.log(`  exists  [${u.role}] ${u.email} (password left untouched)`);
+      }
     } else {
       const user = new User({ ...u, password: PASSWORD, isActive: true, isEmailVerified: true });
       await user.save();

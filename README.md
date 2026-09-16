@@ -118,6 +118,10 @@ npm run dev
 docker-compose up --build
 ```
 
+### 5. Deploying to Render
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for step-by-step instructions, including a `render.yaml` blueprint. The API's start sequence automatically bootstraps a demo agency and ~45 days of realistic sample data across every module on first boot, and safely no-ops on every later restart.
+
 ## API Endpoints
 
 | Module | Base Path |

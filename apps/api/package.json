@@ -8,7 +8,9 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "lint": "eslint src --ext .ts",
-    "seed": "ts-node src/scripts/seed.ts"
+    "seed": "ts-node src/scripts/seed.ts",
+    "seed:demo": "ts-node src/scripts/seed-demo.ts",
+    "render-start": "node dist/scripts/seed.js; node dist/scripts/seed-demo.js; node dist/server.js"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
