@@ -7,6 +7,7 @@ import { getPaginationParams, generateBookingNumber } from '../utils/helpers';
 import { BookingStatus, BookingType } from '../models/Booking';
 import { Agency } from '../models/Agency';
 import { TravelFile } from '../models/TravelFile';
+import { packageService } from './package.service';
 
 async function getAgencyPrefix(agencyId: string): Promise<string> {
   const agency = await Agency.findById(agencyId).select('name').lean();
@@ -90,6 +91,13 @@ export const bookingService = {
       throw new AppError('Customer does not belong to this Travel File', 400);
     }
 
+    // Claim a seat before creating anything — a full package must refuse the
+    // booking outright rather than overselling.
+    const tourPackageId = (data.tourPackageId as string) || undefined;
+    if (tourPackageId) {
+      await packageService.claimSeat(agencyId, tourPackageId);
+    }
+
     const prefix = await getAgencyPrefix(agencyId);
     const seq = await bookingRepository.nextSequence(agencyId);
     const bookingNumber = generateBookingNumber(prefix, seq);
@@ -147,6 +155,18 @@ export const bookingService = {
   async updateStatus(agencyId: string, id: string, userId: string, status: BookingStatus, reason?: string) {
     const booking = await bookingRepository.findOne({ _id: id, agencyId });
     if (!booking) throw new NotFoundError('Booking');
+
+    // Cancelling frees the seat back into the package's capacity; un-cancelling
+    // has to claim one again (and can legitimately fail if it sold out meanwhile).
+    if (booking.tourPackageId) {
+      const wasCancelled = booking.status === 'cancelled';
+      const nowCancelled = status === 'cancelled';
+      if (!wasCancelled && nowCancelled) {
+        await packageService.releaseSeat(agencyId, booking.tourPackageId.toString());
+      } else if (wasCancelled && !nowCancelled) {
+        await packageService.claimSeat(agencyId, booking.tourPackageId.toString());
+      }
+    }
 
     const updated = await bookingRepository.updateById(id, {
       status,
@@ -213,6 +233,10 @@ export const bookingService = {
     if (!booking) throw new NotFoundError('Booking');
     if (!['draft', 'cancelled'].includes(booking.status)) {
       throw new AppError('Only draft or cancelled bookings can be deleted', 400);
+    }
+    // A cancelled booking already released its seat when it was cancelled.
+    if (booking.tourPackageId && booking.status !== 'cancelled') {
+      await packageService.releaseSeat(agencyId, booking.tourPackageId.toString());
     }
     return bookingRepository.deleteById(id);
   },

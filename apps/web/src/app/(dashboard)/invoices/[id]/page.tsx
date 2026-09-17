@@ -1,9 +1,11 @@
 'use client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, Download, Receipt } from 'lucide-react';
+import { ArrowLeft, Download, Receipt, RotateCcw } from 'lucide-react';
 import { toast } from 'sonner';
-import { invoicesApi } from '@/services/api.service';
+import { invoicesApi, refundsApi } from '@/services/api.service';
+import { Modal } from '@/components/ui/Modal';
+import { Textarea } from '@/components/ui/Input';
 import { Card, CardContent, CardHeader, CardTitle, Skeleton } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { StatusBadge } from '@/components/ui/StatusBadge';
@@ -18,10 +20,18 @@ export default function InvoiceDetailPage() {
   const [payAmount, setPayAmount] = useState('');
   const [payMethod, setPayMethod] = useState('cash');
   const [payRef, setPayRef] = useState('');
+  const [showRefund, setShowRefund] = useState(false);
+  const [refund, setRefund] = useState({ amount: '', reason: '', method: 'bank_transfer' });
 
   const { data: invoice, isLoading } = useQuery({
     queryKey: ['invoices', id],
     queryFn: () => invoicesApi.getById(id).then((r) => r.data.data),
+  });
+
+  const { data: payments } = useQuery({
+    queryKey: ['invoices', id, 'payments'],
+    queryFn: () => invoicesApi.listPayments(id).then((r) => r.data.data),
+    enabled: !!id,
   });
 
   const paymentMutation = useMutation({
@@ -29,9 +39,49 @@ export default function InvoiceDetailPage() {
     onSuccess: () => {
       toast.success('Payment recorded');
       qc.invalidateQueries({ queryKey: ['invoices', id] });
+      qc.invalidateQueries({ queryKey: ['invoices', id, 'payments'] });
       setPayAmount(''); setPayRef('');
     },
     onError: (err: any) => toast.error(err.response?.data?.message || 'Failed to record payment'),
+  });
+
+  const { data: refunds } = useQuery({
+    queryKey: ['refunds', { invoiceId: id }],
+    queryFn: () => refundsApi.list({ invoiceId: id }).then((r) => r.data.data),
+    enabled: !!id,
+  });
+
+  const refundMutation = useMutation({
+    mutationFn: () => refundsApi.request({
+      invoiceId: id,
+      amount: Number(refund.amount),
+      reason: refund.reason,
+      method: refund.method,
+    }),
+    onSuccess: () => {
+      toast.success('Refund requested — awaiting approval');
+      setShowRefund(false);
+      setRefund({ amount: '', reason: '', method: 'bank_transfer' });
+      qc.invalidateQueries({ queryKey: ['refunds'] });
+      qc.invalidateQueries({ queryKey: ['invoices', id] });
+    },
+    onError: (err: any) => toast.error(err.response?.data?.message || 'Failed to request refund'),
+  });
+
+  const refundActionMutation = useMutation({
+    mutationFn: ({ refundId, action, value }: { refundId: string; action: 'approve' | 'reject' | 'complete'; value?: string }) =>
+      action === 'approve'
+        ? refundsApi.approve(refundId)
+        : action === 'reject'
+        ? refundsApi.reject(refundId, value || 'Rejected')
+        : refundsApi.complete(refundId, value),
+    onSuccess: () => {
+      toast.success('Refund updated');
+      qc.invalidateQueries({ queryKey: ['refunds'] });
+      qc.invalidateQueries({ queryKey: ['invoices', id] });
+      qc.invalidateQueries({ queryKey: ['invoices', id, 'payments'] });
+    },
+    onError: (err: any) => toast.error(err.response?.data?.message || 'Failed to update refund'),
   });
 
   async function downloadPDF() {
@@ -44,9 +94,9 @@ export default function InvoiceDetailPage() {
     } catch { toast.error('Failed to download PDF'); }
   }
 
-  async function downloadReceipt() {
+  async function downloadReceipt(paymentId?: string) {
     try {
-      const res = await invoicesApi.downloadReceipt(id);
+      const res = await invoicesApi.downloadReceipt(id, paymentId);
       const url = URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
       const a = document.createElement('a');
       a.href = url; a.download = `receipt-${invoice?.invoiceNumber}.pdf`; a.click();
@@ -59,7 +109,6 @@ export default function InvoiceDetailPage() {
 
   const customer = invoice.customerId as any;
   const lineItems = invoice.lineItems ?? [];
-  const payments = invoice.payments ?? [];
 
   return (
     <div className="space-y-6">
@@ -71,7 +120,12 @@ export default function InvoiceDetailPage() {
         </div>
         <Button variant="outline" onClick={downloadPDF}><Download className="h-4 w-4" /> Invoice PDF</Button>
         {invoice.amountPaid > 0 && (
-          <Button variant="outline" onClick={downloadReceipt}><Receipt className="h-4 w-4" /> Receipt PDF</Button>
+          <>
+            <Button variant="outline" onClick={() => downloadReceipt()}><Receipt className="h-4 w-4" /> Receipt PDF</Button>
+            <Button variant="outline" onClick={() => setShowRefund(true)}>
+              <RotateCcw className="h-4 w-4" /> Refund
+            </Button>
+          </>
         )}
       </div>
 
@@ -119,18 +173,85 @@ export default function InvoiceDetailPage() {
             </CardContent>
           </Card>
 
-          {payments.length > 0 && (
+          {payments && payments.length > 0 && (
             <Card>
               <CardHeader><CardTitle>Payment History</CardTitle></CardHeader>
               <CardContent>
                 <ul className="divide-y divide-gray-50 dark:divide-gray-800">
-                  {payments.map((p: { amount: number; method: string; reference?: string; paidAt: string }, i: number) => (
-                    <li key={i} className="flex items-center justify-between py-3 text-sm">
-                      <div>
-                        <p className="font-medium text-gray-900 dark:text-gray-100">{formatCurrency(p.amount, invoice.currency)}</p>
+                  {payments.map((p: any) => (
+                    <li key={p._id} className="flex items-center justify-between gap-3 py-3 text-sm">
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <p className={`font-medium ${p.status === 'rejected' ? 'text-gray-400 line-through' : 'text-gray-900 dark:text-gray-100'}`}>
+                            {formatCurrency(p.amount, invoice.currency)}
+                          </p>
+                          <StatusBadge status={p.status} />
+                        </div>
                         <p className="text-xs text-gray-500 capitalize">{p.method.replace(/_/g, ' ')} {p.reference ? `· ${p.reference}` : ''}</p>
                       </div>
-                      <span className="text-xs text-gray-400">{formatDate(p.paidAt)}</span>
+                      <div className="flex shrink-0 items-center gap-2">
+                        {p.status === 'verified' && (
+                          <button
+                            onClick={() => downloadReceipt(p._id)}
+                            className="rounded-lg border border-gray-200 px-2 py-1 text-xs text-gray-600 hover:border-blue-400 hover:text-blue-600 dark:border-gray-700 dark:text-gray-300"
+                          >
+                            Receipt
+                          </button>
+                        )}
+                        <span className="text-xs text-gray-400">{formatDate(p.paidAt)}</span>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+          )}
+
+          {refunds && refunds.length > 0 && (
+            <Card>
+              <CardHeader><CardTitle>Refunds</CardTitle></CardHeader>
+              <CardContent>
+                <ul className="divide-y divide-gray-50 dark:divide-gray-800">
+                  {refunds.map((r: any) => (
+                    <li key={r._id} className="flex flex-wrap items-center justify-between gap-3 py-3 text-sm">
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium text-gray-900 dark:text-gray-100">
+                            {formatCurrency(r.amount, invoice.currency)}
+                          </p>
+                          <StatusBadge status={r.status} />
+                        </div>
+                        <p className="text-xs text-gray-500">{r.reason}</p>
+                        <p className="text-xs text-gray-400">
+                          Requested {formatDate(r.createdAt)}
+                          {r.approvedBy && ` · Approved by ${r.approvedBy.firstName} ${r.approvedBy.lastName}`}
+                          {r.reference && ` · Ref: ${r.reference}`}
+                        </p>
+                        {r.rejectionReason && <p className="text-xs text-red-500">Rejected: {r.rejectionReason}</p>}
+                      </div>
+                      <div className="flex shrink-0 gap-2">
+                        {r.status === 'requested' && (
+                          <>
+                            <Button size="sm" onClick={() => refundActionMutation.mutate({ refundId: r._id, action: 'approve' })}>
+                              Approve
+                            </Button>
+                            <Button size="sm" variant="outline" onClick={() => {
+                              const reason = window.prompt('Why is this refund being rejected?');
+                              if (reason?.trim()) refundActionMutation.mutate({ refundId: r._id, action: 'reject', value: reason.trim() });
+                            }}>
+                              Reject
+                            </Button>
+                          </>
+                        )}
+                        {r.status === 'approved' && (
+                          <Button size="sm" onClick={() => {
+                            const ref = window.prompt('Payout reference (optional)') || undefined;
+                            refundActionMutation.mutate({ refundId: r._id, action: 'complete', value: ref });
+                          }}>
+                            Mark Paid Out
+                          </Button>
+                        )}
+                      </div>
                     </li>
                   ))}
                 </ul>
@@ -168,6 +289,56 @@ export default function InvoiceDetailPage() {
           </Card>
         )}
       </div>
+
+      <Modal open={showRefund} onClose={() => setShowRefund(false)} title="Request Refund" size="sm">
+        <div className="space-y-4 p-6">
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            {formatCurrency(invoice.amountPaid, invoice.currency)} has been received on this invoice
+            {invoice.totalRefunded ? `, ${formatCurrency(invoice.totalRefunded, invoice.currency)} already refunded` : ''}.
+            A refund must be approved before it can be paid out.
+          </p>
+          <div>
+            <Label>Amount *</Label>
+            <Input
+              type="number"
+              min={0}
+              max={invoice.amountPaid}
+              value={refund.amount}
+              onChange={(e) => setRefund((r) => ({ ...r, amount: e.target.value }))}
+              placeholder={`Max: ${invoice.amountPaid}`}
+            />
+          </div>
+          <div>
+            <Label>Method</Label>
+            <Select value={refund.method} onChange={(e) => setRefund((r) => ({ ...r, method: e.target.value }))}>
+              <option value="bank_transfer">Bank Transfer</option>
+              <option value="cash">Cash</option>
+              <option value="card">Card</option>
+              <option value="mobile_money">Mobile Money</option>
+              <option value="other">Other</option>
+            </Select>
+          </div>
+          <div>
+            <Label>Reason *</Label>
+            <Textarea
+              rows={3}
+              placeholder="e.g. Visa rejected, customer cancelled the trip"
+              value={refund.reason}
+              onChange={(e) => setRefund((r) => ({ ...r, reason: e.target.value }))}
+            />
+          </div>
+          <div className="flex justify-end gap-3">
+            <Button variant="outline" onClick={() => setShowRefund(false)}>Cancel</Button>
+            <Button
+              disabled={!Number(refund.amount) || !refund.reason.trim()}
+              loading={refundMutation.isPending}
+              onClick={() => refundMutation.mutate()}
+            >
+              Request Refund
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

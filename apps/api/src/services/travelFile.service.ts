@@ -1,10 +1,12 @@
 import mongoose from 'mongoose';
 import { travelFileRepository } from '../repositories/travelFile.repository';
 import { bookingRepository } from '../repositories/booking.repository';
+import { paymentRepository } from '../repositories/payment.repository';
+import { paymentService } from './payment.service';
 import { notificationService } from './notification.service';
 import { NotFoundError } from '../utils/errors';
 import { getPaginationParams, generateTravelFileNumber } from '../utils/helpers';
-import { TravelFileStatus } from '../models/TravelFile';
+import { TravelFile, TravelFileStatus } from '../models/TravelFile';
 import { Invoice } from '../models/Invoice';
 import { DocumentFile } from '../models/Document';
 
@@ -387,30 +389,84 @@ export const travelFileService = {
     });
   },
 
+  /**
+   * Delegates to the Payment collection — the single source of truth. The
+   * file's cached amountPaid is re-derived from verified payments there.
+   */
   async addPayment(agencyId: string, id: string, userId: string, payment: Record<string, unknown>) {
     const file = await travelFileRepository.findOne({ _id: id, agencyId });
     if (!file) throw new NotFoundError('Travel File');
 
-    const amount = Number(payment.amount);
+    await paymentService.record(agencyId, userId, {
+      travelFileId: id,
+      customerId: file.customerId.toString(),
+      amount: Number(payment.amount),
+      method: payment.method as any,
+      reference: payment.reference as string,
+      proofUrl: payment.proofUrl as string,
+      notes: (payment.note || payment.notes) as string,
+      // Staff recording a payment at the desk have confirmed it themselves;
+      // anything arriving unverified goes to the verification queue instead.
+      autoVerify: payment.autoVerify !== false,
+    });
+
+    return travelFileRepository.findOne({ _id: id, agencyId });
+  },
+
+  async listPayments(agencyId: string, id: string) {
+    const file = await travelFileRepository.findOne({ _id: id, agencyId });
+    if (!file) throw new NotFoundError('Travel File');
+    return paymentRepository.listForTravelFile(agencyId, id);
+  },
+
+  // ─── Installment schedule ───────────────────────────────────────────────────
+  async setPaymentSchedule(agencyId: string, id: string, userId: string, schedule: Array<Record<string, unknown>>) {
+    const file = await travelFileRepository.findOne({ _id: id, agencyId });
+    if (!file) throw new NotFoundError('Travel File');
+
+    const entries = (schedule || [])
+      .filter((s) => s.dueDate && Number(s.amount) > 0)
+      .map((s) => ({
+        dueDate: new Date(s.dueDate as string),
+        amount: Number(s.amount),
+        note: s.note as string,
+      }));
+
     return travelFileRepository.updateById(id, {
-      $inc: { amountPaid: amount },
+      $set: { paymentSchedule: entries },
       $push: {
-        payments: {
-          amount,
-          method: payment.method || 'cash',
-          reference: payment.reference,
-          note: payment.note,
-          paidAt: new Date(),
-        },
         timeline: {
-          action: 'Payment Recorded',
-          description: `Payment of ${amount.toLocaleString()} recorded`,
+          action: 'Payment Plan Updated',
+          description: `${entries.length} installment(s) scheduled`,
           performedBy: new mongoose.Types.ObjectId(userId),
           performedAt: new Date(),
           source: 'payment',
         },
       },
-    });
+    } as any);
+  },
+
+  /** Files with an installment past its due date and still not fully paid. */
+  async getOverdueInstallments(agencyId: string) {
+    const files = await TravelFile.find({
+      agencyId,
+      status: { $nin: ['completed', 'cancelled', 'archived'] },
+      'paymentSchedule.dueDate': { $lt: new Date() },
+    })
+      .select('fileNumber customerId totalCost amountPaid paymentSchedule destination status')
+      .populate('customerId', 'firstName lastName fullName phone')
+      .lean();
+
+    return files
+      .map((f: any) => {
+        const overdue = (f.paymentSchedule || []).filter((s: any) => new Date(s.dueDate) < new Date());
+        const scheduledOverdue = overdue.reduce((sum: number, s: any) => sum + s.amount, 0);
+        // Only genuinely behind if what they've paid doesn't cover what was due by now.
+        const shortfall = scheduledOverdue - (f.amountPaid || 0);
+        return { ...f, overdueInstallments: overdue, scheduledOverdue, shortfall };
+      })
+      .filter((f: any) => f.shortfall > 0)
+      .sort((a: any, b: any) => b.shortfall - a.shortfall);
   },
 
   async updatePhysicalFile(agencyId: string, id: string, userId: string, data: Record<string, unknown>) {

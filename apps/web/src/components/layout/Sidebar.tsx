@@ -4,7 +4,7 @@ import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, Users, FileText, Package, Receipt,
   FolderOpen, BarChart3, Settings, Bot, UserCog, LogOut,
-  FolderKanban, Globe, ClipboardCheck, Bell,
+  FolderKanban, Globe, ClipboardCheck, Bell, Wallet, UsersRound,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/stores/auth.store';
@@ -17,9 +17,11 @@ import Image from 'next/image';
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/travel-files', label: 'Travel Files', icon: FolderKanban },
+  { href: '/groups', label: 'Groups & Families', icon: UsersRound },
   { href: '/customers', label: 'Customers', icon: Users },
   { href: '/bookings', label: 'Bookings', icon: FileText },
   { href: '/packages', label: 'Travel Deals', icon: Package },
+  { href: '/payments', label: 'Payments', icon: Wallet },
   { href: '/invoices', label: 'Invoices', icon: Receipt },
   { href: '/receipts', label: 'Receipts', icon: ClipboardCheck },
   { href: '/documents', label: 'Documents', icon: FolderOpen },

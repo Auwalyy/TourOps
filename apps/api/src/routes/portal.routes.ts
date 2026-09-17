@@ -3,6 +3,7 @@ import rateLimit from 'express-rate-limit';
 import { TravelFile } from '../models/TravelFile';
 import { TourPackage } from '../models/TourPackage';
 import { Agency } from '../models/Agency';
+import { Payment } from '../models/Payment';
 import { sendSuccess } from '../utils/response';
 import { NotFoundError } from '../utils/errors';
 import { cloudinary } from '../config/cloudinary';
@@ -48,9 +49,18 @@ router.get('/track/:fileNumber', trackLimiter, async (req: Request, res: Respons
 
     if (!file) throw new NotFoundError('Travel file not found. Please check the file number.');
 
+    // Payment history now lives in its own collection; expose only the fields a
+    // customer should see, and flag anything still awaiting verification so an
+    // uploaded receipt doesn't silently look like it was ignored.
+    const payments = await Payment.find({ travelFileId: file._id, status: { $ne: 'rejected' } })
+      .select('amount method paidAt notes status')
+      .sort({ paidAt: -1 })
+      .lean();
+
     // SECURITY: strip internal notes — customers must never see internal staff notes
     const safeFile = {
       ...file,
+      payments,
       notes: (file.notes || []).filter((n: any) => n.visibility === 'shared'),
       // strip internal tasks details — only expose title, status, priority, dueDate
       tasks: (file.tasks || []).map((t: any) => ({
@@ -96,25 +106,34 @@ router.post('/track/:fileNumber/receipt', trackLimiter, upload.single('receipt')
     const amount = parseFloat(req.body.amount) || 0;
     const note = req.body.note || '';
 
-    (file as any).payments = (file as any).payments || [];
-    (file as any).payments.push({
+    // Self-reported by the customer, so it lands in the verification queue as
+    // `pending` with the teller photo attached — it does not count as money
+    // received until a staff member checks it against the bank.
+    await Payment.create({
+      agencyId: file.agencyId,
+      customerId: file.customerId,
+      travelFileId: file._id,
+      groupId: file.groupId,
       amount,
+      currency: 'NGN',
       method: 'bank_transfer',
+      proofUrl: url,
+      notes: note || 'Receipt uploaded by customer',
+      status: 'pending',
+      recordedBy: file.customerId, // submitted on the customer's own behalf
       paidAt: new Date(),
-      reference: url,
-      note: note || 'Receipt uploaded by customer',
     });
 
     file.timeline.push({
       action: 'Payment Receipt Uploaded',
-      description: `Customer uploaded a payment receipt${amount ? ` for ${amount}` : ''}`,
+      description: `Customer uploaded a payment receipt${amount ? ` for ${amount.toLocaleString()}` : ''} — awaiting verification`,
       performedBy: (file as any).customerId,
       performedAt: new Date(),
       source: 'customer',
     } as any);
 
     await (file as any).save();
-    sendSuccess(res, { receiptUrl: url }, 'Receipt uploaded successfully');
+    sendSuccess(res, { receiptUrl: url }, 'Receipt uploaded — our team will verify it shortly');
   } catch (e) { next(e); }
 });
 

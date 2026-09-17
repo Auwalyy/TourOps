@@ -15,6 +15,10 @@ import travelFileRoutes from './travelFile.routes';
 import portalRoutes from './portal.routes';
 import agencyRoutes from './agency.routes';
 import receiptRoutes from './receipt.routes';
+import paymentRoutes from './payment.routes';
+import refundRoutes from './refund.routes';
+import bookingGroupRoutes from './bookingGroup.routes';
+import branchRoutes from './branch.routes';
 
 export function registerRoutes(app: Express): void {
   const API = '/api/v1';
@@ -37,4 +41,8 @@ export function registerRoutes(app: Express): void {
   app.use(`${API}/portal`, portalRoutes);
   app.use(`${API}/agency`, agencyRoutes);
   app.use(`${API}/receipts`, receiptRoutes);
+  app.use(`${API}/payments`, paymentRoutes);
+  app.use(`${API}/refunds`, refundRoutes);
+  app.use(`${API}/groups`, bookingGroupRoutes);
+  app.use(`${API}/branches`, branchRoutes);
 }

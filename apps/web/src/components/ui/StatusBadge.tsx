@@ -20,6 +20,9 @@ const statusMap: Record<string, { label: string; variant: string }> = {
   under_review: { label: 'Under Review', variant: 'orange' },
   approved: { label: 'Approved', variant: 'green' },
   rejected: { label: 'Rejected', variant: 'red' },
+  // Payments & refunds
+  verified: { label: 'Verified', variant: 'green' },
+  requested: { label: 'Requested', variant: 'yellow' },
   // Invoice
   sent: { label: 'Sent', variant: 'blue' },
   partially_paid: { label: 'Partial', variant: 'yellow' },

@@ -20,11 +20,14 @@ import { Agency } from '../models/Agency';
 import { User, IUser } from '../models/User';
 import { Customer } from '../models/Customer';
 import { TourPackage } from '../models/TourPackage';
-import { TravelFile, TravelFileStatus, ITravelFilePayment } from '../models/TravelFile';
+import { TravelFile, TravelFileStatus } from '../models/TravelFile';
+import { Payment, PaymentMethod } from '../models/Payment';
 import { Booking, BookingStatus, BookingType } from '../models/Booking';
 import { VisaApplication, VisaStatus } from '../models/VisaApplication';
 import { Invoice } from '../models/Invoice';
 import { Receipt } from '../models/Receipt';
+import { Refund } from '../models/Refund';
+import { BookingGroup } from '../models/BookingGroup';
 import { DocumentFile } from '../models/Document';
 import { Notification } from '../models/Notification';
 import { AuditLog } from '../models/AuditLog';
@@ -173,6 +176,9 @@ async function main() {
     DocumentFile.deleteMany({ agencyId }),
     Notification.deleteMany({ agencyId }),
     AuditLog.deleteMany({ agencyId }),
+    Payment.deleteMany({ agencyId }),
+    Refund.deleteMany({ agencyId }),
+    BookingGroup.deleteMany({ agencyId }),
   ]);
 
   // ── 1. Customers ──────────────────────────────────────────────────────────
@@ -373,7 +379,7 @@ async function main() {
     );
     const totalCost = packageMatch ? packageMatch.pricing.basePrice : randInt(300000, 2000000);
     const paidRatio = status === 'completed' ? 1 : status === 'cancelled' ? randWeighted([[0, 40], [0.5, 40], [1, 20]]) : randWeighted([[0, 20], [0.3, 25], [0.5, 25], [0.8, 20], [1, 10]]);
-    const payments: ITravelFilePayment[] = [];
+    const payments: Array<{ amount: number; method: PaymentMethod; reference?: string; note: string; paidAt: Date }> = [];
     let amountPaid = 0;
     if (paidRatio > 0) {
       const targetPaid = Math.round(totalCost * paidRatio);
@@ -427,15 +433,73 @@ async function main() {
       },
       totalCost,
       amountPaid,
-      payments,
+      // An unpaid balance gets a forward installment plan so the reminder job
+      // and the overdue list have something realistic to work with.
+      paymentSchedule: amountPaid < totalCost
+        ? [
+            { _id: new ObjectId(), dueDate: futureDate(-10, 10), amount: Math.round((totalCost - amountPaid) / 2), note: 'Second installment' },
+            { _id: new ObjectId(), dueDate: futureDate(15, 45), amount: totalCost - amountPaid - Math.round((totalCost - amountPaid) / 2), note: 'Final balance' },
+          ]
+        : [],
       invoiceIds: [],
       documentIds: [],
       createdAt,
       updatedAt: [...statusHistory].sort((a, b) => b.changedAt.getTime() - a.changedAt.getTime())[0]?.changedAt || createdAt,
+      // Not a schema field — carried alongside so Payment docs can be built below.
+      _paymentSpecs: payments,
     });
   }
+  const paymentSpecsByFile = travelFiles.map((tf) => ({ file: tf, specs: tf._paymentSpecs }));
+  travelFiles.forEach((tf) => delete tf._paymentSpecs);
   await TravelFile.insertMany(travelFiles as any, { timestamps: false } as any);
   console.log(`Created ${travelFiles.length} travel files`);
+
+  // ── 3b. Payments (single source of truth for money) ──────────────────────
+  const paymentDocs: any[] = [];
+  for (const { file, specs } of paymentSpecsByFile) {
+    for (const spec of specs) {
+      // A slice of recent payments sits unverified, so the verification queue
+      // isn't empty on a fresh demo.
+      const isPending = Math.random() < 0.12;
+      paymentDocs.push({
+        _id: new ObjectId(),
+        agencyId,
+        customerId: file.customerId,
+        travelFileId: file._id,
+        amount: spec.amount,
+        currency: 'NGN',
+        method: spec.method,
+        reference: spec.reference,
+        proofUrl: spec.method === 'bank_transfer' ? rand(SAMPLE_IMAGES) : undefined,
+        notes: spec.note,
+        status: isPending ? 'pending' : 'verified',
+        recordedBy: rand(staffPool)._id,
+        verifiedBy: isPending ? undefined : finance._id,
+        verifiedAt: isPending ? undefined : spec.paidAt,
+        paidAt: spec.paidAt,
+        createdAt: spec.paidAt,
+        updatedAt: spec.paidAt,
+      });
+    }
+  }
+  await Payment.insertMany(paymentDocs as any, { timestamps: false } as any);
+  console.log(`Created ${paymentDocs.length} payments`);
+
+  // Cached amountPaid must reflect verified payments only.
+  const verifiedByFile = new Map<string, number>();
+  for (const p of paymentDocs) {
+    if (p.status !== 'verified') continue;
+    const key = p.travelFileId.toString();
+    verifiedByFile.set(key, (verifiedByFile.get(key) || 0) + p.amount);
+  }
+  await TravelFile.bulkWrite(
+    travelFiles.map((tf) => ({
+      updateOne: {
+        filter: { _id: tf._id },
+        update: { $set: { amountPaid: verifiedByFile.get(tf._id.toString()) || 0 } },
+      },
+    }))
+  );
 
   // ── 4. Bookings ──────────────────────────────────────────────────────────
   let bookingSeq = 0;
@@ -602,17 +666,10 @@ async function main() {
     const tax = 0;
     const discount = Math.random() > 0.85 ? Math.round(subtotal * 0.05) : 0;
     const totalAmount = subtotal - discount;
-    const amountPaid = Math.min(tf.amountPaid, totalAmount);
+    const verifiedPaid = verifiedByFile.get(tf._id.toString()) || 0;
+    const amountPaid = Math.min(verifiedPaid, totalAmount);
     const outstandingBalance = totalAmount - amountPaid;
     const status = outstandingBalance <= 0 ? 'paid' : amountPaid > 0 ? 'partially_paid' : (Math.random() > 0.7 ? 'overdue' : 'sent');
-    const paymentsArr = tf.payments.map((p: ITravelFilePayment) => ({
-      amount: p.amount,
-      method: p.method,
-      reference: p.reference,
-      paidAt: p.paidAt,
-      recordedBy: finance._id,
-      notes: p.note,
-    }));
 
     const invId = new ObjectId();
     invoices.push({
@@ -631,7 +688,7 @@ async function main() {
       currency: 'NGN',
       status,
       dueDate: futureDate(-10, 20),
-      payments: paymentsArr,
+      totalRefunded: 0,
       notes: '',
       issuedAt,
       createdAt: issuedAt,
@@ -650,31 +707,45 @@ async function main() {
   }));
   if (invoiceLinkOps.length) await TravelFile.bulkWrite(invoiceLinkOps);
 
+  // Point each payment at its travel file's invoice, so the same money shows
+  // on both without being stored twice.
+  const invoiceByFile = new Map<string, mongoose.Types.ObjectId>();
+  for (const [tfId, invIds] of invoiceIdsByTravelFile.entries()) invoiceByFile.set(tfId, invIds[0]);
+  const paymentInvoiceOps = paymentDocs
+    .filter((p) => invoiceByFile.has(p.travelFileId.toString()))
+    .map((p) => {
+      p.invoiceId = invoiceByFile.get(p.travelFileId.toString());
+      return { updateOne: { filter: { _id: p._id }, update: { $set: { invoiceId: p.invoiceId } } } };
+    });
+  if (paymentInvoiceOps.length) await Payment.bulkWrite(paymentInvoiceOps);
+
   // ── 7. Receipts ──────────────────────────────────────────────────────────
   let receiptSeq = 0;
   const receipts: any[] = [];
-  for (const inv of invoices) {
-    if (inv.amountPaid <= 0) continue;
-    for (const p of inv.payments) {
-      if (Math.random() < 0.3) continue; // not every payment gets a formal receipt
-      receiptSeq += 1;
-      receipts.push({
-        _id: new ObjectId(),
-        agencyId,
-        receiptNumber: `RCP-${p.paidAt.getFullYear()}${pad(p.paidAt.getMonth() + 1, 2)}-${pad(1000 + receiptSeq, 4)}`,
-        customerId: inv.customerId,
-        invoiceId: inv._id,
-        amount: p.amount,
-        currency: 'NGN',
-        method: p.method,
-        reference: p.reference,
-        description: `Payment for invoice ${inv.invoiceNumber}`,
-        paidAt: p.paidAt,
-        issuedBy: finance._id,
-        createdAt: p.paidAt,
-        updatedAt: p.paidAt,
-      });
-    }
+  const invoiceById = new Map(invoices.map((i) => [i._id.toString(), i]));
+  for (const p of paymentDocs) {
+    // Only verified money gets a formal receipt, and not every one is issued.
+    if (p.status !== 'verified' || !p.invoiceId || Math.random() < 0.3) continue;
+    const inv = invoiceById.get(p.invoiceId.toString());
+    if (!inv) continue;
+    receiptSeq += 1;
+    receipts.push({
+      _id: new ObjectId(),
+      agencyId,
+      receiptNumber: `RCP-${p.paidAt.getFullYear()}${pad(p.paidAt.getMonth() + 1, 2)}-${pad(1000 + receiptSeq, 4)}`,
+      customerId: p.customerId,
+      invoiceId: inv._id,
+      travelFileId: p.travelFileId,
+      amount: p.amount,
+      currency: 'NGN',
+      method: p.method,
+      reference: p.reference,
+      description: `Payment for invoice ${inv.invoiceNumber}`,
+      paidAt: p.paidAt,
+      issuedBy: finance._id,
+      createdAt: p.paidAt,
+      updatedAt: p.paidAt,
+    });
   }
   await Receipt.insertMany(receipts as any, { timestamps: false } as any);
   console.log(`Created ${receipts.length} receipts`);
@@ -731,6 +802,99 @@ async function main() {
     updateOne: { filter: { _id: tfId }, update: { $set: { documentIds: docIds } } },
   }));
   if (docLinkOps.length) await TravelFile.bulkWrite(docLinkOps);
+
+  // ── 8b. Family / group bookings ──────────────────────────────────────────
+  // Pull together small clusters of Umrah/Hajj files under one payer, the way
+  // one man books for his wife, mother and children in a single transaction.
+  const groupableFiles = travelFiles.filter((tf) => ['umrah', 'hajj'].includes(tf.travelType));
+  const groups: any[] = [];
+  const groupMemberOps: any[] = [];
+  for (let g = 0; g < 4 && groupableFiles.length >= 3; g++) {
+    const members = groupableFiles.splice(0, randInt(3, 5));
+    if (members.length < 2) break;
+    const payer = customers.find((c) => c._id.toString() === members[0].customerId.toString())!;
+    const groupId = new ObjectId();
+    groups.push({
+      _id: groupId,
+      agencyId,
+      name: `${payer.lastName} Family — ${members[0].travelType === 'hajj' ? 'Hajj' : 'Umrah'} ${rand(['Jan', 'Feb', 'Mar'])} 2026`,
+      primaryContactCustomerId: payer._id,
+      departureGroup: members[0].departureGroup,
+      notes: `${members.length} travellers booked together. ${payer.firstName} ${payer.lastName} pays for the group.`,
+      createdBy: consultant._id,
+      createdAt: members[0].createdAt,
+      updatedAt: members[0].createdAt,
+    });
+    for (const m of members) {
+      groupMemberOps.push({
+        updateOne: { filter: { _id: m._id }, update: { $set: { groupId } } },
+      });
+      // Tag that member's payments so the shared ledger reads as one story.
+      for (const p of paymentDocs) {
+        if (p.travelFileId.toString() === m._id.toString()) p.groupId = groupId;
+      }
+    }
+  }
+  if (groups.length) {
+    await BookingGroup.insertMany(groups as any, { timestamps: false } as any);
+    await TravelFile.bulkWrite(groupMemberOps);
+    const groupPaymentOps = paymentDocs
+      .filter((p) => p.groupId)
+      .map((p) => ({ updateOne: { filter: { _id: p._id }, update: { $set: { groupId: p.groupId } } } }));
+    if (groupPaymentOps.length) await Payment.bulkWrite(groupPaymentOps);
+  }
+  console.log(`Created ${groups.length} family/group bookings`);
+
+  // ── 8c. Refunds ──────────────────────────────────────────────────────────
+  const refunds: any[] = [];
+  const refundableInvoices = invoices.filter((i) => i.amountPaid > 0).slice(0, 6);
+  for (const inv of refundableInvoices) {
+    if (Math.random() < 0.4) continue;
+    const requestedAt = pastDate(20, 1);
+    const status = randWeighted<'requested' | 'approved' | 'completed' | 'rejected'>([
+      ['requested', 30], ['approved', 20], ['completed', 40], ['rejected', 10],
+    ]);
+    const amount = Math.round(inv.amountPaid * (Math.random() > 0.5 ? 1 : 0.5));
+    if (amount <= 0) continue;
+    refunds.push({
+      _id: new ObjectId(),
+      agencyId,
+      customerId: inv.customerId,
+      invoiceId: inv._id,
+      amount,
+      currency: 'NGN',
+      reason: rand([
+        'Customer cancelled — visa was rejected',
+        'Trip postponed to the next departure group',
+        'Overpayment on the package balance',
+        'Medical emergency, customer could not travel',
+      ]),
+      method: rand(['bank_transfer', 'cash']),
+      status,
+      requestedBy: finance._id,
+      approvedBy: status === 'requested' ? undefined : owner._id,
+      approvedAt: status === 'requested' ? undefined : new Date(requestedAt.getTime() + 86400000),
+      processedAt: status === 'completed' ? new Date(requestedAt.getTime() + 2 * 86400000) : undefined,
+      reference: status === 'completed' ? `RFD-${randInt(100000, 999999)}` : undefined,
+      rejectionReason: status === 'rejected' ? 'Outside the refund window stated in the contract' : undefined,
+      createdAt: requestedAt,
+      updatedAt: requestedAt,
+    });
+  }
+  if (refunds.length) {
+    await Refund.insertMany(refunds as any, { timestamps: false } as any);
+    // Completed refunds have to be reflected on the invoice books.
+    const refundOps = refunds
+      .filter((r) => r.status === 'completed')
+      .map((r) => ({
+        updateOne: {
+          filter: { _id: r.invoiceId },
+          update: { $inc: { totalRefunded: r.amount, amountPaid: -r.amount, outstandingBalance: r.amount } },
+        },
+      }));
+    if (refundOps.length) await Invoice.bulkWrite(refundOps);
+  }
+  console.log(`Created ${refunds.length} refunds`);
 
   // ── 9. Notifications ─────────────────────────────────────────────────────
   const notifications: any[] = [];
@@ -806,6 +970,9 @@ async function main() {
   console.log(`  Customers:      ${customers.length}`);
   console.log(`  Packages:       ${packages.length}`);
   console.log(`  Travel Files:   ${travelFiles.length}`);
+  console.log(`  Payments:       ${paymentDocs.length}`);
+  console.log(`  Groups:         ${groups.length}`);
+  console.log(`  Refunds:        ${refunds.length}`);
   console.log(`  Bookings:       ${bookings.length}`);
   console.log(`  Visas:          ${visas.length}`);
   console.log(`  Invoices:       ${invoices.length}`);

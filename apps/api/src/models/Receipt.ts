@@ -45,6 +45,6 @@ const receiptSchema = new Schema<IReceipt>(
 
 receiptSchema.index({ agencyId: 1, createdAt: -1 });
 receiptSchema.index({ agencyId: 1, customerId: 1 });
-receiptSchema.index({ receiptNumber: 1 }, { unique: true });
+// receiptNumber's unique index comes from the field definition above.
 
 export const Receipt = mongoose.model<IReceipt>('Receipt', receiptSchema);

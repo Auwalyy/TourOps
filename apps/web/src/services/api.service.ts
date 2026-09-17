@@ -76,6 +76,7 @@ export const visasApi = {
 export const packagesApi = {
   list: (params?: Record<string, unknown>) => api.get('/packages', { params }),
   getById: (id: string) => api.get(`/packages/${id}`),
+  availability: (id: string) => api.get(`/packages/${id}/availability`),
   create: (data: Record<string, unknown>) => api.post('/packages', data),
   update: (id: string, data: Record<string, unknown>) => api.put(`/packages/${id}`, data),
   delete: (id: string) => api.delete(`/packages/${id}`),
@@ -89,8 +90,9 @@ export const invoicesApi = {
   recordPayment: (id: string, data: Record<string, unknown>) => api.post(`/invoices/${id}/payments`, data),
   downloadPDF: (id: string) =>
     api.get(`/invoices/${id}/pdf`, { responseType: 'blob' }),
-  downloadReceipt: (id: string, paymentIndex?: number) =>
-    api.get(`/invoices/${id}/receipt`, { responseType: 'blob', params: paymentIndex !== undefined ? { payment: paymentIndex } : {} }),
+  downloadReceipt: (id: string, paymentId?: string) =>
+    api.get(`/invoices/${id}/receipt`, { responseType: 'blob', params: paymentId ? { payment: paymentId } : {} }),
+  listPayments: (id: string) => api.get('/payments', { params: { invoiceId: id, limit: 100 } }),
   getFinancialSummary: () => api.get('/invoices/summary'),
 };
 
@@ -168,6 +170,50 @@ export const aiApi = {
   getSimilarPackages: (id: string) => api.get(`/ai/recommendations/similar/${id}`),
 };
 
+// ─── Payments (single source of truth for money) ─────────────────────────────
+export const paymentsApi = {
+  list: (params?: Record<string, unknown>) => api.get('/payments', { params }),
+  pending: () => api.get('/payments/pending'),
+  getById: (id: string) => api.get(`/payments/${id}`),
+  create: (data: Record<string, unknown>) => api.post('/payments', data),
+  update: (id: string, data: Record<string, unknown>) => api.patch(`/payments/${id}`, data),
+  verify: (id: string) => api.patch(`/payments/${id}/verify`),
+  reject: (id: string, reason: string) => api.patch(`/payments/${id}/reject`, { reason }),
+  delete: (id: string) => api.delete(`/payments/${id}`),
+};
+
+// ─── Refunds ─────────────────────────────────────────────────────────────────
+export const refundsApi = {
+  list: (params?: Record<string, unknown>) => api.get('/refunds', { params }),
+  getById: (id: string) => api.get(`/refunds/${id}`),
+  request: (data: Record<string, unknown>) => api.post('/refunds', data),
+  approve: (id: string) => api.patch(`/refunds/${id}/approve`),
+  reject: (id: string, reason: string) => api.patch(`/refunds/${id}/reject`, { reason }),
+  complete: (id: string, reference?: string) => api.patch(`/refunds/${id}/complete`, { reference }),
+};
+
+// ─── Family / Group Bookings ─────────────────────────────────────────────────
+export const groupsApi = {
+  list: (params?: Record<string, unknown>) => api.get('/groups', { params }),
+  getById: (id: string) => api.get(`/groups/${id}`),
+  create: (data: Record<string, unknown>) => api.post('/groups', data),
+  update: (id: string, data: Record<string, unknown>) => api.put(`/groups/${id}`, data),
+  members: (id: string) => api.get(`/groups/${id}/members`),
+  ledger: (id: string) => api.get(`/groups/${id}/ledger`),
+  addMember: (id: string, travelFileId: string) => api.post(`/groups/${id}/members`, { travelFileId }),
+  removeMember: (id: string, travelFileId: string) => api.delete(`/groups/${id}/members/${travelFileId}`),
+  recordPayment: (id: string, data: Record<string, unknown>) => api.post(`/groups/${id}/payments`, data),
+  delete: (id: string) => api.delete(`/groups/${id}`),
+};
+
+// ─── Branches ────────────────────────────────────────────────────────────────
+export const branchesApi = {
+  list: () => api.get('/branches'),
+  create: (data: Record<string, unknown>) => api.post('/branches', data),
+  update: (id: string, data: Record<string, unknown>) => api.put(`/branches/${id}`, data),
+  delete: (id: string) => api.delete(`/branches/${id}`),
+};
+
 // ─── Travel Files ─────────────────────────────────────────────────────────────
 export const travelFilesApi = {
   list: (params?: Record<string, unknown>) => api.get('/travel-files', { params }),
@@ -180,6 +226,10 @@ export const travelFilesApi = {
   updateTask: (id: string, taskId: string, data: Record<string, unknown>) =>
     api.patch(`/travel-files/${id}/tasks/${taskId}`, data),
   addPayment: (id: string, data: Record<string, unknown>) => api.post(`/travel-files/${id}/payments`, data),
+  listPayments: (id: string) => api.get(`/travel-files/${id}/payments`),
+  setPaymentSchedule: (id: string, schedule: Array<Record<string, unknown>>) =>
+    api.put(`/travel-files/${id}/payment-schedule`, { schedule }),
+  overdueInstallments: () => api.get('/travel-files/overdue-installments'),
   addNote: (id: string, content: string, visibility?: 'internal' | 'shared') =>
     api.post(`/travel-files/${id}/notes`, { content, visibility }),
   linkDocument: (id: string, documentId: string) => api.post(`/travel-files/${id}/documents`, { documentId }),

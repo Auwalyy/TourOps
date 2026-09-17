@@ -22,6 +22,12 @@ export default function PackageDetailPage() {
     queryFn: () => packagesApi.getById(id).then((r) => r.data.data),
   });
 
+  const { data: availability } = useQuery({
+    queryKey: ['packages', id, 'availability'],
+    queryFn: () => packagesApi.availability(id).then((r) => r.data.data),
+    enabled: !!id,
+  });
+
   const deleteMutation = useMutation({
     mutationFn: () => packagesApi.delete(id),
     onSuccess: () => {
@@ -68,9 +74,64 @@ export default function PackageDetailPage() {
                   <Detail label="Discounted Price" value={formatCurrency(pkg.pricing.discountedPrice, pkg.pricing.currency)} />
                 )}
                 <Detail label="Per Person" value={pkg.pricing.pricePerPerson ? 'Yes' : 'No'} />
-                <Detail label="Max Capacity" value={pkg.availability.maxCapacity ? String(pkg.availability.maxCapacity) : 'Unlimited'} />
-                <Detail label="Current Bookings" value={String(pkg.availability.currentBookings)} />
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Seat capacity — what's sold, what's merely held, what's actually left */}
+          <Card className={availability?.isFull ? 'border-red-300 dark:border-red-900/50' : ''}>
+            <CardHeader>
+              <CardTitle>Seat Capacity</CardTitle>
+              {availability?.isFull && (
+                <span className="rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-semibold text-red-700">
+                  FULLY BOOKED
+                </span>
+              )}
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {!availability ? (
+                <Skeleton className="h-20 w-full" />
+              ) : availability.maxCapacity === null ? (
+                <p className="text-sm text-gray-500">
+                  No seat limit set on this package — {availability.taken} booking(s) so far.
+                  Set a capacity to enforce a hard cap.
+                </p>
+              ) : (
+                <>
+                  <div className="flex h-3 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800">
+                    <div
+                      className="bg-green-500"
+                      style={{ width: `${Math.min(100, (availability.sold / availability.maxCapacity) * 100)}%` }}
+                      title={`${availability.sold} sold`}
+                    />
+                    <div
+                      className="bg-yellow-400"
+                      style={{ width: `${Math.min(100, (availability.held / availability.maxCapacity) * 100)}%` }}
+                      title={`${availability.held} held`}
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                    {[
+                      { label: 'Sold', value: availability.sold, color: 'text-green-600', dot: 'bg-green-500' },
+                      { label: 'Held', value: availability.held, color: 'text-yellow-600', dot: 'bg-yellow-400' },
+                      { label: 'Remaining', value: availability.remaining, color: availability.remaining === 0 ? 'text-red-600' : 'text-gray-900 dark:text-gray-100', dot: 'bg-gray-300' },
+                      { label: 'Capacity', value: availability.maxCapacity, color: 'text-gray-900 dark:text-gray-100', dot: 'bg-gray-400' },
+                    ].map((s) => (
+                      <div key={s.label} className="rounded-xl bg-gray-50 p-3 dark:bg-gray-800/50">
+                        <div className="flex items-center gap-1.5">
+                          <span className={`h-2 w-2 rounded-full ${s.dot}`} />
+                          <p className="text-xs text-gray-500">{s.label}</p>
+                        </div>
+                        <p className={`mt-0.5 text-xl font-bold ${s.color}`}>{s.value}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-xs text-gray-400">
+                    Held = draft, pending or reserved bookings. New bookings are refused automatically once sold + held
+                    reaches capacity.
+                  </p>
+                </>
+              )}
             </CardContent>
           </Card>
 

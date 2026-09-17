@@ -56,12 +56,12 @@ export interface INote {
   createdAt: Date;
 }
 
-export interface ITravelFilePayment {
+export interface IPaymentScheduleEntry {
+  _id: mongoose.Types.ObjectId;
+  dueDate: Date;
   amount: number;
-  method: 'cash' | 'bank_transfer' | 'card' | 'mobile_money' | 'other';
-  reference?: string;
   note?: string;
-  paidAt: Date;
+  remindedAt?: Date;
 }
 
 export interface IPhysicalFile {
@@ -81,6 +81,7 @@ export interface IPhysicalFile {
 export interface ITravelFile extends Document {
   agencyId: mongoose.Types.ObjectId;
   branchId?: mongoose.Types.ObjectId;
+  groupId?: mongoose.Types.ObjectId;
   fileNumber: string;
   customerId: mongoose.Types.ObjectId;
   travelType: TravelType;
@@ -101,8 +102,9 @@ export interface ITravelFile extends Document {
   notes: INote[];
   physicalFile: IPhysicalFile;
   totalCost: number;
+  /** Cached from verified Payment documents — Payment is the source of truth. */
   amountPaid: number;
-  payments: ITravelFilePayment[];
+  paymentSchedule: IPaymentScheduleEntry[];
   invoiceIds: mongoose.Types.ObjectId[];
   documentIds: mongoose.Types.ObjectId[];
   createdAt: Date;
@@ -157,19 +159,14 @@ const noteSchema = new Schema<INote>(
   { _id: true }
 );
 
-const travelFilePaymentSchema = new Schema<ITravelFilePayment>(
+const paymentScheduleSchema = new Schema<IPaymentScheduleEntry>(
   {
-    amount: { type: Number, required: true },
-    method: {
-      type: String,
-      enum: ['cash', 'bank_transfer', 'card', 'mobile_money', 'other'],
-      required: true,
-    },
-    reference: String,
+    dueDate: { type: Date, required: true },
+    amount: { type: Number, required: true, min: 0 },
     note: String,
-    paidAt: { type: Date, default: Date.now },
+    remindedAt: Date,
   },
-  { _id: false }
+  { _id: true }
 );
 
 const physicalFileSchema = new Schema<IPhysicalFile>(
@@ -197,6 +194,7 @@ const travelFileSchema = new Schema<ITravelFile>(
   {
     agencyId: { type: Schema.Types.ObjectId, ref: 'Agency', required: true },
     branchId: { type: Schema.Types.ObjectId, ref: 'Branch' },
+    groupId: { type: Schema.Types.ObjectId, ref: 'BookingGroup' },
     fileNumber: { type: String, required: true, unique: true },
     customerId: { type: Schema.Types.ObjectId, ref: 'Customer', required: true },
     travelType: {
@@ -222,7 +220,7 @@ const travelFileSchema = new Schema<ITravelFile>(
     priority: { type: String, enum: ['low', 'normal', 'high', 'urgent'], default: 'normal' },
     totalCost: { type: Number, default: 0, min: 0 },
     amountPaid: { type: Number, default: 0, min: 0 },
-    payments: { type: [travelFilePaymentSchema], default: [] },
+    paymentSchedule: { type: [paymentScheduleSchema], default: [] },
     timeline: { type: [timelineSchema], default: [] },
     tasks: { type: [taskSchema], default: [] },
     notes: { type: [noteSchema], default: [] },
@@ -242,5 +240,6 @@ travelFileSchema.index({ agencyId: 1, customerId: 1 });
 travelFileSchema.index({ agencyId: 1, travelType: 1 });
 travelFileSchema.index({ agencyId: 1, priority: 1 });
 travelFileSchema.index({ agencyId: 1, departureDate: 1 });
+travelFileSchema.index({ agencyId: 1, groupId: 1 });
 
 export const TravelFile = mongoose.model<ITravelFile>('TravelFile', travelFileSchema);

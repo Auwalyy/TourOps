@@ -1,11 +1,12 @@
 import { invoiceRepository } from '../repositories/invoice.repository';
+import { paymentRepository } from '../repositories/payment.repository';
+import { paymentService } from './payment.service';
 import { NotFoundError, AppError } from '../utils/errors';
 import { getPaginationParams, generateInvoiceNumber } from '../utils/helpers';
 import { generateInvoicePDF, generateReceiptPDF } from './pdf.service';
 import { Agency } from '../models/Agency';
 import { Customer } from '../models/Customer';
-import { IPaymentRecord } from '../models/Invoice';
-import { notificationService } from './notification.service';
+import { Payment, IPayment } from '../models/Payment';
 import mongoose from 'mongoose';
 
 export const invoiceService = {
@@ -64,39 +65,41 @@ export const invoiceService = {
     } as any);
   },
 
-  async recordPayment(agencyId: string, id: string, userId: string, payment: Omit<IPaymentRecord, 'recordedBy'>) {
+  /**
+   * Delegates to the Payment collection — the single source of truth. The
+   * invoice's cached amountPaid/outstandingBalance are re-derived from
+   * verified payments rather than being incremented here.
+   */
+  async recordPayment(agencyId: string, id: string, userId: string, payment: Record<string, unknown>) {
     const invoice = await invoiceRepository.findOne({ _id: id, agencyId });
     if (!invoice) throw new NotFoundError('Invoice');
 
-    const newAmountPaid = invoice.amountPaid + payment.amount;
-    if (newAmountPaid > invoice.totalAmount) {
+    const amount = Number(payment.amount);
+    const alreadyReceived = await paymentRepository.sumVerifiedForInvoice(invoice._id as mongoose.Types.ObjectId);
+    if (payment.autoVerify !== false && alreadyReceived + amount > invoice.totalAmount) {
       throw new AppError('Payment exceeds invoice total', 400);
     }
 
-    const outstandingBalance = invoice.totalAmount - newAmountPaid;
-    const status = outstandingBalance === 0 ? 'paid' : 'partially_paid';
-
-    const updated = await invoiceRepository.updateById(id, {
-      amountPaid: newAmountPaid,
-      outstandingBalance,
-      status,
-      $push: { payments: { ...payment, recordedBy: userId } },
+    await paymentService.record(agencyId, userId, {
+      invoiceId: id,
+      customerId: invoice.customerId.toString(),
+      amount,
+      method: payment.method as any,
+      reference: payment.reference as string,
+      proofUrl: payment.proofUrl as string,
+      notes: payment.notes as string,
+      paidAt: payment.paidAt ? new Date(payment.paidAt as string) : undefined,
+      // Staff recording against an invoice have confirmed the money themselves.
+      autoVerify: payment.autoVerify !== false,
     });
 
-    if (outstandingBalance > 0) {
-      await notificationService.notifyAgencyStaff(
-        new mongoose.Types.ObjectId(agencyId),
-        {
-          title: 'Payment Received',
-          message: `Payment of ${payment.amount} recorded on invoice ${invoice.invoiceNumber}`,
-          type: 'payment',
-          referenceId: invoice._id as mongoose.Types.ObjectId,
-          referenceModel: 'Invoice',
-        }
-      );
-    }
+    return invoiceRepository.findOne({ _id: id, agencyId });
+  },
 
-    return updated;
+  async listPayments(agencyId: string, id: string) {
+    const invoice = await invoiceRepository.findOne({ _id: id, agencyId });
+    if (!invoice) throw new NotFoundError('Invoice');
+    return paymentRepository.listForInvoice(agencyId, id);
   },
 
   async generatePDF(agencyId: string, id: string): Promise<Buffer> {
@@ -109,14 +112,19 @@ export const invoiceService = {
     return generateInvoicePDF(invoice, agency);
   },
 
-  async generateReceiptPDF(agencyId: string, id: string, paymentIndex?: number): Promise<Buffer> {
+  async generateReceiptPDF(agencyId: string, id: string, paymentId?: string): Promise<Buffer> {
     const [invoice, agency] = await Promise.all([
       invoiceRepository.findOne({ _id: id, agencyId }),
       Agency.findById(agencyId),
     ]);
     if (!invoice) throw new NotFoundError('Invoice');
     if (!agency) throw new NotFoundError('Agency');
-    return generateReceiptPDF(invoice, agency, paymentIndex);
+
+    const filter: Record<string, unknown> = { agencyId, invoiceId: id, status: 'verified' };
+    if (paymentId) filter._id = paymentId;
+    const payments = (await Payment.find(filter).sort({ paidAt: 1 })) as IPayment[];
+
+    return generateReceiptPDF(invoice, agency, payments, paymentId);
   },
 
   async getFinancialSummary(agencyId: string) {

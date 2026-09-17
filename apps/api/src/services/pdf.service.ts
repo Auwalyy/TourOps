@@ -2,6 +2,7 @@ import PDFDocument from 'pdfkit';
 import { IInvoice } from '../models/Invoice';
 import { IReceipt } from '../models/Receipt';
 import { IAgency } from '../models/Agency';
+import { IPayment } from '../models/Payment';
 import https from 'https';
 import http from 'http';
 
@@ -187,7 +188,7 @@ export async function generateInvoicePDF(invoice: IInvoice, agency: IAgency): Pr
 }
 
 // ─── RECEIPT PDF ──────────────────────────────────────────────────────────────
-export async function generateReceiptPDF(invoice: IInvoice, agency: IAgency, paymentIndex?: number): Promise<Buffer> {
+export async function generateReceiptPDF(invoice: IInvoice, agency: IAgency, payments: IPayment[], singlePaymentId?: string): Promise<Buffer> {
   return new Promise(async (resolve, reject) => {
     const doc = new PDFDocument({ margin: 50, size: 'A4' });
     const chunks: Buffer[] = [];
@@ -200,12 +201,7 @@ export async function generateReceiptPDF(invoice: IInvoice, agency: IAgency, pay
     const customer = (invoice as any).customerId as any;
     const customerName = customer?.fullName || (customer ? `${customer.firstName} ${customer.lastName}` : 'Customer');
 
-    // Determine which payment(s) to show
-    const payments = paymentIndex !== undefined
-      ? [invoice.payments[paymentIndex]].filter(Boolean)
-      : invoice.payments;
-
-    const receiptNumber = `RCP-${invoice.invoiceNumber}-${paymentIndex !== undefined ? String(paymentIndex + 1).padStart(2, '0') : 'ALL'}`;
+    const receiptNumber = `RCP-${invoice.invoiceNumber}-${singlePaymentId ? singlePaymentId.slice(-6).toUpperCase() : 'ALL'}`;
     const receiptDate = payments.length > 0
       ? new Date(payments[payments.length - 1].paidAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
       : new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });

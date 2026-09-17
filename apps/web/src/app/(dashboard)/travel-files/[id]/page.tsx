@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, Clock, CheckSquare, StickyNote, FolderOpen, Receipt, AlertCircle, Copy, Check, Upload, Trash2, Download, Plane, Pencil, Wallet } from 'lucide-react';
 import { toast } from 'sonner';
-import { travelFilesApi, documentsApi, bookingsApi } from '@/services/api.service';
+import { travelFilesApi, documentsApi, bookingsApi, paymentsApi } from '@/services/api.service';
 import { TravelFile, TravelFileStatus, Booking } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle, Skeleton } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -75,6 +75,29 @@ export default function TravelFileDetailPage() {
     enabled: !!id,
   });
 
+  const { data: payments } = useQuery({
+    queryKey: ['travel-files', id, 'payments'],
+    queryFn: () => travelFilesApi.listPayments(id).then((r) => r.data.data),
+    enabled: !!id,
+  });
+
+  function invalidatePayments() {
+    qc.invalidateQueries({ queryKey: ['travel-files', id] });
+    qc.invalidateQueries({ queryKey: ['travel-files', id, 'payments'] });
+  }
+
+  const verifyMutation = useMutation({
+    mutationFn: (paymentId: string) => paymentsApi.verify(paymentId),
+    onSuccess: () => { toast.success('Payment verified'); invalidatePayments(); },
+    onError: (e: any) => toast.error(e.response?.data?.message || 'Failed to verify payment'),
+  });
+
+  const rejectMutation = useMutation({
+    mutationFn: ({ id: paymentId, reason }: { id: string; reason: string }) => paymentsApi.reject(paymentId, reason),
+    onSuccess: () => { toast.success('Payment rejected'); invalidatePayments(); },
+    onError: (e: any) => toast.error(e.response?.data?.message || 'Failed to reject payment'),
+  });
+
   const statusMutation = useMutation({
     mutationFn: (status: TravelFileStatus) => travelFilesApi.updateStatus(id, status),
     onSuccess: () => { toast.success('Status updated'); qc.invalidateQueries({ queryKey: ['travel-files', id] }); },
@@ -126,7 +149,7 @@ export default function TravelFileDetailPage() {
     onSuccess: () => {
       toast.success('Payment recorded');
       setPayment({ amount: '', method: 'cash', reference: '', note: '' });
-      qc.invalidateQueries({ queryKey: ['travel-files', id] });
+      invalidatePayments();
     },
     onError: (err: any) => toast.error(err.response?.data?.message || 'Failed to record payment'),
   });
@@ -695,21 +718,46 @@ export default function TravelFileDetailPage() {
           </Card>
 
           <Card>
-            <CardHeader><CardTitle>Payment History ({file.payments?.length || 0})</CardTitle></CardHeader>
+            <CardHeader><CardTitle>Payment History ({payments?.length || 0})</CardTitle></CardHeader>
             <CardContent>
-              {!file.payments || file.payments.length === 0 ? (
+              {!payments || payments.length === 0 ? (
                 <p className="text-sm text-gray-400">No payments recorded yet.</p>
               ) : (
                 <ul className="divide-y divide-gray-50 dark:divide-gray-800">
-                  {[...file.payments].reverse().map((p, i) => (
-                    <li key={i} className="flex items-center justify-between py-3">
-                      <div>
-                        <p className="text-sm text-gray-700 dark:text-gray-300 capitalize">{p.method.replace(/_/g, ' ')}</p>
+                  {payments.map((p: any) => (
+                    <li key={p._id} className="flex items-center justify-between gap-4 py-3">
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm text-gray-700 dark:text-gray-300 capitalize">{p.method.replace(/_/g, ' ')}</p>
+                          <StatusBadge status={p.status} />
+                        </div>
                         <p className="text-xs text-gray-400">
-                          {formatDate(p.paidAt)}{p.reference && ` · Ref: ${p.reference}`}{p.note && ` · ${p.note}`}
+                          {formatDate(p.paidAt)}{p.reference && ` · Ref: ${p.reference}`}{p.notes && ` · ${p.notes}`}
                         </p>
+                        {p.status === 'rejected' && p.rejectionReason && (
+                          <p className="text-xs text-red-500">Rejected: {p.rejectionReason}</p>
+                        )}
                       </div>
-                      <span className="font-semibold text-green-600">+{formatCurrency(p.amount)}</span>
+                      <div className="flex shrink-0 items-center gap-2">
+                        {p.proofUrl && (
+                          <a href={p.proofUrl} target="_blank" rel="noreferrer"
+                            className="rounded-lg border border-gray-200 px-2 py-1 text-xs text-gray-600 hover:border-blue-400 hover:text-blue-600 dark:border-gray-700 dark:text-gray-300">
+                            View proof
+                          </a>
+                        )}
+                        {p.status === 'pending' && (
+                          <>
+                            <Button size="sm" onClick={() => verifyMutation.mutate(p._id)}>Verify</Button>
+                            <Button size="sm" variant="outline" onClick={() => {
+                              const reason = window.prompt('Why is this payment being rejected?');
+                              if (reason?.trim()) rejectMutation.mutate({ id: p._id, reason: reason.trim() });
+                            }}>Reject</Button>
+                          </>
+                        )}
+                        <span className={`font-semibold ${p.status === 'verified' ? 'text-green-600' : p.status === 'rejected' ? 'text-gray-400 line-through' : 'text-yellow-600'}`}>
+                          +{formatCurrency(p.amount)}
+                        </span>
+                      </div>
                     </li>
                   ))}
                 </ul>

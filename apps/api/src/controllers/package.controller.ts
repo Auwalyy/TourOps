@@ -11,6 +11,12 @@ export const packageController = {
     } catch (e) { next(e); }
   },
 
+  async availability(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      sendSuccess(res, await packageService.getAvailability(req.user!.agencyId!.toString(), req.params.id));
+    } catch (e) { next(e); }
+  },
+
   async getById(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       sendSuccess(res, await packageService.getById(req.user!.agencyId!.toString(), req.params.id));

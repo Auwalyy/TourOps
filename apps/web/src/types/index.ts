@@ -193,10 +193,10 @@ export interface Invoice {
   totalAmount: number;
   amountPaid: number;
   outstandingBalance: number;
+  totalRefunded?: number;
   currency: string;
   status: 'draft' | 'sent' | 'partially_paid' | 'paid' | 'overdue' | 'cancelled' | 'refunded';
   dueDate?: string;
-  payments: Array<{ amount: number; method: string; paidAt: string; reference?: string }>;
   notes?: string;
   issuedAt: string;
   createdAt: string;
@@ -288,6 +288,79 @@ export interface PhysicalFile {
   notes?: string;
 }
 
+export type PaymentStatus = 'pending' | 'verified' | 'rejected';
+export type PaymentMethod = 'cash' | 'bank_transfer' | 'card' | 'mobile_money' | 'other';
+
+export interface Payment {
+  _id: string;
+  customerId: Customer | string;
+  travelFileId?: TravelFile | string;
+  invoiceId?: Invoice | string;
+  groupId?: string;
+  amount: number;
+  currency: string;
+  method: PaymentMethod;
+  reference?: string;
+  proofUrl?: string;
+  notes?: string;
+  status: PaymentStatus;
+  recordedBy: User | string;
+  verifiedBy?: User | string;
+  verifiedAt?: string;
+  rejectionReason?: string;
+  paidAt: string;
+  createdAt: string;
+}
+
+export type RefundStatus = 'requested' | 'approved' | 'rejected' | 'completed';
+
+export interface Refund {
+  _id: string;
+  customerId: Customer | string;
+  invoiceId?: Invoice | string;
+  travelFileId?: string;
+  amount: number;
+  currency: string;
+  reason: string;
+  method: PaymentMethod;
+  status: RefundStatus;
+  requestedBy: User | string;
+  approvedBy?: User | string;
+  approvedAt?: string;
+  processedAt?: string;
+  reference?: string;
+  rejectionReason?: string;
+  createdAt: string;
+}
+
+export interface PaymentScheduleEntry {
+  _id: string;
+  dueDate: string;
+  amount: number;
+  note?: string;
+  remindedAt?: string;
+}
+
+export interface BookingGroup {
+  _id: string;
+  name: string;
+  primaryContactCustomerId: Customer | string;
+  departureGroup?: string;
+  notes?: string;
+  memberCount?: number;
+  totalCost?: number;
+  amountPaid?: number;
+  createdAt: string;
+}
+
+export interface Branch {
+  _id: string;
+  name: string;
+  address?: string;
+  phone?: string;
+  isActive: boolean;
+}
+
 export interface TravelFile {
   _id: string;
   fileNumber: string;
@@ -310,8 +383,11 @@ export interface TravelFile {
   notes: TravelFileNote[];
   physicalFile: PhysicalFile;
   totalCost: number;
+  /** Cached from verified Payment records — fetch /payments for the ledger. */
   amountPaid: number;
-  payments: Array<{ amount: number; method: string; reference?: string; note?: string; paidAt: string }>;
+  paymentSchedule: PaymentScheduleEntry[];
+  groupId?: BookingGroup | string;
+  branchId?: string;
   balance: number;
   invoiceIds: Invoice[];
   documentIds: Document[];

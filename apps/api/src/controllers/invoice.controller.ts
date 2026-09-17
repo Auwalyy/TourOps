@@ -43,8 +43,8 @@ export const invoiceController = {
 
   async downloadReceipt(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const paymentIndex = req.query.payment !== undefined ? parseInt(String(req.query.payment)) : undefined;
-      const buffer = await invoiceService.generateReceiptPDF(req.user!.agencyId!.toString(), req.params.id, paymentIndex);
+      const paymentId = req.query.payment !== undefined ? String(req.query.payment) : undefined;
+      const buffer = await invoiceService.generateReceiptPDF(req.user!.agencyId!.toString(), req.params.id, paymentId);
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Disposition', `attachment; filename="receipt-${req.params.id}.pdf"`);
       res.send(buffer);

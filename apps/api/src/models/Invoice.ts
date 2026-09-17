@@ -1,14 +1,5 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
-export interface IPaymentRecord {
-  amount: number;
-  method: 'cash' | 'bank_transfer' | 'card' | 'mobile_money' | 'other';
-  reference?: string;
-  paidAt: Date;
-  recordedBy: mongoose.Types.ObjectId;
-  notes?: string;
-}
-
 export interface IInvoice extends Document {
   agencyId: mongoose.Types.ObjectId;
   invoiceNumber: string;
@@ -25,34 +16,19 @@ export interface IInvoice extends Document {
   taxRate: number;
   discount: number;
   totalAmount: number;
+  /** Cached from verified Payment documents — Payment is the source of truth. */
   amountPaid: number;
   outstandingBalance: number;
+  totalRefunded: number;
   currency: string;
   status: 'draft' | 'sent' | 'partially_paid' | 'paid' | 'overdue' | 'cancelled' | 'refunded';
   dueDate?: Date;
-  payments: IPaymentRecord[];
   notes?: string;
   pdfUrl?: string;
   issuedAt: Date;
   createdAt: Date;
   updatedAt: Date;
 }
-
-const paymentRecordSchema = new Schema<IPaymentRecord>(
-  {
-    amount: { type: Number, required: true },
-    method: {
-      type: String,
-      enum: ['cash', 'bank_transfer', 'card', 'mobile_money', 'other'],
-      required: true,
-    },
-    reference: String,
-    paidAt: { type: Date, default: Date.now },
-    recordedBy: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-    notes: String,
-  },
-  { _id: true }
-);
 
 const invoiceSchema = new Schema<IInvoice>(
   {
@@ -75,6 +51,7 @@ const invoiceSchema = new Schema<IInvoice>(
     totalAmount: { type: Number, required: true },
     amountPaid: { type: Number, default: 0 },
     outstandingBalance: { type: Number, required: true },
+    totalRefunded: { type: Number, default: 0 },
     currency: { type: String, default: 'NGN' },
     status: {
       type: String,
@@ -82,7 +59,6 @@ const invoiceSchema = new Schema<IInvoice>(
       default: 'draft',
     },
     dueDate: Date,
-    payments: { type: [paymentRecordSchema], default: [] },
     notes: String,
     pdfUrl: String,
     issuedAt: { type: Date, default: Date.now },

@@ -77,6 +77,30 @@ export const travelFileController = {
     } catch (e) { next(e); }
   },
 
+  async listPayments(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      sendSuccess(res, await travelFileService.listPayments(req.user!.agencyId!.toString(), req.params.id));
+    } catch (e) { next(e); }
+  },
+
+  async setPaymentSchedule(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      sendSuccess(
+        res,
+        await travelFileService.setPaymentSchedule(
+          req.user!.agencyId!.toString(), req.params.id, req.user!.id, req.body.schedule
+        ),
+        'Payment plan updated'
+      );
+    } catch (e) { next(e); }
+  },
+
+  async overdueInstallments(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      sendSuccess(res, await travelFileService.getOverdueInstallments(req.user!.agencyId!.toString()));
+    } catch (e) { next(e); }
+  },
+
   async updatePhysicalFile(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       sendSuccess(res, await travelFileService.updatePhysicalFile(req.user!.agencyId!.toString(), req.params.id, req.user!.id, req.body), 'Physical file updated');
