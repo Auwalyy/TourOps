@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { bookingsApi, travelFilesApi } from '@/services/api.service';
+import { bookingsApi, travelFilesApi, visasApi } from '@/services/api.service';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Input, Label, Select, Textarea } from '@/components/ui/Input';
@@ -21,6 +21,8 @@ interface Props {
 
 const BOOKING_TYPES: { value: BookingType; label: string }[] = [
   { value: 'flight', label: 'Flight' },
+  { value: 'ticket', label: 'Ticket (ticketing only)' },
+  { value: 'visa', label: 'Visa' },
   { value: 'hotel', label: 'Hotel' },
   { value: 'transport', label: 'Transport' },
   { value: 'tour', label: 'Tour' },
@@ -48,11 +50,19 @@ export function BookingFormModal({ open, onClose, travelFileId, customerId, onCr
     enabled: open && !travelFileId,
   });
 
+  // For visa bookings — link the charge to the application it pays for.
+  const [visaApplicationId, setVisaApplicationId] = useState('');
+  const { data: visaApplications } = useQuery({
+    queryKey: ['visas', 'linkable', customerId],
+    queryFn: () => visasApi.list({ limit: 100, customerId: customerId || undefined }).then((r) => r.data.data),
+    enabled: open && bookingType === 'visa',
+  });
+
   // When a travel file is selected from the dropdown, auto-populate customerId
   const selectedTf = (travelFiles as any[])?.find((tf: any) => tf._id === selectedTravelFileId);
 
   useEffect(() => {
-    if (!open) { reset(); setBookingType('flight'); setSelectedTravelFileId(travelFileId || ''); }
+    if (!open) { reset(); setBookingType('flight'); setSelectedTravelFileId(travelFileId || ''); setVisaApplicationId(''); }
   }, [open, travelFileId, reset]);
 
   async function onSubmit(data: any) {
@@ -68,6 +78,7 @@ export function BookingFormModal({ open, onClose, travelFileId, customerId, onCr
       startDate: data.startDate || undefined,
       endDate: data.endDate || undefined,
       details: buildDetails(bookingType, data),
+      ...(bookingType === 'visa' && visaApplicationId ? { visaApplicationId } : {}),
     };
 
     if (customerId) payload.customerId = customerId;
@@ -135,6 +146,24 @@ export function BookingFormModal({ open, onClose, travelFileId, customerId, onCr
         {/* Type-specific fields */}
         <TypeFields type={bookingType} register={register} />
 
+        {/* Link a visa charge to its application so the fee lives in one place */}
+        {bookingType === 'visa' && (
+          <div>
+            <Label>Link to Visa Application (optional)</Label>
+            <Select value={visaApplicationId} onChange={(e) => setVisaApplicationId(e.target.value)}>
+              <option value="">Not linked</option>
+              {(visaApplications as any[])?.map((v: any) => (
+                <option key={v._id} value={v._id}>
+                  {v.referenceNumber} — {v.destinationCountry} {v.visaType}
+                </option>
+              ))}
+            </Select>
+            <p className="mt-1 text-xs text-gray-400">
+              Linking keeps the charge here and the workflow on the application, so the fee isn&apos;t entered twice.
+            </p>
+          </div>
+        )}
+
         {/* Dates */}
         <div className="grid grid-cols-2 gap-4">
           <div>
@@ -178,6 +207,41 @@ function TypeFields({ type, register }: { type: BookingType; register: any }) {
       <div><Label>Airline</Label><Input placeholder="Qatar Airways" {...register('details.airline')} /></div>
       <div><Label>From (Departure)</Label><Input placeholder="Kano (KAN)" {...register('details.departureLocation')} /></div>
       <div><Label>To (Arrival)</Label><Input placeholder="Jeddah (JED)" {...register('details.arrivalLocation')} /></div>
+    </div>
+  );
+
+  if (type === 'ticket') return (
+    <div className="grid grid-cols-2 gap-4">
+      <div><Label>Airline</Label><Input placeholder="Qatar Airways" {...register('details.airline')} /></div>
+      <div><Label>Ticket Number</Label><Input placeholder="157-1234567890" {...register('details.ticketNumber')} /></div>
+      <div><Label>From</Label><Input placeholder="Kano (KAN)" {...register('details.departureLocation')} /></div>
+      <div><Label>To</Label><Input placeholder="Jeddah (JED)" {...register('details.arrivalLocation')} /></div>
+      <div><Label>Passenger Count</Label><Input type="number" min={1} {...register('details.passengerCount')} /></div>
+    </div>
+  );
+
+  if (type === 'visa') return (
+    <div className="grid grid-cols-2 gap-4">
+      <div><Label>Destination Country</Label><Input placeholder="Saudi Arabia" {...register('details.destinationCountry')} /></div>
+      <div><Label>Visa Type</Label><Input placeholder="Umrah / Tourist / Student" {...register('details.visaType')} /></div>
+      <div><Label>Number of Applicants</Label><Input type="number" min={1} {...register('details.numberOfApplicants')} /></div>
+      <div>
+        <Label>Entry Type</Label>
+        <Select {...register('details.entryType')}>
+          <option value="">—</option>
+          <option value="single">Single Entry</option>
+          <option value="multiple">Multiple Entry</option>
+        </Select>
+      </div>
+      <div>
+        <Label>Processing</Label>
+        <Select {...register('details.processingType')}>
+          <option value="">—</option>
+          <option value="standard">Standard</option>
+          <option value="express">Express</option>
+        </Select>
+      </div>
+      <div><Label>Reference</Label><Input placeholder="Application ref" {...register('details.bookingReference')} /></div>
     </div>
   );
 
@@ -229,6 +293,8 @@ function buildDetails(type: BookingType, data: any) {
 function titlePlaceholder(type: BookingType) {
   const map: Record<BookingType, string> = {
     flight: 'e.g. Kano → Jeddah Flight',
+    ticket: 'e.g. Kano → Dubai Return Ticket',
+    visa: 'e.g. Saudi Umrah Visa — 2 applicants',
     hotel: 'e.g. Hilton Makkah — 10 nights',
     transport: 'e.g. Airport Transfer Jeddah → Makkah',
     tour: 'e.g. Madinah City Tour',
@@ -242,10 +308,14 @@ function titlePlaceholder(type: BookingType) {
 function startDateLabel(type: BookingType) {
   if (type === 'hotel') return 'Check-in Date';
   if (type === 'transport') return 'Pickup Date & Time';
+  if (type === 'visa') return 'Submitted On';
+  if (type === 'ticket') return 'Departure Date';
   return 'Start Date';
 }
 
 function endDateLabel(type: BookingType) {
   if (type === 'hotel') return 'Check-out Date';
+  if (type === 'visa') return 'Expected By';
+  if (type === 'ticket') return 'Return Date';
   return 'End Date';
 }

@@ -6,6 +6,7 @@ import { notificationService } from './notification.service';
 import { NotFoundError } from '../utils/errors';
 import { getPaginationParams } from '../utils/helpers';
 import { VisaStatus } from '../models/VisaApplication';
+import { Booking } from '../models/Booking';
 import { Customer } from '../models/Customer';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -28,7 +29,14 @@ export const visaService = {
   async getById(agencyId: string, id: string) {
     const visa = await visaApplicationRepository.findOne({ _id: id, agencyId });
     if (!visa) throw new NotFoundError('Visa application');
-    return visa;
+
+    // If a visa booking bills for this application, the charge lives there —
+    // surface it so the fee isn't recorded in two places.
+    const billedVia = await Booking.findOne({ agencyId, visaApplicationId: id })
+      .select('bookingNumber cost currency status travelFileId')
+      .lean();
+
+    return { ...(visa.toObject ? visa.toObject() : visa), billedVia } as any;
   },
 
   async listPayments(agencyId: string, id: string) {

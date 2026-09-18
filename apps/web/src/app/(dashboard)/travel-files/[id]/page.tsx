@@ -400,7 +400,7 @@ export default function TravelFileDetailPage() {
                 <ul className="divide-y divide-gray-50 dark:divide-gray-800">
                   {bookings.map((bk) => {
                     const TYPE_ICON: Record<string, string> = {
-                      flight: '✈️', hotel: '🏨', transport: '🚌', tour: '🗺️',
+                      flight: '✈️', ticket: '🎫', visa: '🛂', hotel: '🏨', transport: '🚌', tour: '🗺️',
                       activity: '🎯', package: '📦', other: '📋',
                     };
                     return (

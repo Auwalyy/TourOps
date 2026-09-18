@@ -53,7 +53,16 @@ export interface Customer {
   createdAt: string;
 }
 
-export type BookingType = 'flight' | 'hotel' | 'transport' | 'tour' | 'activity' | 'package' | 'other';
+export type BookingType =
+  | 'flight'
+  | 'ticket'
+  | 'visa'
+  | 'hotel'
+  | 'transport'
+  | 'tour'
+  | 'activity'
+  | 'package'
+  | 'other';
 
 export type BookingStatus = 'draft' | 'pending' | 'reserved' | 'confirmed' | 'ticketed' | 'cancelled' | 'completed';
 
@@ -89,6 +98,11 @@ export interface BookingDetails {
   dropoffLocation?: string;
   pickupDateTime?: string;
   // Tour / Activity
+  visaType?: string;
+  destinationCountry?: string;
+  numberOfApplicants?: number;
+  entryType?: string;
+  processingType?: string;
   tourName?: string;
   location?: string;
   startDateTime?: string;
@@ -124,6 +138,7 @@ export interface Booking {
   cost: number;
   currency: string;
   tourPackageId?: TourPackage | string;
+  visaApplicationId?: VisaApplication | string;
   details: BookingDetails;
   documents: Array<{ documentId: Document | string; visibleToCustomer: boolean }>;
   createdBy: User | string;

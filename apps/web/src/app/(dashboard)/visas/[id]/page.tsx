@@ -129,6 +129,19 @@ export default function VisaDetailPage() {
               <PaymentStatusBadge item={visa} />
             </CardHeader>
             <CardContent className="space-y-4">
+              {visa.billedVia && (
+                <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-2.5 text-sm text-blue-700 dark:border-blue-900/40 dark:bg-blue-900/20 dark:text-blue-300">
+                  Billed via booking{' '}
+                  <button
+                    onClick={() => router.push(`/bookings/${visa.billedVia._id}`)}
+                    className="font-mono font-semibold underline"
+                  >
+                    {visa.billedVia.bookingNumber}
+                  </button>{' '}
+                  ({formatCurrency(visa.billedVia.cost, visa.billedVia.currency)}). Record payment there, not here, so
+                  the charge stays in one place.
+                </div>
+              )}
               {!visa.fees ? (
                 <p className="text-sm text-gray-400">
                   No fee set for this application. Add one via Edit so it can be tracked and chased.

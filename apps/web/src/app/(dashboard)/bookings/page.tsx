@@ -16,7 +16,7 @@ import { formatDate, formatCurrency } from '@/lib/utils';
 import { BookingFormModal } from '@/components/features/bookings/BookingFormModal';
 
 const BOOKING_STATUSES = ['', 'draft', 'pending', 'reserved', 'confirmed', 'ticketed', 'cancelled', 'completed'];
-const BOOKING_TYPES = ['', 'flight', 'hotel', 'transport', 'tour', 'activity', 'package', 'other'];
+const BOOKING_TYPES = ['', 'flight', 'ticket', 'visa', 'hotel', 'transport', 'tour', 'activity', 'package', 'other'];
 
 export default function BookingsPage() {
   const router = useRouter();

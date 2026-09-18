@@ -15,7 +15,7 @@ import { Booking, BookingStatus, BookingType } from '@/types';
 const BOOKING_STATUSES: BookingStatus[] = ['draft', 'pending', 'reserved', 'confirmed', 'ticketed', 'cancelled', 'completed'];
 
 const TYPE_LABEL: Record<BookingType, string> = {
-  flight: 'Flight', hotel: 'Hotel', transport: 'Transport',
+  flight: 'Flight', ticket: 'Ticket', visa: 'Visa', hotel: 'Hotel', transport: 'Transport',
   tour: 'Tour', activity: 'Activity', package: 'Package', other: 'Other',
 };
 
@@ -268,6 +268,22 @@ function BookingDetailsCard({ booking }: { booking: Booking }) {
       ['Arrival', d.arrivalDateTime ? formatDate(d.arrivalDateTime) : undefined],
       ['Ticket Number', d.ticketNumber],
     );
+  } else if (booking.bookingType === 'ticket') {
+    rows.push(
+      ['Airline', d.airline],
+      ['From', d.departureLocation], ['To', d.arrivalLocation],
+      ['Ticket Number', d.ticketNumber],
+      ['Passengers', d.passengerCount],
+    );
+  } else if (booking.bookingType === 'visa') {
+    rows.push(
+      ['Destination', d.destinationCountry],
+      ['Visa Type', d.visaType],
+      ['Applicants', d.numberOfApplicants],
+      ['Entry Type', d.entryType],
+      ['Processing', d.processingType],
+      ['Reference', d.bookingReference],
+    );
   } else if (booking.bookingType === 'hotel') {
     rows.push(
       ['Hotel', d.hotelName], ['City', d.city], ['Address', d.hotelAddress],
@@ -299,7 +315,8 @@ function BookingDetailsCard({ booking }: { booking: Booking }) {
   if (filled.length === 0) return null;
 
   const typeLabel: Record<BookingType, string> = {
-    flight: 'Flight Details', hotel: 'Hotel Details', transport: 'Transport Details',
+    flight: 'Flight Details', ticket: 'Ticket Details', visa: 'Visa Details',
+    hotel: 'Hotel Details', transport: 'Transport Details',
     tour: 'Tour Details', activity: 'Activity Details', package: 'Package Details', other: 'Details',
   };
 
