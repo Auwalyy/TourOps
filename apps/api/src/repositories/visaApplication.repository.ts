@@ -67,7 +67,7 @@ class VisaApplicationRepository extends BaseRepository<IVisaApplication> {
 
   async getStatusCounts(agencyId: string) {
     return VisaApplication.aggregate([
-      { $match: { agencyId: { $toString: agencyId } } },
+      { $match: { agencyId: new mongoose.Types.ObjectId(agencyId) } },
       { $group: { _id: '$status', count: { $sum: 1 } } },
     ]);
   }
