@@ -8,6 +8,8 @@ import { BookingStatus, BookingType } from '../models/Booking';
 import { Agency } from '../models/Agency';
 import { TravelFile } from '../models/TravelFile';
 import { packageService } from './package.service';
+import { paymentService } from './payment.service';
+import { paymentRepository } from '../repositories/payment.repository';
 
 async function getAgencyPrefix(agencyId: string): Promise<string> {
   const agency = await Agency.findById(agencyId).select('name').lean();
@@ -78,18 +80,24 @@ export const bookingService = {
     return bookingRepository.getByTravelFile(agencyId, travelFileId);
   },
 
+  /**
+   * A booking can either belong to a travel file (the customer already has
+   * one open) or stand alone against just a customer — a walk-in flight or
+   * visa charge that doesn't need a whole file opened for it.
+   */
   async create(agencyId: string, userId: string, data: Record<string, unknown>, travelFileIdOverride?: string) {
-    const travelFileId = travelFileIdOverride || (data.travelFileId as string);
-    if (!travelFileId) throw new AppError('travelFileId is required', 400);
+    const travelFileId = travelFileIdOverride || (data.travelFileId as string) || undefined;
+    let customerId = data.customerId as string | undefined;
 
-    const travelFile = await travelFileRepository.findOne({ _id: travelFileId, agencyId });
-    if (!travelFile) throw new NotFoundError('Travel File');
-
-    // Validate customer belongs to travel file
-    const customerId = data.customerId || travelFile.customerId.toString();
-    if (customerId.toString() !== travelFile.customerId.toString()) {
-      throw new AppError('Customer does not belong to this Travel File', 400);
+    if (travelFileId) {
+      const travelFile = await travelFileRepository.findOne({ _id: travelFileId, agencyId });
+      if (!travelFile) throw new NotFoundError('Travel File');
+      customerId = customerId || travelFile.customerId.toString();
+      if (customerId.toString() !== travelFile.customerId.toString()) {
+        throw new AppError('Customer does not belong to this Travel File', 400);
+      }
     }
+    if (!customerId) throw new AppError('Select a customer, or a travel file, for this booking', 400);
 
     // Claim a seat before creating anything — a full package must refuse the
     // booking outright rather than overselling.
@@ -119,15 +127,17 @@ export const bookingService = {
       ],
     } as any);
 
-    await pushTravelFileTimeline(
-      travelFileId,
-      agencyId,
-      userId,
-      `${(data.bookingType as string || 'Booking').replace(/^\w/, (c) => c.toUpperCase())} Booking Created`,
-      `Booking ${bookingNumber} — ${data.title || data.bookingType} created`,
-      'booking',
-      booking._id as mongoose.Types.ObjectId
-    );
+    if (travelFileId) {
+      await pushTravelFileTimeline(
+        travelFileId,
+        agencyId,
+        userId,
+        `${(data.bookingType as string || 'Booking').replace(/^\w/, (c) => c.toUpperCase())} Booking Created`,
+        `Booking ${bookingNumber} — ${data.title || data.bookingType} created`,
+        'booking',
+        booking._id as mongoose.Types.ObjectId
+      );
+    }
 
     await notificationService.notifyAgencyStaff(new mongoose.Types.ObjectId(agencyId), {
       title: 'New Booking Created',
@@ -185,15 +195,17 @@ export const bookingService = {
     const label = status.replace(/_/g, ' ');
     const typeLabel = booking.bookingType.replace(/^\w/, (c) => c.toUpperCase());
 
-    await pushTravelFileTimeline(
-      booking.travelFileId.toString(),
-      agencyId,
-      userId,
-      `${typeLabel} Booking → ${label}`,
-      reason || `${booking.bookingNumber} status changed to ${label}`,
-      'booking',
-      booking._id as mongoose.Types.ObjectId
-    );
+    if (booking.travelFileId) {
+      await pushTravelFileTimeline(
+        booking.travelFileId.toString(),
+        agencyId,
+        userId,
+        `${typeLabel} Booking → ${label}`,
+        reason || `${booking.bookingNumber} status changed to ${label}`,
+        'booking',
+        booking._id as mongoose.Types.ObjectId
+      );
+    }
 
     await notificationService.notifyAgencyStaff(new mongoose.Types.ObjectId(agencyId), {
       title: 'Booking Status Updated',
@@ -215,15 +227,17 @@ export const bookingService = {
       updatedBy: new mongoose.Types.ObjectId(userId),
     });
 
-    await pushTravelFileTimeline(
-      booking.travelFileId.toString(),
-      agencyId,
-      userId,
-      'Booking Document Linked',
-      `Document linked to booking ${booking.bookingNumber}`,
-      'document',
-      booking._id as mongoose.Types.ObjectId
-    );
+    if (booking.travelFileId) {
+      await pushTravelFileTimeline(
+        booking.travelFileId.toString(),
+        agencyId,
+        userId,
+        'Booking Document Linked',
+        `Document linked to booking ${booking.bookingNumber}`,
+        'document',
+        booking._id as mongoose.Types.ObjectId
+      );
+    }
 
     return updated;
   },
@@ -245,5 +259,30 @@ export const bookingService = {
   async getBookingSummaryForFile(agencyId: string, travelFileId: string) {
     const bookings = await bookingRepository.getByTravelFile(agencyId, travelFileId);
     return bookings;
+  },
+
+  // ─── Payments (simple paid/unpaid, especially for standalone bookings) ────
+  async addPayment(agencyId: string, id: string, userId: string, payment: Record<string, unknown>) {
+    const booking = await bookingRepository.findOne({ _id: id, agencyId });
+    if (!booking) throw new NotFoundError('Booking');
+
+    await paymentService.record(agencyId, userId, {
+      bookingId: id,
+      customerId: booking.customerId.toString(),
+      amount: Number(payment.amount),
+      method: payment.method as any,
+      reference: payment.reference as string,
+      notes: (payment.note || payment.notes) as string,
+      // Staff recording it directly have confirmed it themselves.
+      autoVerify: payment.autoVerify !== false,
+    });
+
+    return bookingRepository.findOne({ _id: id, agencyId });
+  },
+
+  async listPayments(agencyId: string, id: string) {
+    const booking = await bookingRepository.findOne({ _id: id, agencyId });
+    if (!booking) throw new NotFoundError('Booking');
+    return paymentRepository.listForBooking(agencyId, id);
   },
 };

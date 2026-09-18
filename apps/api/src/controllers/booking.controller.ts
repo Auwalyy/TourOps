@@ -57,6 +57,22 @@ export const bookingController = {
     } catch (e) { next(e); }
   },
 
+  async listPayments(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      sendSuccess(res, await bookingService.listPayments(req.user!.agencyId!.toString(), req.params.id));
+    } catch (e) { next(e); }
+  },
+
+  async addPayment(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      sendSuccess(
+        res,
+        await bookingService.addPayment(req.user!.agencyId!.toString(), req.params.id, req.user!.id, req.body),
+        'Payment recorded'
+      );
+    } catch (e) { next(e); }
+  },
+
   async linkDocument(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       sendSuccess(res, await bookingService.linkDocument(

@@ -51,8 +51,20 @@ class PaymentRepository extends BaseRepository<IPayment> {
     return this.sumVerified({ visaApplicationId: new mongoose.Types.ObjectId(visaApplicationId.toString()) });
   }
 
+  async sumVerifiedForBooking(bookingId: string | mongoose.Types.ObjectId): Promise<number> {
+    return this.sumVerified({ bookingId: new mongoose.Types.ObjectId(bookingId.toString()) });
+  }
+
   async listForVisa(agencyId: string, visaApplicationId: string) {
     return Payment.find({ agencyId, visaApplicationId })
+      .sort({ paidAt: -1 })
+      .populate('recordedBy', 'firstName lastName')
+      .populate('verifiedBy', 'firstName lastName')
+      .lean();
+  }
+
+  async listForBooking(agencyId: string, bookingId: string) {
+    return Payment.find({ agencyId, bookingId })
       .sort({ paidAt: -1 })
       .populate('recordedBy', 'firstName lastName')
       .populate('verifiedBy', 'firstName lastName')

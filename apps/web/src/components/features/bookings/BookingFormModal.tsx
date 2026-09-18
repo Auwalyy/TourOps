@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { bookingsApi, travelFilesApi, visasApi } from '@/services/api.service';
+import { bookingsApi, travelFilesApi, visasApi, customersApi } from '@/services/api.service';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Input, Label, Select, Textarea } from '@/components/ui/Input';
@@ -41,13 +41,21 @@ export function BookingFormModal({ open, onClose, travelFileId, customerId, onCr
     defaultValues: { title: '', provider: '', currency: 'NGN', cost: 0, startDate: '', endDate: '' },
   });
 
-  // If no travelFileId prop, let staff pick a Travel File
+  // If no travelFileId prop, let staff pick a Travel File — or skip it entirely
+  // and book straight against a customer.
   const [selectedTravelFileId, setSelectedTravelFileId] = useState(travelFileId || '');
+  const [selectedCustomerId, setSelectedCustomerId] = useState(customerId || '');
 
   const { data: travelFiles } = useQuery({
     queryKey: ['travel-files', 'all'],
     queryFn: () => travelFilesApi.list({ limit: 100 }).then((r) => r.data.data),
     enabled: open && !travelFileId,
+  });
+
+  const { data: customers } = useQuery({
+    queryKey: ['customers', 'all'],
+    queryFn: () => customersApi.list({ limit: 200 }).then((r) => r.data.data),
+    enabled: open && !travelFileId && !customerId && !selectedTravelFileId,
   });
 
   // For visa bookings — link the charge to the application it pays for.

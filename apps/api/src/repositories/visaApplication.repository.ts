@@ -1,4 +1,4 @@
-import { FilterQuery } from 'mongoose';
+import mongoose, { FilterQuery } from 'mongoose';
 import { VisaApplication, IVisaApplication, VisaStatus } from '../models/VisaApplication';
 import { BaseRepository } from './base.repository';
 

@@ -79,7 +79,8 @@ export interface IBookingDetails {
 export interface IBooking extends Document {
   agencyId: mongoose.Types.ObjectId;
   bookingNumber: string;
-  travelFileId: mongoose.Types.ObjectId;
+  /** Optional — a booking can stand alone against just a customer, with no travel file. */
+  travelFileId?: mongoose.Types.ObjectId;
   customerId: mongoose.Types.ObjectId;
   bookingType: BookingType;
   title: string;
@@ -89,6 +90,8 @@ export interface IBooking extends Document {
   startDate?: Date;
   endDate?: Date;
   cost: number;
+  /** Cached from verified Payment documents — Payment is the source of truth. */
+  amountPaid: number;
   currency: string;
   tourPackageId?: mongoose.Types.ObjectId;
   /**
@@ -151,7 +154,7 @@ const bookingSchema = new Schema<IBooking>(
   {
     agencyId: { type: Schema.Types.ObjectId, ref: 'Agency', required: true },
     bookingNumber: { type: String, required: true, unique: true },
-    travelFileId: { type: Schema.Types.ObjectId, ref: 'TravelFile', required: true },
+    travelFileId: { type: Schema.Types.ObjectId, ref: 'TravelFile' },
     customerId: { type: Schema.Types.ObjectId, ref: 'Customer', required: true },
     bookingType: {
       type: String,
@@ -169,6 +172,7 @@ const bookingSchema = new Schema<IBooking>(
     startDate: Date,
     endDate: Date,
     cost: { type: Number, default: 0, min: 0 },
+    amountPaid: { type: Number, default: 0, min: 0 },
     currency: { type: String, default: 'NGN' },
     tourPackageId: { type: Schema.Types.ObjectId, ref: 'TourPackage' },
     visaApplicationId: { type: Schema.Types.ObjectId, ref: 'VisaApplication' },
