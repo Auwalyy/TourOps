@@ -508,8 +508,10 @@ async function main() {
     if (Math.random() < 0.15) continue; // some files have no bookings yet
     const count = randInt(1, 3);
     const types: BookingType[] = tf.travelType === 'umrah' || tf.travelType === 'hajj'
-      ? ['flight', 'hotel', 'transport']
-      : ['flight'];
+      ? ['flight', 'hotel', 'visa']
+      : ['study_abroad', 'tourist_visa', 'business', 'medical'].includes(tf.travelType)
+      ? ['visa', 'ticket']
+      : ['ticket'];
     for (let b = 0; b < count; b++) {
       bookingSeq += 1;
       const bookingType = types[b] || rand(['flight', 'hotel', 'transport', 'other'] as BookingType[]);
@@ -520,7 +522,30 @@ async function main() {
       let details: any = {};
       let title = '';
       let cost = 0;
-      if (bookingType === 'flight') {
+      if (bookingType === 'ticket') {
+        const to = rand(['Jeddah (JED)', 'Dubai (DXB)', 'Istanbul (IST)', 'London (LHR)', 'Cairo (CAI)']);
+        title = `Ticket — Kano to ${to.split(' (')[0]}`;
+        details = {
+          airline: rand(AIRLINES),
+          departureLocation: 'Kano (KAN)',
+          arrivalLocation: to,
+          ticketNumber: `${randInt(100, 999)}-${randInt(1000000000, 2000000000)}`,
+          passengerCount: randInt(1, 4),
+        };
+        cost = randInt(420000, 1400000);
+      } else if (bookingType === 'visa') {
+        const country = (TRAVEL_TYPE_DESTS[tf.travelType] || ['Saudi Arabia'])[0].split(' (')[0];
+        title = `${country} Visa Processing`;
+        details = {
+          destinationCountry: country,
+          visaType: tf.travelType === 'study_abroad' ? 'Student Visa' : tf.travelType === 'business' ? 'Business Visa' : 'Tourist / Umrah Visa',
+          numberOfApplicants: randInt(1, 4),
+          entryType: rand(['single', 'multiple']),
+          processingType: rand(['standard', 'express']),
+          bookingReference: `VA-${randInt(10000, 99999)}`,
+        };
+        cost = randInt(8, 30) * 10000;
+      } else if (bookingType === 'flight') {
         title = `Flight — Kano to ${tf.destination.split(' ')[0]}`;
         details = {
           airline: rand(AIRLINES),
