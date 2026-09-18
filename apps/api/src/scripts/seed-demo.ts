@@ -644,7 +644,8 @@ async function main() {
       documents: [],
       notes: '',
       dueDate: futureDate(3, 30),
-      fees: randInt(50000, 250000),
+      fees: randInt(5, 25) * 10000,
+      amountPaid: 0, // set below, from the visa fee payments
       referenceNumber: `VISA-${randInt(10000000, 99999999).toString(16).toUpperCase()}`,
       createdAt: applicationDate,
       updatedAt: [...statusHistory].sort((a, b) => b.changedAt.getTime() - a.changedAt.getTime())[0].changedAt,
@@ -652,6 +653,51 @@ async function main() {
   }
   await VisaApplication.insertMany(visas as any, { timestamps: false } as any);
   console.log(`Created ${visas.length} visa applications`);
+
+  // ── 5b. Visa fee payments ────────────────────────────────────────────────
+  // A realistic mix: some fees fully settled, some part-paid, some untouched —
+  // so the Unpaid / Part-paid / Paid filter has something to show.
+  const visaPaymentDocs: any[] = [];
+  const visaPaidTotals = new Map<string, number>();
+  for (const visa of visas) {
+    const outcome = randWeighted<'paid' | 'part' | 'none'>([['paid', 45], ['part', 25], ['none', 30]]);
+    if (outcome === 'none') continue;
+    const amount = outcome === 'paid' ? visa.fees : Math.round(visa.fees * rand([0.3, 0.5, 0.6]));
+    if (amount <= 0) continue;
+    const isPending = Math.random() < 0.1;
+    const paidAt = new Date(visa.applicationDate.getTime() + randInt(0, 3) * 86400000);
+    visaPaymentDocs.push({
+      _id: new ObjectId(),
+      agencyId,
+      customerId: visa.customerId,
+      visaApplicationId: visa._id,
+      amount,
+      currency: 'NGN',
+      method: rand(['cash', 'bank_transfer', 'mobile_money'] as PaymentMethod[]),
+      reference: Math.random() > 0.5 ? `VFEE-${randInt(100000, 999999)}` : undefined,
+      notes: 'Visa fee',
+      status: isPending ? 'pending' : 'verified',
+      recordedBy: rand(staffPool)._id,
+      verifiedBy: isPending ? undefined : finance._id,
+      verifiedAt: isPending ? undefined : paidAt,
+      paidAt,
+      createdAt: paidAt,
+      updatedAt: paidAt,
+    });
+    if (!isPending) visaPaidTotals.set(visa._id.toString(), amount);
+  }
+  if (visaPaymentDocs.length) {
+    await Payment.insertMany(visaPaymentDocs as any, { timestamps: false } as any);
+    await VisaApplication.bulkWrite(
+      visas.map((v) => ({
+        updateOne: {
+          filter: { _id: v._id },
+          update: { $set: { amountPaid: visaPaidTotals.get(v._id.toString()) || 0 } },
+        },
+      }))
+    );
+  }
+  console.log(`Created ${visaPaymentDocs.length} visa fee payments`);
 
   // ── 6. Invoices ──────────────────────────────────────────────────────────
   let invoiceSeq = 0;

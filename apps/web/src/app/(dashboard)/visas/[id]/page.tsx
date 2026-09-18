@@ -1,12 +1,13 @@
 'use client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Wallet } from 'lucide-react';
 import { toast } from 'sonner';
 import { visasApi, usersApi } from '@/services/api.service';
 import { Card, CardContent, CardHeader, CardTitle, Skeleton } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { StatusBadge } from '@/components/ui/StatusBadge';
+import { PaymentStatusBadge } from '@/components/ui/PaymentStatusBadge';
 import { Input, Label, Select } from '@/components/ui/Input';
 import { formatDate, formatCurrency } from '@/lib/utils';
 import { VisaStatus } from '@/types';
@@ -22,6 +23,7 @@ export default function VisaDetailPage() {
   const [note, setNote] = useState('');
   const [apptDate, setApptDate] = useState('');
   const [apptLocation, setApptLocation] = useState('');
+  const [pay, setPay] = useState({ amount: '', method: 'cash', reference: '', note: '' });
 
   const { data: visa, isLoading } = useQuery({
     queryKey: ['visas', id],
@@ -31,6 +33,28 @@ export default function VisaDetailPage() {
   const { data: officers } = useQuery({
     queryKey: ['users', 'staff'],
     queryFn: () => usersApi.listStaff().then((r) => r.data.data?.data || []),
+  });
+
+  const { data: payments } = useQuery({
+    queryKey: ['visas', id, 'payments'],
+    queryFn: () => visasApi.listPayments(id).then((r) => r.data.data),
+    enabled: !!id,
+  });
+
+  const paymentMutation = useMutation({
+    mutationFn: () => visasApi.addPayment(id, {
+      amount: Number(pay.amount),
+      method: pay.method,
+      reference: pay.reference || undefined,
+      note: pay.note || undefined,
+    }),
+    onSuccess: () => {
+      toast.success('Payment recorded');
+      setPay({ amount: '', method: 'cash', reference: '', note: '' });
+      qc.invalidateQueries({ queryKey: ['visas', id] });
+      qc.invalidateQueries({ queryKey: ['visas', id, 'payments'] });
+    },
+    onError: (e: any) => toast.error(e.response?.data?.message || 'Failed to record payment'),
   });
 
   const statusMutation = useMutation({
@@ -75,8 +99,9 @@ export default function VisaDetailPage() {
           <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
             {visa.destinationCountry} — {visa.visaType}
           </h1>
-          <div className="flex items-center gap-2 mt-1">
+          <div className="flex flex-wrap items-center gap-2 mt-1">
             <StatusBadge status={visa.status} />
+            <PaymentStatusBadge item={visa} />
             {visa.referenceNumber && <span className="font-mono text-xs text-gray-400">{visa.referenceNumber}</span>}
           </div>
         </div>
@@ -92,9 +117,113 @@ export default function VisaDetailPage() {
               <Detail label="Travel Date" value={visa.travelDate ? formatDate(visa.travelDate) : '—'} />
               <Detail label="Return Date" value={visa.returnDate ? formatDate(visa.returnDate) : '—'} />
               <Detail label="Due Date" value={visa.dueDate ? formatDate(visa.dueDate) : '—'} />
-              <Detail label="Fees" value={visa.fees ? formatCurrency(visa.fees) : '—'} />
               <Detail label="Assigned Officer" value={officer?.fullName || 'Unassigned'} />
               {visa.notes && <div className="col-span-2"><Detail label="Notes" value={visa.notes} /></div>}
+            </CardContent>
+          </Card>
+
+          {/* Visa fee — is this paid or not */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Visa Fee</CardTitle>
+              <PaymentStatusBadge item={visa} />
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {!visa.fees ? (
+                <p className="text-sm text-gray-400">
+                  No fee set for this application. Add one via Edit so it can be tracked and chased.
+                </p>
+              ) : (
+                <>
+                  <div className="grid grid-cols-3 gap-3">
+                    {[
+                      { label: 'Fee', value: formatCurrency(visa.fees), color: 'text-gray-900 dark:text-gray-100' },
+                      { label: 'Paid', value: formatCurrency(visa.amountPaid || 0), color: 'text-green-600' },
+                      {
+                        label: 'Balance',
+                        value: formatCurrency(Math.max(0, visa.fees - (visa.amountPaid || 0))),
+                        color: visa.fees - (visa.amountPaid || 0) > 0 ? 'text-red-600' : 'text-green-600',
+                      },
+                    ].map((s) => (
+                      <div key={s.label} className="rounded-xl bg-gray-50 p-3 text-center dark:bg-gray-800/50">
+                        <p className="text-xs text-gray-500">{s.label}</p>
+                        <p className={`mt-0.5 text-base font-bold ${s.color}`}>{s.value}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="h-2 w-full rounded-full bg-gray-100 dark:bg-gray-800">
+                    <div
+                      className="h-2 rounded-full bg-green-500 transition-all"
+                      style={{ width: `${Math.min(100, Math.round(((visa.amountPaid || 0) / visa.fees) * 100))}%` }}
+                    />
+                  </div>
+                </>
+              )}
+
+              {/* Record a payment against the fee */}
+              <div className="border-t border-gray-100 pt-4 dark:border-gray-800">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-4">
+                  <div>
+                    <Label>Amount</Label>
+                    <Input type="number" min="0" placeholder="0" value={pay.amount}
+                      onChange={(e) => setPay((p) => ({ ...p, amount: e.target.value }))} />
+                  </div>
+                  <div>
+                    <Label>Method</Label>
+                    <Select value={pay.method} onChange={(e) => setPay((p) => ({ ...p, method: e.target.value }))}>
+                      <option value="cash">Cash</option>
+                      <option value="bank_transfer">Bank Transfer</option>
+                      <option value="card">Card</option>
+                      <option value="mobile_money">Mobile Money</option>
+                      <option value="other">Other</option>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label>Reference</Label>
+                    <Input placeholder="optional" value={pay.reference}
+                      onChange={(e) => setPay((p) => ({ ...p, reference: e.target.value }))} />
+                  </div>
+                  <div>
+                    <Label>Note</Label>
+                    <Input placeholder="optional" value={pay.note}
+                      onChange={(e) => setPay((p) => ({ ...p, note: e.target.value }))} />
+                  </div>
+                </div>
+                <Button
+                  className="mt-3"
+                  disabled={!pay.amount || Number(pay.amount) <= 0}
+                  loading={paymentMutation.isPending}
+                  onClick={() => paymentMutation.mutate()}
+                >
+                  <Wallet className="h-4 w-4" /> Record Payment
+                </Button>
+              </div>
+
+              {/* Payment history */}
+              {payments && payments.length > 0 && (
+                <ul className="divide-y divide-gray-50 border-t border-gray-100 pt-2 dark:divide-gray-800 dark:border-gray-800">
+                  {payments.map((p: any) => (
+                    <li key={p._id} className="flex items-center justify-between gap-3 py-2.5">
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm capitalize text-gray-700 dark:text-gray-300">
+                            {p.method.replace(/_/g, ' ')}
+                          </span>
+                          <StatusBadge status={p.status} />
+                        </div>
+                        <p className="text-xs text-gray-400">
+                          {formatDate(p.paidAt)}{p.reference && ` · Ref: ${p.reference}`}{p.notes && ` · ${p.notes}`}
+                        </p>
+                      </div>
+                      <span className={`shrink-0 font-semibold ${
+                        p.status === 'verified' ? 'text-green-600' : p.status === 'rejected' ? 'text-gray-400 line-through' : 'text-yellow-600'
+                      }`}>
+                        +{formatCurrency(p.amount)}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </CardContent>
           </Card>
 

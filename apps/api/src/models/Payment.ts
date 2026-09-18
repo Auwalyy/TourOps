@@ -14,6 +14,7 @@ export interface IPayment extends Document {
   customerId: mongoose.Types.ObjectId;
   travelFileId?: mongoose.Types.ObjectId;
   invoiceId?: mongoose.Types.ObjectId;
+  visaApplicationId?: mongoose.Types.ObjectId;
   groupId?: mongoose.Types.ObjectId;
   amount: number;
   currency: string;
@@ -37,6 +38,7 @@ const paymentSchema = new Schema<IPayment>(
     customerId: { type: Schema.Types.ObjectId, ref: 'Customer', required: true },
     travelFileId: { type: Schema.Types.ObjectId, ref: 'TravelFile' },
     invoiceId: { type: Schema.Types.ObjectId, ref: 'Invoice' },
+    visaApplicationId: { type: Schema.Types.ObjectId, ref: 'VisaApplication' },
     groupId: { type: Schema.Types.ObjectId, ref: 'BookingGroup' },
     amount: { type: Number, required: true, min: 0 },
     currency: { type: String, default: 'NGN' },
@@ -65,6 +67,7 @@ const paymentSchema = new Schema<IPayment>(
 paymentSchema.index({ agencyId: 1, status: 1 });
 paymentSchema.index({ agencyId: 1, travelFileId: 1 });
 paymentSchema.index({ agencyId: 1, invoiceId: 1 });
+paymentSchema.index({ agencyId: 1, visaApplicationId: 1 });
 paymentSchema.index({ agencyId: 1, customerId: 1 });
 paymentSchema.index({ agencyId: 1, groupId: 1 });
 

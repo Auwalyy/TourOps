@@ -3,6 +3,7 @@ import { Payment, PaymentMethod } from '../models/Payment';
 import { paymentRepository } from '../repositories/payment.repository';
 import { TravelFile } from '../models/TravelFile';
 import { Invoice } from '../models/Invoice';
+import { VisaApplication } from '../models/VisaApplication';
 import { notificationService } from './notification.service';
 import { NotFoundError, AppError } from '../utils/errors';
 import { getPaginationParams } from '../utils/helpers';
@@ -11,6 +12,7 @@ interface RecordPaymentInput {
   customerId?: string;
   travelFileId?: string;
   invoiceId?: string;
+  visaApplicationId?: string;
   groupId?: string;
   amount: number;
   method?: PaymentMethod;
@@ -52,6 +54,7 @@ export const paymentService = {
       status: query.status as string,
       travelFileId: query.travelFileId as string,
       invoiceId: query.invoiceId as string,
+      visaApplicationId: query.visaApplicationId as string,
       customerId: query.customerId as string,
       groupId: query.groupId as string,
       page,
@@ -95,8 +98,8 @@ export const paymentService = {
   async record(agencyId: string, userId: string, input: RecordPaymentInput) {
     const amount = Number(input.amount);
     if (!amount || amount <= 0) throw new AppError('Payment amount must be greater than zero', 400);
-    if (!input.travelFileId && !input.invoiceId) {
-      throw new AppError('A payment must be attached to a travel file or an invoice', 400);
+    if (!input.travelFileId && !input.invoiceId && !input.visaApplicationId) {
+      throw new AppError('A payment must be attached to a travel file, an invoice or a visa application', 400);
     }
 
     // Derive customer from whichever parent was supplied.
@@ -112,6 +115,11 @@ export const paymentService = {
       if (!invoice) throw new NotFoundError('Invoice');
       customerId = invoice.customerId.toString();
     }
+    if (!customerId && input.visaApplicationId) {
+      const visa = await VisaApplication.findOne({ _id: input.visaApplicationId, agencyId });
+      if (!visa) throw new NotFoundError('Visa Application');
+      customerId = visa.customerId.toString();
+    }
     if (!customerId) throw new AppError('Could not determine the customer for this payment', 400);
 
     const verified = input.autoVerify === true;
@@ -120,6 +128,7 @@ export const paymentService = {
       customerId,
       travelFileId: input.travelFileId,
       invoiceId: input.invoiceId,
+      visaApplicationId: input.visaApplicationId,
       groupId: input.groupId || travelFile?.groupId,
       amount,
       currency: input.currency || 'NGN',
@@ -134,7 +143,7 @@ export const paymentService = {
       paidAt: input.paidAt || new Date(),
     });
 
-    if (verified) await this.recalculate(payment.travelFileId, payment.invoiceId);
+    if (verified) await this.recalculate(payment.travelFileId, payment.invoiceId, payment.visaApplicationId);
 
     if (input.travelFileId) {
       await pushTravelFileTimeline(
@@ -172,7 +181,7 @@ export const paymentService = {
     payment.rejectionReason = undefined;
     await payment.save();
 
-    await this.recalculate(payment.travelFileId, payment.invoiceId);
+    await this.recalculate(payment.travelFileId, payment.invoiceId, payment.visaApplicationId);
 
     if (payment.travelFileId) {
       await pushTravelFileTimeline(
@@ -200,7 +209,7 @@ export const paymentService = {
     await payment.save();
 
     // A previously-verified payment being reversed must come back out of the totals.
-    if (wasVerified) await this.recalculate(payment.travelFileId, payment.invoiceId);
+    if (wasVerified) await this.recalculate(payment.travelFileId, payment.invoiceId, payment.visaApplicationId);
 
     if (payment.travelFileId) {
       await pushTravelFileTimeline(
@@ -228,7 +237,7 @@ export const paymentService = {
     if (paidAt !== undefined) payment.paidAt = new Date(paidAt);
     await payment.save();
 
-    if (payment.status === 'verified') await this.recalculate(payment.travelFileId, payment.invoiceId);
+    if (payment.status === 'verified') await this.recalculate(payment.travelFileId, payment.invoiceId, payment.visaApplicationId);
     return payment;
   },
 
@@ -246,10 +255,18 @@ export const paymentService = {
    * this payment touches. Every write path above funnels through here so the
    * cached figures can never drift from the Payment collection.
    */
-  async recalculate(travelFileId?: mongoose.Types.ObjectId, invoiceId?: mongoose.Types.ObjectId) {
+  async recalculate(
+    travelFileId?: mongoose.Types.ObjectId,
+    invoiceId?: mongoose.Types.ObjectId,
+    visaApplicationId?: mongoose.Types.ObjectId
+  ) {
     if (travelFileId) {
       const total = await paymentRepository.sumVerifiedForTravelFile(travelFileId);
       await TravelFile.findByIdAndUpdate(travelFileId, { $set: { amountPaid: total } });
+    }
+    if (visaApplicationId) {
+      const total = await paymentRepository.sumVerifiedForVisa(visaApplicationId);
+      await VisaApplication.findByIdAndUpdate(visaApplicationId, { $set: { amountPaid: total } });
     }
     if (invoiceId) {
       const invoice = await Invoice.findById(invoiceId);

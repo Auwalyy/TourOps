@@ -1,5 +1,7 @@
 import mongoose from 'mongoose';
 import { visaApplicationRepository } from '../repositories/visaApplication.repository';
+import { paymentRepository } from '../repositories/payment.repository';
+import { paymentService } from './payment.service';
 import { notificationService } from './notification.service';
 import { NotFoundError } from '../utils/errors';
 import { getPaginationParams } from '../utils/helpers';
@@ -17,6 +19,7 @@ export const visaService = {
       customerId: query.customerId as string,
       assignedOfficer: query.assignedOfficer as string,
       destinationCountry: query.destinationCountry as string,
+      paymentStatus: query.paymentStatus as string,
       page,
       limit,
     });
@@ -26,6 +29,31 @@ export const visaService = {
     const visa = await visaApplicationRepository.findOne({ _id: id, agencyId });
     if (!visa) throw new NotFoundError('Visa application');
     return visa;
+  },
+
+  async listPayments(agencyId: string, id: string) {
+    const visa = await visaApplicationRepository.findOne({ _id: id, agencyId });
+    if (!visa) throw new NotFoundError('Visa application');
+    return paymentRepository.listForVisa(agencyId, id);
+  },
+
+  /** Records a payment against the visa fee. */
+  async addPayment(agencyId: string, id: string, userId: string, payment: Record<string, unknown>) {
+    const visa = await visaApplicationRepository.findOne({ _id: id, agencyId });
+    if (!visa) throw new NotFoundError('Visa application');
+
+    await paymentService.record(agencyId, userId, {
+      visaApplicationId: id,
+      customerId: visa.customerId.toString(),
+      amount: Number(payment.amount),
+      method: payment.method as any,
+      reference: payment.reference as string,
+      proofUrl: payment.proofUrl as string,
+      notes: (payment.note || payment.notes) as string,
+      autoVerify: payment.autoVerify !== false,
+    });
+
+    return visaApplicationRepository.findOne({ _id: id, agencyId });
   },
 
   async create(agencyId: string, userId: string, data: Record<string, unknown>) {

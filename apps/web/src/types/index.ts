@@ -155,6 +155,9 @@ export interface VisaApplication {
   embassy?: { name?: string; address?: string };
   dueDate?: string;
   fees?: number;
+  /** Cached from verified payments against this visa. */
+  amountPaid: number;
+  balance?: number;
   referenceNumber?: string;
   notes: string;
   createdAt: string;

@@ -69,6 +69,8 @@ export const visasApi = {
   scheduleAppointment: (id: string, data: Record<string, unknown>) =>
     api.patch(`/visas/${id}/appointment`, data),
   getUpcomingAppointments: () => api.get('/visas/appointments/upcoming'),
+  listPayments: (id: string) => api.get(`/visas/${id}/payments`),
+  addPayment: (id: string, data: Record<string, unknown>) => api.post(`/visas/${id}/payments`, data),
   delete: (id: string) => api.delete(`/visas/${id}`),
 };
 

@@ -9,6 +9,7 @@ interface VisaFilter {
   customerId?: string;
   assignedOfficer?: string;
   destinationCountry?: string;
+  paymentStatus?: string;
   page: number;
   limit: number;
 }
@@ -18,13 +19,36 @@ class VisaApplicationRepository extends BaseRepository<IVisaApplication> {
     super(VisaApplication);
   }
 
-  async search({ agencyId, search, status, customerId, assignedOfficer, destinationCountry, page, limit }: VisaFilter) {
+  async search({ agencyId, search, status, customerId, assignedOfficer, destinationCountry, paymentStatus, page, limit }: VisaFilter) {
     const filter: FilterQuery<IVisaApplication> = { agencyId };
     if (status) filter.status = status;
     if (customerId) filter.customerId = customerId;
     if (assignedOfficer) filter.assignedOfficer = assignedOfficer;
     if (destinationCountry) filter.destinationCountry = { $regex: destinationCountry, $options: 'i' };
     if (search) filter.referenceNumber = { $regex: search, $options: 'i' };
+
+    // Paid/unpaid is derived from the fee vs. what's actually been received, so
+    // it's expressed as a comparison between the two fields rather than stored.
+    if (paymentStatus === 'unpaid') {
+      filter.fees = { $gt: 0 };
+      filter.$or = [{ amountPaid: { $lte: 0 } }, { amountPaid: { $exists: false } }];
+    } else if (paymentStatus === 'paid') {
+      filter.fees = { $gt: 0 };
+      filter.$expr = { $gte: [{ $ifNull: ['$amountPaid', 0] }, '$fees'] };
+    } else if (paymentStatus === 'partially_paid') {
+      filter.fees = { $gt: 0 };
+      filter.$expr = {
+        $and: [
+          { $gt: [{ $ifNull: ['$amountPaid', 0] }, 0] },
+          { $lt: [{ $ifNull: ['$amountPaid', 0] }, '$fees'] },
+        ],
+      };
+    } else if (paymentStatus === 'outstanding') {
+      // Anything still owing money — the list a finance officer actually chases.
+      filter.fees = { $gt: 0 };
+      filter.$expr = { $lt: [{ $ifNull: ['$amountPaid', 0] }, '$fees'] };
+    }
+
     return this.paginate(filter, page, limit, { createdAt: -1 }, ['customerId', 'assignedOfficer']);
   }
 

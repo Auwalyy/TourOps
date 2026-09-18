@@ -17,6 +17,22 @@ export const visaController = {
     } catch (e) { next(e); }
   },
 
+  async listPayments(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      sendSuccess(res, await visaService.listPayments(req.user!.agencyId!.toString(), req.params.id));
+    } catch (e) { next(e); }
+  },
+
+  async addPayment(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      sendSuccess(
+        res,
+        await visaService.addPayment(req.user!.agencyId!.toString(), req.params.id, req.user!.id, req.body),
+        'Payment recorded'
+      );
+    } catch (e) { next(e); }
+  },
+
   async create(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const visa = await visaService.create(req.user!.agencyId!.toString(), req.user!.id, req.body);

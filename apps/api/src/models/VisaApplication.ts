@@ -44,10 +44,25 @@ export interface IVisaApplication extends Document {
   documents: mongoose.Types.ObjectId[];
   notes: string;
   dueDate?: Date;
+  /** What the visa costs the customer. */
   fees?: number;
+  /** Cached from verified Payment documents — Payment is the source of truth. */
+  amountPaid: number;
   referenceNumber?: string;
   createdAt: Date;
   updatedAt: Date;
+}
+
+export type VisaPaymentStatus = 'unpaid' | 'partially_paid' | 'paid' | 'no_fee';
+
+/** Derives the paid/unpaid state from the fee and what's actually been received. */
+export function getVisaPaymentStatus(visa: { fees?: number; amountPaid?: number }): VisaPaymentStatus {
+  const fees = visa.fees || 0;
+  const paid = visa.amountPaid || 0;
+  if (fees <= 0) return 'no_fee';
+  if (paid <= 0) return 'unpaid';
+  if (paid >= fees) return 'paid';
+  return 'partially_paid';
 }
 
 const visaStatusHistorySchema = new Schema<IVisaStatusHistory>(
@@ -93,10 +108,15 @@ const visaApplicationSchema = new Schema<IVisaApplication>(
     notes: { type: String, default: '' },
     dueDate: Date,
     fees: Number,
+    amountPaid: { type: Number, default: 0, min: 0 },
     referenceNumber: String,
   },
-  { timestamps: true }
+  { timestamps: true, toJSON: { virtuals: true } }
 );
+
+visaApplicationSchema.virtual('balance').get(function () {
+  return Math.max(0, (this.fees || 0) - (this.amountPaid || 0));
+});
 
 visaApplicationSchema.index({ agencyId: 1, status: 1 });
 visaApplicationSchema.index({ agencyId: 1, customerId: 1 });
