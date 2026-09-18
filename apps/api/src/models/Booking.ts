@@ -1,6 +1,15 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
-export type BookingType = 'flight' | 'hotel' | 'transport' | 'tour' | 'activity' | 'package' | 'other';
+export type BookingType =
+  | 'flight'
+  | 'ticket'
+  | 'visa'
+  | 'hotel'
+  | 'transport'
+  | 'tour'
+  | 'activity'
+  | 'package'
+  | 'other';
 
 export type BookingStatus = 'draft' | 'pending' | 'reserved' | 'confirmed' | 'ticketed' | 'cancelled' | 'completed';
 
@@ -48,6 +57,12 @@ export interface IBookingDetails {
   pickupLocation?: string;
   dropoffLocation?: string;
   pickupDateTime?: Date;
+  // Visa
+  visaType?: string;
+  destinationCountry?: string;
+  numberOfApplicants?: number;
+  entryType?: string; // single / multiple
+  processingType?: string; // standard / express
   // Tour / Activity
   tourName?: string;
   location?: string;
@@ -76,6 +91,12 @@ export interface IBooking extends Document {
   cost: number;
   currency: string;
   tourPackageId?: mongoose.Types.ObjectId;
+  /**
+   * For `visa` bookings: the application this charge is for. The booking holds
+   * what the customer is billed; the application holds the workflow. Linking
+   * them keeps one number per charge instead of a fee in two places.
+   */
+  visaApplicationId?: mongoose.Types.ObjectId;
   details: IBookingDetails;
   documents: IBookingDocument[];
   createdBy: mongoose.Types.ObjectId;
@@ -116,6 +137,8 @@ const detailsSchema = new Schema<IBookingDetails>(
     roomType: String, numberOfRooms: Number, numberOfNights: Number, guestCount: Number,
     vehicleType: String, driverName: String, driverPhone: String,
     pickupLocation: String, dropoffLocation: String, pickupDateTime: Date,
+    visaType: String, destinationCountry: String, numberOfApplicants: Number,
+    entryType: String, processingType: String,
     tourName: String, location: String,
     startDateTime: Date, endDateTime: Date, numberOfParticipants: Number,
     providerName: String, passengerCount: Number,
@@ -132,7 +155,7 @@ const bookingSchema = new Schema<IBooking>(
     customerId: { type: Schema.Types.ObjectId, ref: 'Customer', required: true },
     bookingType: {
       type: String,
-      enum: ['flight', 'hotel', 'transport', 'tour', 'activity', 'package', 'other'],
+      enum: ['flight', 'ticket', 'visa', 'hotel', 'transport', 'tour', 'activity', 'package', 'other'],
       required: true,
     },
     title: { type: String, required: true },
@@ -148,6 +171,7 @@ const bookingSchema = new Schema<IBooking>(
     cost: { type: Number, default: 0, min: 0 },
     currency: { type: String, default: 'NGN' },
     tourPackageId: { type: Schema.Types.ObjectId, ref: 'TourPackage' },
+    visaApplicationId: { type: Schema.Types.ObjectId, ref: 'VisaApplication' },
     details: { type: detailsSchema, default: () => ({}) },
     documents: { type: [bookingDocumentSchema], default: [] },
     createdBy: { type: Schema.Types.ObjectId, ref: 'User', required: true },
