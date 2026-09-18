@@ -8,7 +8,8 @@ import { bookingsApi } from '@/services/api.service';
 import { Card, CardContent, CardHeader, CardTitle, Skeleton } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { StatusBadge } from '@/components/ui/StatusBadge';
-import { Select } from '@/components/ui/Input';
+import { PaymentStatusBadge } from '@/components/ui/PaymentStatusBadge';
+import { Select, Input } from '@/components/ui/Input';
 import { formatDate, formatCurrency, formatRelativeTime } from '@/lib/utils';
 import { Booking, BookingStatus, BookingType } from '@/types';
 
@@ -25,10 +26,28 @@ export default function BookingDetailPage() {
   const qc = useQueryClient();
   const [newStatus, setNewStatus] = useState<BookingStatus | ''>('');
   const [reason, setReason] = useState('');
+  const [pay, setPay] = useState({ amount: '', method: 'cash' });
 
   const { data: booking, isLoading } = useQuery({
     queryKey: ['bookings', id],
     queryFn: () => bookingsApi.getById(id).then((r) => r.data.data as Booking),
+  });
+
+  const { data: payments } = useQuery({
+    queryKey: ['bookings', id, 'payments'],
+    queryFn: () => bookingsApi.listPayments(id).then((r) => r.data.data),
+    enabled: !!id,
+  });
+
+  const paymentMutation = useMutation({
+    mutationFn: () => bookingsApi.addPayment(id, { amount: Number(pay.amount), method: pay.method }),
+    onSuccess: () => {
+      toast.success('Payment recorded');
+      setPay({ amount: '', method: 'cash' });
+      qc.invalidateQueries({ queryKey: ['bookings', id] });
+      qc.invalidateQueries({ queryKey: ['bookings', id, 'payments'] });
+    },
+    onError: (err: any) => toast.error(err.response?.data?.message || 'Failed to record payment'),
   });
 
   const statusMutation = useMutation({
@@ -187,6 +206,65 @@ export default function BookingDetailPage() {
 
         {/* Sidebar */}
         <div className="space-y-6">
+          {/* Payment — simple paid/unpaid for this booking */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Payment</CardTitle>
+              <PaymentStatusBadge item={{ fees: booking.cost, amountPaid: booking.amountPaid }} />
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-3 gap-2 text-center">
+                <div className="rounded-lg bg-gray-50 p-2.5 dark:bg-gray-800/50">
+                  <p className="text-xs text-gray-500">Cost</p>
+                  <p className="mt-0.5 text-sm font-bold text-gray-900 dark:text-gray-100">{formatCurrency(booking.cost, booking.currency)}</p>
+                </div>
+                <div className="rounded-lg bg-gray-50 p-2.5 dark:bg-gray-800/50">
+                  <p className="text-xs text-gray-500">Paid</p>
+                  <p className="mt-0.5 text-sm font-bold text-green-600">{formatCurrency(booking.amountPaid || 0, booking.currency)}</p>
+                </div>
+                <div className="rounded-lg bg-gray-50 p-2.5 dark:bg-gray-800/50">
+                  <p className="text-xs text-gray-500">Balance</p>
+                  <p className={`mt-0.5 text-sm font-bold ${booking.cost - (booking.amountPaid || 0) > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                    {formatCurrency(Math.max(0, booking.cost - (booking.amountPaid || 0)), booking.currency)}
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-2 border-t border-gray-100 pt-3 dark:border-gray-800">
+                <Input type="number" min="0" placeholder="Amount" value={pay.amount}
+                  onChange={(e) => setPay((p) => ({ ...p, amount: e.target.value }))} />
+                <Select value={pay.method} onChange={(e) => setPay((p) => ({ ...p, method: e.target.value }))}>
+                  <option value="cash">Cash</option>
+                  <option value="bank_transfer">Bank Transfer</option>
+                  <option value="card">Card</option>
+                  <option value="mobile_money">Mobile Money</option>
+                  <option value="other">Other</option>
+                </Select>
+                <Button
+                  className="w-full"
+                  disabled={!pay.amount || Number(pay.amount) <= 0}
+                  loading={paymentMutation.isPending}
+                  onClick={() => paymentMutation.mutate()}
+                >
+                  Record Payment
+                </Button>
+              </div>
+
+              {payments && payments.length > 0 && (
+                <ul className="divide-y divide-gray-50 border-t border-gray-100 pt-2 dark:divide-gray-800 dark:border-gray-800">
+                  {payments.map((p: any) => (
+                    <li key={p._id} className="flex items-center justify-between py-2 text-xs">
+                      <span className="text-gray-500">{formatDate(p.paidAt)} · <span className="capitalize">{p.method.replace(/_/g, ' ')}</span></span>
+                      <span className={p.status === 'verified' ? 'font-semibold text-green-600' : 'text-yellow-600'}>
+                        {formatCurrency(p.amount)}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </CardContent>
+          </Card>
+
           {/* Update Status */}
           <Card>
             <CardHeader><CardTitle>Update Status</CardTitle></CardHeader>

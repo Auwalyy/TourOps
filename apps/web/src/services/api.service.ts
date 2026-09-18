@@ -54,6 +54,8 @@ export const bookingsApi = {
     api.patch(`/bookings/${id}/status`, { status, reason }),
   linkDocument: (id: string, documentId: string, visibleToCustomer?: boolean) =>
     api.post(`/bookings/${id}/documents`, { documentId, visibleToCustomer }),
+  listPayments: (id: string) => api.get(`/bookings/${id}/payments`),
+  addPayment: (id: string, data: Record<string, unknown>) => api.post(`/bookings/${id}/payments`, data),
   delete: (id: string) => api.delete(`/bookings/${id}`),
 };
 

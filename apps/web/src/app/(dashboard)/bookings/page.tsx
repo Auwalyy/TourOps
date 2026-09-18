@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { DataTable, Column } from '@/components/ui/DataTable';
 import { StatusBadge } from '@/components/ui/StatusBadge';
+import { PaymentStatusBadge } from '@/components/ui/PaymentStatusBadge';
 import { Select } from '@/components/ui/Input';
 import { formatDate, formatCurrency } from '@/lib/utils';
 import { BookingFormModal } from '@/components/features/bookings/BookingFormModal';
@@ -82,6 +83,11 @@ export default function BookingsPage() {
       key: 'cost',
       header: 'Cost',
       render: (row) => formatCurrency(row.cost, row.currency),
+    },
+    {
+      key: 'paymentStatus',
+      header: 'Payment',
+      render: (row) => <PaymentStatusBadge item={{ fees: row.cost, amountPaid: row.amountPaid }} />,
     },
   ];
 

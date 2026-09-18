@@ -58,24 +58,31 @@ export function BookingFormModal({ open, onClose, travelFileId, customerId, onCr
     enabled: open && !travelFileId && !customerId && !selectedTravelFileId,
   });
 
+  // When a travel file is selected from the dropdown, auto-populate customerId
+  const selectedTf = (travelFiles as any[])?.find((tf: any) => tf._id === selectedTravelFileId);
+  const effectiveCustomerId = customerId
+    || (selectedTf ? (typeof selectedTf.customerId === 'object' ? selectedTf.customerId._id : selectedTf.customerId) : selectedCustomerId);
+
   // For visa bookings — link the charge to the application it pays for.
   const [visaApplicationId, setVisaApplicationId] = useState('');
   const { data: visaApplications } = useQuery({
-    queryKey: ['visas', 'linkable', customerId],
-    queryFn: () => visasApi.list({ limit: 100, customerId: customerId || undefined }).then((r) => r.data.data),
-    enabled: open && bookingType === 'visa',
+    queryKey: ['visas', 'linkable', effectiveCustomerId],
+    queryFn: () => visasApi.list({ limit: 100, customerId: effectiveCustomerId || undefined }).then((r) => r.data.data),
+    enabled: open && bookingType === 'visa' && !!effectiveCustomerId,
   });
 
-  // When a travel file is selected from the dropdown, auto-populate customerId
-  const selectedTf = (travelFiles as any[])?.find((tf: any) => tf._id === selectedTravelFileId);
-
   useEffect(() => {
-    if (!open) { reset(); setBookingType('flight'); setSelectedTravelFileId(travelFileId || ''); setVisaApplicationId(''); }
-  }, [open, travelFileId, reset]);
+    if (!open) {
+      reset(); setBookingType('flight'); setSelectedTravelFileId(travelFileId || '');
+      setSelectedCustomerId(customerId || ''); setVisaApplicationId('');
+    }
+  }, [open, travelFileId, customerId, reset]);
 
   async function onSubmit(data: any) {
     const tfId = travelFileId || selectedTravelFileId;
-    if (!tfId) { toast.error('Please select a Travel File'); return; }
+    const custId = effectiveCustomerId;
+
+    if (!tfId && !custId) { toast.error('Select a customer, or a travel file, for this booking'); return; }
 
     const payload: Record<string, unknown> = {
       bookingType,
@@ -87,16 +94,18 @@ export function BookingFormModal({ open, onClose, travelFileId, customerId, onCr
       endDate: data.endDate || undefined,
       details: buildDetails(bookingType, data),
       ...(bookingType === 'visa' && visaApplicationId ? { visaApplicationId } : {}),
+      ...(custId ? { customerId: custId } : {}),
     };
 
-    if (customerId) payload.customerId = customerId;
-    else if (selectedTf) payload.customerId = typeof selectedTf.customerId === 'object' ? selectedTf.customerId._id : selectedTf.customerId;
-
     try {
-      await bookingsApi.createForTravelFile(tfId, payload);
+      if (tfId) {
+        await bookingsApi.createForTravelFile(tfId, payload);
+      } else {
+        await bookingsApi.create(payload);
+      }
       toast.success('Booking created');
       qc.invalidateQueries({ queryKey: ['bookings'] });
-      qc.invalidateQueries({ queryKey: ['travel-files', tfId] });
+      if (tfId) qc.invalidateQueries({ queryKey: ['travel-files', tfId] });
       onCreated?.();
       onClose();
     } catch (err: any) {
@@ -110,9 +119,9 @@ export function BookingFormModal({ open, onClose, travelFileId, customerId, onCr
         {/* Travel File selector — only shown when not locked */}
         {!travelFileId && (
           <div>
-            <Label>Travel File *</Label>
-            <Select value={selectedTravelFileId} onChange={(e) => setSelectedTravelFileId(e.target.value)}>
-              <option value="">Select travel file...</option>
+            <Label>Travel File</Label>
+            <Select value={selectedTravelFileId} onChange={(e) => { setSelectedTravelFileId(e.target.value); setSelectedCustomerId(''); }}>
+              <option value="">No travel file — just book a customer directly</option>
               {(travelFiles as any[] | undefined)?.map((tf: any) => {
                 const c = tf.customerId;
                 const name = c?.fullName || `${c?.firstName || ''} ${c?.lastName || ''}`.trim();
@@ -128,6 +137,21 @@ export function BookingFormModal({ open, onClose, travelFileId, customerId, onCr
                 Customer: {(selectedTf.customerId as any)?.fullName || '—'} · {selectedTf.destination}
               </p>
             )}
+          </div>
+        )}
+
+        {/* Direct customer pick — for a booking with no travel file */}
+        {!travelFileId && !customerId && !selectedTravelFileId && (
+          <div>
+            <Label>Customer *</Label>
+            <Select value={selectedCustomerId} onChange={(e) => setSelectedCustomerId(e.target.value)}>
+              <option value="">Select customer...</option>
+              {(customers as any[] | undefined)?.map((c: any) => (
+                <option key={c._id} value={c._id}>
+                  {c.fullName || `${c.firstName} ${c.lastName}`} {c.phone ? `· ${c.phone}` : ''}
+                </option>
+              ))}
+            </Select>
           </div>
         )}
 
@@ -200,7 +224,9 @@ export function BookingFormModal({ open, onClose, travelFileId, customerId, onCr
 
         <div className="flex justify-end gap-3 pt-2">
           <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
-          <Button type="submit" loading={isSubmitting}>Create Booking</Button>
+          <Button type="submit" loading={isSubmitting} disabled={!travelFileId && !selectedTravelFileId && !customerId && !selectedCustomerId}>
+            Create Booking
+          </Button>
         </div>
       </form>
     </Modal>

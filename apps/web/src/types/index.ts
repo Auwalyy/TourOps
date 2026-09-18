@@ -126,7 +126,7 @@ export interface BookingStatusHistory {
 export interface Booking {
   _id: string;
   bookingNumber: string;
-  travelFileId: TravelFile | string;
+  travelFileId?: TravelFile | string;
   customerId: Customer | string;
   bookingType: BookingType;
   title: string;
@@ -136,6 +136,8 @@ export interface Booking {
   startDate?: string;
   endDate?: string;
   cost: number;
+  /** Cached from verified payments against this booking. */
+  amountPaid: number;
   currency: string;
   tourPackageId?: TourPackage | string;
   visaApplicationId?: VisaApplication | string;
