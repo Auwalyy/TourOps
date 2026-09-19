@@ -12,7 +12,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-screen flex-col lg:flex-row">
       {/* Left panel */}
-      <div className="hidden w-1/2 flex-col justify-between p-8 lg:flex lg:p-12" style={{ backgroundColor: branding.primaryColor || '#2563eb' }}>
+      <div className="hidden w-1/2 flex-col justify-between p-8 lg:flex lg:p-12" style={{ backgroundColor: branding.primaryColor || '#0d6e52' }}>
         <div className="flex items-center gap-2">
           {branding.logoUrl ? (
             <Image src={branding.logoUrl} alt={displayName} width={36} height={36} className="h-9 w-9 rounded-lg object-contain" />

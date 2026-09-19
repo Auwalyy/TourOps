@@ -6,7 +6,7 @@ export { cn };
 export function Card({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={cn('rounded-2xl border border-slate-200/60 bg-white shadow-sm dark:border-white/5 dark:bg-slate-800/50', className)}
+      className={cn('rounded-xl border border-slate-200 bg-white dark:border-white/10 dark:bg-slate-800/50', className)}
       {...props}
     />
   );
@@ -26,19 +26,24 @@ export function CardContent({ className, ...props }: HTMLAttributes<HTMLDivEleme
 
 // ─── Badge ────────────────────────────────────────────────────────────────────
 const badgeVariants: Record<string, string> = {
-  default: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300',
-  blue: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-  green: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-  yellow: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
-  red: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
-  purple: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
-  orange: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
+  default: 'border-slate-200 bg-slate-50 text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300',
+  blue: 'border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-900/40 dark:bg-blue-900/20 dark:text-blue-300',
+  green: 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/40 dark:bg-emerald-900/20 dark:text-emerald-300',
+  yellow: 'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900/40 dark:bg-amber-900/20 dark:text-amber-300',
+  red: 'border-red-200 bg-red-50 text-red-700 dark:border-red-900/40 dark:bg-red-900/20 dark:text-red-300',
+  // Kept so any direct callers still render, mapped onto the reduced palette.
+  purple: 'border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-900/40 dark:bg-blue-900/20 dark:text-blue-300',
+  orange: 'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900/40 dark:bg-amber-900/20 dark:text-amber-300',
 };
 
 export function Badge({ variant = 'default', className, ...props }: HTMLAttributes<HTMLSpanElement> & { variant?: string }) {
   return (
     <span
-      className={cn('inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium', badgeVariants[variant] || badgeVariants.default, className)}
+      className={cn(
+        'inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium',
+        badgeVariants[variant] || badgeVariants.default,
+        className
+      )}
       {...props}
     />
   );

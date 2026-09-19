@@ -25,11 +25,11 @@ const BOOKING_COLORS: Record<string, string> = {
 };
 
 const STAT_CONFIGS = [
-  { key: 'totalCustomers',  label: 'Total Customers',      icon: Users,        grad: 'from-blue-500 to-blue-600',    href: '/customers' },
-  { key: 'activeBookings',  label: 'Active Bookings',      icon: FileText,     grad: 'from-violet-500 to-violet-600', href: '/bookings' },
-  { key: 'pendingVisas',    label: 'Pending Visas',        icon: Globe,        grad: 'from-orange-400 to-orange-500', href: '/visas' },
-  { key: 'activeTravelFiles', label: 'Active Travel Files', icon: FolderKanban, grad: 'from-indigo-500 to-indigo-600', href: '/travel-files' },
-  { key: 'totalRevenue',    label: 'Total Revenue',        icon: TrendingUp,   grad: 'from-emerald-500 to-emerald-600', href: '/invoices' },
+  { key: 'totalCustomers',    label: 'Total Customers',     icon: Users,        href: '/customers' },
+  { key: 'activeBookings',    label: 'Active Bookings',     icon: FileText,     href: '/bookings' },
+  { key: 'pendingVisas',      label: 'Pending Visas',       icon: Globe,        href: '/visas' },
+  { key: 'activeTravelFiles', label: 'Active Travel Files', icon: FolderKanban, href: '/travel-files' },
+  { key: 'totalRevenue',      label: 'Total Revenue',       icon: TrendingUp,   href: '/invoices', accent: true },
 ];
 
 const CustomTooltip = ({ active, payload, label }: any) => {
@@ -46,29 +46,36 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   );
 };
 
-function StatCard({ title, value, icon: Icon, grad, href, sub }: {
+/**
+ * Quiet by default, with the one figure that matters most (revenue) carrying
+ * the accent. Five competing colours read as decoration; one reads as emphasis.
+ */
+function StatCard({ title, value, icon: Icon, href, sub, accent }: {
   title: string; value: string | number; icon: any;
-  grad: string; href: string; sub?: string;
+  href: string; sub?: string; accent?: boolean;
 }) {
   return (
-    <Link href={href} className="group relative overflow-hidden rounded-2xl p-5 shadow-sm transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5">
-      {/* Gradient background */}
-      <div className={`absolute inset-0 bg-gradient-to-br ${grad}`} />
-      {/* Decorative circle */}
-      <div className="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-white/10" />
-      <div className="absolute -right-1 -bottom-6 h-16 w-16 rounded-full bg-white/5" />
-
-      <div className="relative">
-        <div className="flex items-start justify-between">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/20">
-            <Icon className="h-5 w-5 text-white" />
-          </div>
-          <ArrowUpRight className="h-4 w-4 text-white/50 transition-all group-hover:text-white group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-        </div>
-        <p className="mt-4 text-3xl font-extrabold text-white tracking-tight">{value}</p>
-        <p className="mt-0.5 text-sm font-medium text-white/70">{title}</p>
-        {sub && <p className="mt-1 text-xs text-white/50">{sub}</p>}
+    <Link
+      href={href}
+      className={`group rounded-xl border p-5 transition-colors ${
+        accent
+          ? 'border-transparent bg-blue-600 text-white hover:bg-blue-700'
+          : 'border-slate-200 bg-white hover:border-slate-300 dark:border-white/10 dark:bg-slate-800/50'
+      }`}
+    >
+      <div className="flex items-start justify-between">
+        <Icon className={`h-5 w-5 ${accent ? 'text-white/80' : 'text-slate-400'}`} />
+        <ArrowUpRight
+          className={`h-4 w-4 transition-opacity ${
+            accent ? 'text-white/40 group-hover:text-white/80' : 'text-slate-300 group-hover:text-slate-500'
+          }`}
+        />
       </div>
+      <p className={`mt-4 text-2xl font-semibold tracking-tight ${accent ? 'text-white' : 'text-slate-900 dark:text-white'}`}>
+        {value}
+      </p>
+      <p className={`mt-0.5 text-sm ${accent ? 'text-white/70' : 'text-slate-500'}`}>{title}</p>
+      {sub && <p className={`mt-1 text-xs ${accent ? 'text-white/50' : 'text-slate-400'}`}>{sub}</p>}
     </Link>
   );
 }
@@ -76,7 +83,7 @@ function StatCard({ title, value, icon: Icon, grad, href, sub }: {
 export default function DashboardPage() {
   const { user } = useAuthStore();
   const { branding } = useBrandingStore();
-  const primaryColor = branding.primaryColor || '#2563eb';
+  const primaryColor = branding.primaryColor || '#0d6e52';
 
   const { data: kpis, isLoading: kpisLoading } = useQuery({
     queryKey: ['dashboard', 'kpis'],
@@ -143,29 +150,24 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6">
 
-      {/* ── Greeting banner ── */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-800 to-slate-900 px-6 py-5 shadow-lg">
-        <div className="absolute inset-0 opacity-20"
-          style={{ backgroundImage: `radial-gradient(circle at 80% 50%, ${primaryColor} 0%, transparent 60%)` }} />
-        <div className="relative flex flex-wrap items-center justify-between gap-4">
+      {/* ── Greeting ── */}
+      <div className="flex flex-wrap items-end justify-between gap-4 border-b border-slate-200 pb-5 dark:border-white/10">
+        <div>
+          <h1 className="text-xl font-semibold text-slate-900 dark:text-white">
+            {greeting}, {user?.firstName}
+          </h1>
+          <p className="mt-0.5 text-sm text-slate-500">
+            {new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+          </p>
+        </div>
+        <div className="flex items-center gap-6">
           <div>
-            <p className="text-sm font-medium text-slate-400">{greeting} 👋</p>
-            <h1 className="mt-0.5 text-2xl font-extrabold text-white">
-              {user?.firstName} {user?.lastName}
-            </h1>
-            <p className="mt-1 text-sm text-slate-400">
-              {new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-            </p>
+            <p className="text-xs text-slate-400">Outstanding</p>
+            <p className="text-lg font-semibold text-slate-900 dark:text-white">{formatCurrency(kpis?.totalOutstanding ?? 0)}</p>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-center">
-              <p className="text-xs text-slate-400">Outstanding</p>
-              <p className="text-lg font-bold text-orange-400">{formatCurrency(kpis?.totalOutstanding ?? 0)}</p>
-            </div>
-            <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-center">
-              <p className="text-xs text-slate-400">Revenue</p>
-              <p className="text-lg font-bold text-emerald-400">{formatCurrency(kpis?.totalRevenue ?? 0)}</p>
-            </div>
+          <div>
+            <p className="text-xs text-slate-400">Revenue</p>
+            <p className="text-lg font-semibold text-slate-900 dark:text-white">{formatCurrency(kpis?.totalRevenue ?? 0)}</p>
           </div>
         </div>
       </div>
@@ -183,9 +185,9 @@ export default function DashboardPage() {
               title={cfg.label}
               value={statValues[cfg.key]}
               icon={cfg.icon}
-              grad={cfg.grad}
               href={cfg.href}
               sub={statSubs[cfg.key]}
+              accent={cfg.accent}
             />
           ))}
         </div>

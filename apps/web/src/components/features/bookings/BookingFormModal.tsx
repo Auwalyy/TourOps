@@ -169,11 +169,13 @@ export function BookingFormModal({ open, onClose, travelFileId, customerId, onCr
           <Input placeholder={titlePlaceholder(bookingType)} {...register('title', { required: true })} />
         </div>
 
-        {/* Provider */}
-        <div>
-          <Label>Provider / Supplier</Label>
-          <Input placeholder="e.g. Qatar Airways, Hilton, etc." {...register('provider')} />
-        </div>
+        {/* Provider — not relevant for visa or ticket-only bookings */}
+        {bookingType !== 'visa' && bookingType !== 'ticket' && (
+          <div>
+            <Label>Provider / Supplier</Label>
+            <Input placeholder="e.g. Qatar Airways, Hilton, etc." {...register('provider')} />
+          </div>
+        )}
 
         {/* Type-specific fields */}
         <TypeFields type={bookingType} register={register} />
@@ -196,17 +198,19 @@ export function BookingFormModal({ open, onClose, travelFileId, customerId, onCr
           </div>
         )}
 
-        {/* Dates */}
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <Label>{startDateLabel(bookingType)}</Label>
-            <Input type="datetime-local" {...register('startDate')} />
+        {/* Dates — not relevant for a visa charge */}
+        {bookingType !== 'visa' && (
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label>{startDateLabel(bookingType)}</Label>
+              <Input type="datetime-local" {...register('startDate')} />
+            </div>
+            <div>
+              <Label>{endDateLabel(bookingType)}</Label>
+              <Input type="datetime-local" {...register('endDate')} />
+            </div>
           </div>
-          <div>
-            <Label>{endDateLabel(bookingType)}</Label>
-            <Input type="datetime-local" {...register('endDate')} />
-          </div>
-        </div>
+        )}
 
         {/* Cost */}
         <div className="grid grid-cols-2 gap-4">
@@ -247,10 +251,8 @@ function TypeFields({ type, register }: { type: BookingType; register: any }) {
   if (type === 'ticket') return (
     <div className="grid grid-cols-2 gap-4">
       <div><Label>Airline</Label><Input placeholder="Qatar Airways" {...register('details.airline')} /></div>
-      <div><Label>Ticket Number</Label><Input placeholder="157-1234567890" {...register('details.ticketNumber')} /></div>
       <div><Label>From</Label><Input placeholder="Kano (KAN)" {...register('details.departureLocation')} /></div>
       <div><Label>To</Label><Input placeholder="Jeddah (JED)" {...register('details.arrivalLocation')} /></div>
-      <div><Label>Passenger Count</Label><Input type="number" min={1} {...register('details.passengerCount')} /></div>
     </div>
   );
 
@@ -275,7 +277,6 @@ function TypeFields({ type, register }: { type: BookingType; register: any }) {
           <option value="express">Express</option>
         </Select>
       </div>
-      <div><Label>Reference</Label><Input placeholder="Application ref" {...register('details.bookingReference')} /></div>
     </div>
   );
 
@@ -342,14 +343,12 @@ function titlePlaceholder(type: BookingType) {
 function startDateLabel(type: BookingType) {
   if (type === 'hotel') return 'Check-in Date';
   if (type === 'transport') return 'Pickup Date & Time';
-  if (type === 'visa') return 'Submitted On';
   if (type === 'ticket') return 'Departure Date';
   return 'Start Date';
 }
 
 function endDateLabel(type: BookingType) {
   if (type === 'hotel') return 'Check-out Date';
-  if (type === 'visa') return 'Expected By';
   if (type === 'ticket') return 'Return Date';
   return 'End Date';
 }

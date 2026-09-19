@@ -69,7 +69,7 @@ const agencySchema = new Schema<IAgency>(
     branding: {
       companyName: { type: String, default: '' },
       tagline: { type: String, default: '' },
-      primaryColor: { type: String, default: '#2563eb' },
+      primaryColor: { type: String, default: '#0d6e52' },
       logoUrl: { type: String, default: '' },
       faviconUrl: { type: String, default: '' },
     },

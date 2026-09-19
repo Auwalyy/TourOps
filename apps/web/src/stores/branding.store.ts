@@ -14,7 +14,7 @@ export interface Branding {
 const DEFAULTS: Branding = {
   companyName: '',
   tagline: 'Manage customers, bookings, visas, invoices, and documents — all in one place.',
-  primaryColor: '#2563eb',
+  primaryColor: '#0d6e52',
   logoUrl: '',
   faviconUrl: '',
   whatsappNumber: '',

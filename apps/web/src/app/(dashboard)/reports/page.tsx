@@ -94,7 +94,7 @@ export default function ReportsPage() {
               <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `₦${(v / 1000).toFixed(0)}k`} />
               <Tooltip formatter={(v: number) => formatCurrency(v)} />
               <Legend />
-              <Bar dataKey="revenue" fill="#2563eb" name="Revenue" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="revenue" fill="#0d6e52" name="Revenue" radius={[4, 4, 0, 0]} />
               <Bar dataKey="outstanding" fill="#f59e0b" name="Outstanding" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>

@@ -350,8 +350,6 @@ function BookingDetailsCard({ booking }: { booking: Booking }) {
     rows.push(
       ['Airline', d.airline],
       ['From', d.departureLocation], ['To', d.arrivalLocation],
-      ['Ticket Number', d.ticketNumber],
-      ['Passengers', d.passengerCount],
     );
   } else if (booking.bookingType === 'visa') {
     rows.push(
@@ -360,7 +358,6 @@ function BookingDetailsCard({ booking }: { booking: Booking }) {
       ['Applicants', d.numberOfApplicants],
       ['Entry Type', d.entryType],
       ['Processing', d.processingType],
-      ['Reference', d.bookingReference],
     );
   } else if (booking.bookingType === 'hotel') {
     rows.push(

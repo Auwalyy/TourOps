@@ -179,7 +179,7 @@ export default function DealsPage() {
 
   const agency = data?.agency;
   const branding = agency?.branding;
-  const primaryColor = branding?.primaryColor || '#2563eb';
+  const primaryColor = branding?.primaryColor || '#0d6e52';
   const companyName = branding?.companyName || agency?.name || 'Travel Deals';
   const logoUrl = branding?.logoUrl || agency?.logo;
   const whatsapp = branding?.whatsappNumber;

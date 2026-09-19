@@ -31,9 +31,9 @@ export const emailService = {
       subject: 'Reset Your TourOps Password',
       html: `
         <div style="font-family:sans-serif;max-width:600px;margin:0 auto">
-          <h2 style="color:#1a56db">Reset Your Password</h2>
+          <h2 style="color:#0d6e52">Reset Your Password</h2>
           <p>Click the button below to reset your password. This link expires in 1 hour.</p>
-          <a href="${resetUrl}" style="display:inline-block;padding:12px 24px;background:#1a56db;color:#fff;text-decoration:none;border-radius:6px">Reset Password</a>
+          <a href="${resetUrl}" style="display:inline-block;padding:12px 24px;background:#0d6e52;color:#fff;text-decoration:none;border-radius:6px">Reset Password</a>
           <p style="color:#6b7280;font-size:12px;margin-top:24px">If you didn't request this, ignore this email.</p>
         </div>`,
     }),
@@ -44,7 +44,7 @@ export const emailService = {
       subject: `Welcome to ${agencyName} on TourOps`,
       html: `
         <div style="font-family:sans-serif;max-width:600px;margin:0 auto">
-          <h2 style="color:#1a56db">Welcome, ${name}!</h2>
+          <h2 style="color:#0d6e52">Welcome, ${name}!</h2>
           <p>Your account has been created on <strong>${agencyName}</strong>'s TourOps workspace.</p>
           <p>Log in at <a href="${config.clientUrl}">${config.clientUrl}</a> to get started.</p>
         </div>`,
@@ -56,7 +56,7 @@ export const emailService = {
       subject: `Booking Confirmed — ${reference}`,
       html: `
         <div style="font-family:sans-serif;max-width:600px;margin:0 auto">
-          <h2 style="color:#1a56db">Booking Confirmed</h2>
+          <h2 style="color:#0d6e52">Booking Confirmed</h2>
           <p>Hi ${name}, your booking <strong>${reference}</strong> has been confirmed.</p>
           <p>Log in to your portal to view details and track progress.</p>
         </div>`,
@@ -68,7 +68,7 @@ export const emailService = {
       subject: `Visa Application Update — ${country}`,
       html: `
         <div style="font-family:sans-serif;max-width:600px;margin:0 auto">
-          <h2 style="color:#1a56db">Visa Application Update</h2>
+          <h2 style="color:#0d6e52">Visa Application Update</h2>
           <p>Hi ${name}, your visa application for <strong>${country}</strong> has been updated to: <strong>${status.replace(/_/g, ' ')}</strong>.</p>
         </div>`,
     }),
@@ -79,7 +79,7 @@ export const emailService = {
       subject: `Payment Reminder — ${invoiceNumber}`,
       html: `
         <div style="font-family:sans-serif;max-width:600px;margin:0 auto">
-          <h2 style="color:#1a56db">Payment Reminder</h2>
+          <h2 style="color:#0d6e52">Payment Reminder</h2>
           <p>Hi ${name}, invoice <strong>${invoiceNumber}</strong> for <strong>${currency} ${amount.toLocaleString()}</strong> is due on <strong>${dueDate}</strong>.</p>
         </div>`,
     }),
@@ -90,7 +90,7 @@ export const emailService = {
       subject: 'Upcoming Visa Appointment Reminder',
       html: `
         <div style="font-family:sans-serif;max-width:600px;margin:0 auto">
-          <h2 style="color:#1a56db">Appointment Reminder</h2>
+          <h2 style="color:#0d6e52">Appointment Reminder</h2>
           <p>Hi ${name}, you have a visa appointment on <strong>${date}</strong> at <strong>${location}</strong>.</p>
         </div>`,
     }),

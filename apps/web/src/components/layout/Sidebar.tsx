@@ -42,7 +42,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
   const { branding } = useBrandingStore();
   const router = useRouter();
   const displayName = branding.companyName || branding.agencyName || 'Operations';
-  const primaryColor = branding.primaryColor || '#2563eb';
+  const primaryColor = branding.primaryColor || '#0d6e52';
 
   async function handleLogout() {
     try { await authApi.logout(); } catch {}

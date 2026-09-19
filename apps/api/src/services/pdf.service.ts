@@ -28,7 +28,7 @@ function drawHRule(doc: PDFKit.PDFDocument, y: number, color = '#e5e7eb') {
 }
 
 async function drawHeader(doc: PDFKit.PDFDocument, agency: IAgency, docType: 'INVOICE' | 'RECEIPT', refNumber: string, date: string, dueDate?: string) {
-  const primaryColor = (agency as any).branding?.primaryColor || '#1a56db';
+  const primaryColor = (agency as any).branding?.primaryColor || '#0d6e52';
   const companyName = (agency as any).branding?.companyName || agency.name;
   const logoUrl = (agency as any).branding?.logoUrl || agency.logo;
 
@@ -82,7 +82,7 @@ export async function generateInvoicePDF(invoice: IInvoice, agency: IAgency): Pr
     doc.on('end', () => resolve(Buffer.concat(chunks)));
     doc.on('error', reject);
 
-    const primaryColor = (agency as any).branding?.primaryColor || '#1a56db';
+    const primaryColor = (agency as any).branding?.primaryColor || '#0d6e52';
     const customer = (invoice as any).customerId as any;
 
     await drawHeader(
@@ -103,7 +103,7 @@ export async function generateInvoicePDF(invoice: IInvoice, agency: IAgency): Pr
     // Status badge
     const statusColors: Record<string, string> = {
       paid: '#059669', partially_paid: '#d97706', overdue: '#dc2626',
-      sent: '#2563eb', draft: '#6b7280', cancelled: '#9ca3af',
+      sent: '#0d6e52', draft: '#6b7280', cancelled: '#9ca3af',
     };
     const statusColor = statusColors[invoice.status] || '#6b7280';
     doc.roundedRect(390, 128, 155, 22, 4).fill(statusColor);
@@ -196,7 +196,7 @@ export async function generateReceiptPDF(invoice: IInvoice, agency: IAgency, pay
     doc.on('end', () => resolve(Buffer.concat(chunks)));
     doc.on('error', reject);
 
-    const primaryColor = (agency as any).branding?.primaryColor || '#1a56db';
+    const primaryColor = (agency as any).branding?.primaryColor || '#0d6e52';
     const companyName = (agency as any).branding?.companyName || agency.name;
     const customer = (invoice as any).customerId as any;
     const customerName = customer?.fullName || (customer ? `${customer.firstName} ${customer.lastName}` : 'Customer');
@@ -313,7 +313,7 @@ export async function generateStandaloneReceiptPDF(receipt: IReceipt, agency: IA
     doc.on('end', () => resolve(Buffer.concat(chunks)));
     doc.on('error', reject);
 
-    const primaryColor = (agency as any).branding?.primaryColor || '#1a56db';
+    const primaryColor = (agency as any).branding?.primaryColor || '#0d6e52';
     const companyName = (agency as any).branding?.companyName || agency.name;
     const logoUrl = (agency as any).branding?.logoUrl || agency.logo;
     const customer = (receipt as any).customerId as any;

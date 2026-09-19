@@ -14,9 +14,12 @@
 }
 
 :root {
-  --background: #f1f5f9;
-  --foreground: #0f172a;
-  --color-primary: #2563eb;
+  --background: #f8f9f8;
+  --foreground: #14201c;
+  /* Deep emerald — a deliberate move away from the generic "AI SaaS blue"
+     default, and a fitting accent for a travel/Hajj-Umrah business. Agencies
+     can still override this per-tenant via branding settings. */
+  --color-primary: #0d6e52;
 }
 
 .dark {

@@ -31,7 +31,7 @@ const companySchema = z.object({
 const brandingSchema = z.object({
   companyName: z.string().min(1, 'Required'),
   tagline: z.string().optional(),
-  primaryColor: z.string().regex(/^#[0-9a-fA-F]{6}$/, 'Must be a valid hex e.g. #2563eb'),
+  primaryColor: z.string().regex(/^#[0-9a-fA-F]{6}$/, 'Must be a valid hex e.g. #0d6e52'),
   logoUrl: z.string().url('Must be a valid URL').or(z.literal('')).optional(),
   faviconUrl: z.string().url('Must be a valid URL').or(z.literal('')).optional(),
 });
@@ -260,7 +260,7 @@ export default function SettingsPage() {
                     <div>
                       <Label>Primary Color</Label>
                       <div className="flex gap-2">
-                        <Input placeholder="#2563eb" error={brandingForm.formState.errors.primaryColor?.message} {...brandingForm.register('primaryColor')} />
+                        <Input placeholder="#0d6e52" error={brandingForm.formState.errors.primaryColor?.message} {...brandingForm.register('primaryColor')} />
                         <input type="color" {...brandingForm.register('primaryColor')} className="h-10 w-10 cursor-pointer rounded-lg border border-gray-200 p-0.5" />
                       </div>
                     </div>
