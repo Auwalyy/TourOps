@@ -55,7 +55,7 @@ export default function BookingsPage() {
       render: (row) => {
         const tf = row.travelFileId as any;
         return tf?.fileNumber ? (
-          <span className="font-mono text-xs text-indigo-600">{tf.fileNumber}</span>
+          <span className="font-mono text-xs text-neutral-600">{tf.fileNumber}</span>
         ) : '—';
       },
     },
@@ -67,7 +67,7 @@ export default function BookingsPage() {
     {
       key: 'provider',
       header: 'Provider',
-      render: (row) => <span className="text-gray-600 dark:text-gray-400">{row.provider || '—'}</span>,
+      render: (row) => <span className="text-neutral-600 dark:text-neutral-400">{row.provider || '—'}</span>,
     },
     {
       key: 'startDate',
@@ -104,7 +104,7 @@ export default function BookingsPage() {
       />
 
       <Card>
-        <div className="flex flex-wrap items-center gap-3 border-b border-gray-100 px-6 py-4 dark:border-gray-800">
+        <div className="flex flex-wrap items-center gap-3 border-b border-neutral-100 px-6 py-4 dark:border-neutral-800">
           <SearchInput
             value={search}
             onChange={(v) => { setSearch(v); setPage(1); }}

@@ -1,40 +1,57 @@
 @import "tailwindcss";
 
-/* The blue tokens below are tied to --color-primary, set at runtime from
-   agency branding, so blue utility classes used across the app follow the
-   brand color instead of staying pinned to a fixed blue. */
+/* Blue tokens resolve to --color-primary, which agencies can override via
+   branding. Accent is used sparingly: primary actions and active states only. */
 @theme {
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --color-blue-50: color-mix(in srgb, var(--color-primary) 6%, white);
-  --color-blue-100: color-mix(in srgb, var(--color-primary) 12%, white);
-  --color-blue-200: color-mix(in srgb, var(--color-primary) 25%, white);
-  --color-blue-500: color-mix(in srgb, var(--color-primary) 82%, white);
+  --color-blue-50: color-mix(in srgb, var(--color-primary) 5%, white);
+  --color-blue-100: color-mix(in srgb, var(--color-primary) 11%, white);
+  --color-blue-200: color-mix(in srgb, var(--color-primary) 22%, white);
+  --color-blue-500: color-mix(in srgb, var(--color-primary) 88%, white);
   --color-blue-600: var(--color-primary);
-  --color-blue-700: color-mix(in srgb, var(--color-primary) 85%, black);
+  --color-blue-700: color-mix(in srgb, var(--color-primary) 86%, black);
 }
 
 :root {
-  --background: #f8f9f8;
-  --foreground: #14201c;
-  /* Deep emerald — a deliberate move away from the generic "AI SaaS blue"
-     default, and a fitting accent for a travel/Hajj-Umrah business. Agencies
-     can still override this per-tenant via branding settings. */
+  /* Near-white canvas with white surfaces — the light, airy base that reads as
+     considered rather than decorated. */
+  --background: #fbfbfa;
+  --surface: #ffffff;
+  --foreground: #1a1a1a;
   --color-primary: #0d6e52;
 }
 
 .dark {
-  --background: #0a0f1e;
-  --foreground: #f1f5f9;
+  --background: #0a0a0a;
+  --surface: #141414;
+  --foreground: #ededed;
 }
 
 html {
   overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 body {
   min-width: 320px;
   background-color: var(--background);
   color: var(--foreground);
+  /* Slightly tighter tracking on headings is most of what separates a
+     considered interface from a default Tailwind one. */
+  letter-spacing: -0.006em;
+}
+
+h1, h2, h3, h4 {
+  letter-spacing: -0.02em;
+}
+
+/* Tabular figures keep money columns aligned down a table. */
+.tabular,
+td,
+th {
+  font-variant-numeric: tabular-nums;
 }
 
 * {
@@ -49,16 +66,25 @@ canvas {
 }
 
 ::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+  width: 10px;
+  height: 10px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #d4d4d4;
+  border: 3px solid transparent;
+  background-clip: content-box;
   border-radius: 99px;
 }
+::-webkit-scrollbar-thumb:hover {
+  background: #a3a3a3;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
 .dark ::-webkit-scrollbar-thumb {
-  background: #1e293b;
+  background: #333;
+  border: 3px solid transparent;
+  background-clip: content-box;
 }

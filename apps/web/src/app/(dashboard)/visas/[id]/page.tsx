@@ -84,7 +84,7 @@ export default function VisaDetailPage() {
   });
 
   if (isLoading) return <Skeleton className="h-64 w-full" />;
-  if (!visa) return <p className="text-gray-500">Visa application not found.</p>;
+  if (!visa) return <p className="text-neutral-500">Visa application not found.</p>;
 
   const customer = visa.customerId as any;
   const officer = visa.assignedOfficer as any;
@@ -96,13 +96,13 @@ export default function VisaDetailPage() {
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div className="flex-1">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+          <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">
             {visa.destinationCountry} — {visa.visaType}
           </h1>
           <div className="flex flex-wrap items-center gap-2 mt-1">
             <StatusBadge status={visa.status} />
             <PaymentStatusBadge item={visa} />
-            {visa.referenceNumber && <span className="font-mono text-xs text-gray-400">{visa.referenceNumber}</span>}
+            {visa.referenceNumber && <span className="font-mono text-xs text-neutral-400">{visa.referenceNumber}</span>}
           </div>
         </div>
       </div>
@@ -143,14 +143,14 @@ export default function VisaDetailPage() {
                 </div>
               )}
               {!visa.fees ? (
-                <p className="text-sm text-gray-400">
+                <p className="text-sm text-neutral-400">
                   No fee set for this application. Add one via Edit so it can be tracked and chased.
                 </p>
               ) : (
                 <>
                   <div className="grid grid-cols-3 gap-3">
                     {[
-                      { label: 'Fee', value: formatCurrency(visa.fees), color: 'text-gray-900 dark:text-gray-100' },
+                      { label: 'Fee', value: formatCurrency(visa.fees), color: 'text-neutral-900 dark:text-neutral-100' },
                       { label: 'Paid', value: formatCurrency(visa.amountPaid || 0), color: 'text-green-600' },
                       {
                         label: 'Balance',
@@ -158,13 +158,13 @@ export default function VisaDetailPage() {
                         color: visa.fees - (visa.amountPaid || 0) > 0 ? 'text-red-600' : 'text-green-600',
                       },
                     ].map((s) => (
-                      <div key={s.label} className="rounded-xl bg-gray-50 p-3 text-center dark:bg-gray-800/50">
-                        <p className="text-xs text-gray-500">{s.label}</p>
+                      <div key={s.label} className="rounded-xl bg-neutral-50 p-3 text-center dark:bg-neutral-800/50">
+                        <p className="text-xs text-neutral-500">{s.label}</p>
                         <p className={`mt-0.5 text-base font-bold ${s.color}`}>{s.value}</p>
                       </div>
                     ))}
                   </div>
-                  <div className="h-2 w-full rounded-full bg-gray-100 dark:bg-gray-800">
+                  <div className="h-2 w-full rounded-full bg-neutral-100 dark:bg-neutral-800">
                     <div
                       className="h-2 rounded-full bg-green-500 transition-all"
                       style={{ width: `${Math.min(100, Math.round(((visa.amountPaid || 0) / visa.fees) * 100))}%` }}
@@ -174,7 +174,7 @@ export default function VisaDetailPage() {
               )}
 
               {/* Record a payment against the fee */}
-              <div className="border-t border-gray-100 pt-4 dark:border-gray-800">
+              <div className="border-t border-neutral-100 pt-4 dark:border-neutral-800">
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-4">
                   <div>
                     <Label>Amount</Label>
@@ -214,22 +214,22 @@ export default function VisaDetailPage() {
 
               {/* Payment history */}
               {payments && payments.length > 0 && (
-                <ul className="divide-y divide-gray-50 border-t border-gray-100 pt-2 dark:divide-gray-800 dark:border-gray-800">
+                <ul className="divide-y divide-neutral-50 border-t border-neutral-100 pt-2 dark:divide-neutral-800 dark:border-neutral-800">
                   {payments.map((p: any) => (
                     <li key={p._id} className="flex items-center justify-between gap-3 py-2.5">
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
-                          <span className="text-sm capitalize text-gray-700 dark:text-gray-300">
+                          <span className="text-sm capitalize text-neutral-700 dark:text-neutral-300">
                             {p.method.replace(/_/g, ' ')}
                           </span>
                           <StatusBadge status={p.status} />
                         </div>
-                        <p className="text-xs text-gray-400">
+                        <p className="text-xs text-neutral-400">
                           {formatDate(p.paidAt)}{p.reference && ` · Ref: ${p.reference}`}{p.notes && ` · ${p.notes}`}
                         </p>
                       </div>
                       <span className={`shrink-0 font-semibold ${
-                        p.status === 'verified' ? 'text-green-600' : p.status === 'rejected' ? 'text-gray-400 line-through' : 'text-yellow-600'
+                        p.status === 'verified' ? 'text-green-600' : p.status === 'rejected' ? 'text-neutral-400 line-through' : 'text-yellow-600'
                       }`}>
                         +{formatCurrency(p.amount)}
                       </span>
@@ -255,15 +255,15 @@ export default function VisaDetailPage() {
           <Card>
             <CardHeader><CardTitle>Status Timeline</CardTitle></CardHeader>
             <CardContent>
-              <ol className="relative border-l border-gray-200 dark:border-gray-700 pl-4 space-y-4">
+              <ol className="relative border-l border-neutral-200 dark:border-neutral-700 pl-4 space-y-4">
                 {[...visa.statusHistory].reverse().map((h: any, i: number) => (
                   <li key={i} className="ml-2">
-                    <div className="absolute -left-1.5 mt-1.5 h-3 w-3 rounded-full border-2 border-white bg-blue-500 dark:border-gray-900" />
+                    <div className="absolute -left-1.5 mt-1.5 h-3 w-3 rounded-full border-2 border-white bg-blue-500 dark:border-neutral-900" />
                     <div className="flex items-center gap-2">
                       <StatusBadge status={h.status} />
-                      <span className="text-xs text-gray-400">{formatDate(h.changedAt)}</span>
+                      <span className="text-xs text-neutral-400">{formatDate(h.changedAt)}</span>
                     </div>
-                    {h.note && <p className="mt-1 text-xs text-gray-500">{h.note}</p>}
+                    {h.note && <p className="mt-1 text-xs text-neutral-500">{h.note}</p>}
                   </li>
                 ))}
               </ol>
@@ -286,7 +286,7 @@ export default function VisaDetailPage() {
                 onChange={(e) => setNote(e.target.value)}
                 placeholder="Note (optional)"
                 rows={2}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
+                className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none dark:border-neutral-600 dark:bg-neutral-900 dark:text-neutral-100"
               />
               <Button className="w-full" disabled={!newStatus} loading={statusMutation.isPending} onClick={() => statusMutation.mutate()}>
                 Update
@@ -331,8 +331,8 @@ export default function VisaDetailPage() {
 function Detail({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <p className="text-xs text-gray-500">{label}</p>
-      <p className="font-medium text-gray-900 dark:text-gray-100">{value}</p>
+      <p className="text-xs text-neutral-500">{label}</p>
+      <p className="font-medium text-neutral-900 dark:text-neutral-100">{value}</p>
     </div>
   );
 }

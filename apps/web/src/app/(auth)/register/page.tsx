@@ -45,12 +45,12 @@ export default function RegisterPage() {
   return (
     <div>
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Create your agency</h2>
-        <p className="mt-1 text-sm text-gray-500">Get started in minutes</p>
+        <h2 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">Create your agency</h2>
+        <p className="mt-1 text-sm text-neutral-500">Get started in minutes</p>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">Agency Details</p>
+        <p className="text-xs font-semibold uppercase tracking-wide text-neutral-400">Agency Details</p>
         <div className="grid grid-cols-2 gap-3">
           <div className="col-span-2">
             <Label>Agency Name</Label>
@@ -74,7 +74,7 @@ export default function RegisterPage() {
           </div>
         </div>
 
-        <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 pt-2">Your Account</p>
+        <p className="text-xs font-semibold uppercase tracking-wide text-neutral-400 pt-2">Your Account</p>
         <div className="grid grid-cols-2 gap-3">
           <div>
             <Label>First Name</Label>
@@ -97,7 +97,7 @@ export default function RegisterPage() {
         <Button type="submit" className="w-full" loading={isSubmitting}>Create Agency Account</Button>
       </form>
 
-      <p className="mt-4 text-center text-sm text-gray-500">
+      <p className="mt-4 text-center text-sm text-neutral-500">
         Already have an account?{' '}
         <Link href="/login" className="font-medium text-blue-600 hover:underline">Sign in</Link>
       </p>

@@ -68,7 +68,7 @@ export default function BookingDetailPage() {
   });
 
   if (isLoading) return <Skeleton className="h-96 w-full" />;
-  if (!booking) return <p className="text-gray-500">Booking not found.</p>;
+  if (!booking) return <p className="text-neutral-500">Booking not found.</p>;
 
   const customer = booking.customerId as any;
   const travelFile = booking.travelFileId as any;
@@ -82,13 +82,13 @@ export default function BookingDetailPage() {
         </Button>
         <div className="flex-1 min-w-0">
           <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-2xl font-bold font-mono text-gray-900 dark:text-gray-100">{booking.bookingNumber}</h1>
-            <span className="rounded-full bg-indigo-100 px-3 py-0.5 text-sm font-medium text-indigo-700">
+            <h1 className="text-2xl font-bold font-mono text-neutral-900 dark:text-neutral-100">{booking.bookingNumber}</h1>
+            <span className="rounded-full bg-neutral-100 px-3 py-0.5 text-sm font-medium text-neutral-700">
               {TYPE_LABEL[booking.bookingType]} Booking
             </span>
             <StatusBadge status={booking.status} />
           </div>
-          <p className="mt-1 text-sm text-gray-500">{booking.title}</p>
+          <p className="mt-1 text-sm text-neutral-500">{booking.title}</p>
         </div>
         {travelFile?.fileNumber && (
           <Button variant="outline" onClick={() => router.push(`/travel-files/${travelFile._id}`)}>
@@ -139,24 +139,24 @@ export default function BookingDetailPage() {
             </CardHeader>
             <CardContent>
               {booking.statusHistory.length === 0 ? (
-                <p className="text-sm text-gray-400">No status changes recorded.</p>
+                <p className="text-sm text-neutral-400">No status changes recorded.</p>
               ) : (
-                <ol className="relative border-l border-gray-200 dark:border-gray-700 ml-3 space-y-4">
+                <ol className="relative border-l border-neutral-200 dark:border-neutral-700 ml-3 space-y-4">
                   {[...booking.statusHistory].reverse().map((h, i) => {
                     const user = h.changedBy as any;
                     return (
                       <li key={i} className="ml-6">
-                        <span className="absolute -left-3 flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 ring-4 ring-white dark:ring-gray-900">
+                        <span className="absolute -left-3 flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 ring-4 ring-white dark:ring-neutral-900">
                           <Clock className="h-3 w-3 text-blue-600" />
                         </span>
-                        <div className="rounded-lg border border-gray-100 bg-gray-50 p-3 dark:border-gray-800 dark:bg-gray-900">
+                        <div className="rounded-lg border border-neutral-100 bg-neutral-50 p-3 dark:border-neutral-800 dark:bg-neutral-900">
                           <div className="flex items-center gap-2 flex-wrap">
                             <StatusBadge status={h.from} />
-                            <span className="text-xs text-gray-400">→</span>
+                            <span className="text-xs text-neutral-400">→</span>
                             <StatusBadge status={h.to} />
                           </div>
-                          {h.reason && <p className="text-xs text-gray-500 mt-1">{h.reason}</p>}
-                          <p className="mt-1 text-xs text-gray-400">
+                          {h.reason && <p className="text-xs text-neutral-500 mt-1">{h.reason}</p>}
+                          <p className="mt-1 text-xs text-neutral-400">
                             {user?.firstName} {user?.lastName} · {formatRelativeTime(h.changedAt)}
                           </p>
                         </div>
@@ -177,14 +177,14 @@ export default function BookingDetailPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <ul className="divide-y divide-gray-50 dark:divide-gray-800">
+                <ul className="divide-y divide-neutral-50 dark:divide-neutral-800">
                   {booking.documents.map((d, i) => {
                     const doc = d.documentId as any;
                     return (
                       <li key={i} className="flex items-center justify-between py-3">
                         <div>
-                          <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{doc?.name || doc?.originalName || 'Document'}</p>
-                          <p className="text-xs text-gray-500 capitalize">{doc?.category}</p>
+                          <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">{doc?.name || doc?.originalName || 'Document'}</p>
+                          <p className="text-xs text-neutral-500 capitalize">{doc?.category}</p>
                         </div>
                         <div className="flex items-center gap-2">
                           {d.visibleToCustomer && (
@@ -214,23 +214,23 @@ export default function BookingDetailPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-3 gap-2 text-center">
-                <div className="rounded-lg bg-gray-50 p-2.5 dark:bg-gray-800/50">
-                  <p className="text-xs text-gray-500">Cost</p>
-                  <p className="mt-0.5 text-sm font-bold text-gray-900 dark:text-gray-100">{formatCurrency(booking.cost, booking.currency)}</p>
+                <div className="rounded-lg bg-neutral-50 p-2.5 dark:bg-neutral-800/50">
+                  <p className="text-xs text-neutral-500">Cost</p>
+                  <p className="mt-0.5 text-sm font-bold text-neutral-900 dark:text-neutral-100">{formatCurrency(booking.cost, booking.currency)}</p>
                 </div>
-                <div className="rounded-lg bg-gray-50 p-2.5 dark:bg-gray-800/50">
-                  <p className="text-xs text-gray-500">Paid</p>
+                <div className="rounded-lg bg-neutral-50 p-2.5 dark:bg-neutral-800/50">
+                  <p className="text-xs text-neutral-500">Paid</p>
                   <p className="mt-0.5 text-sm font-bold text-green-600">{formatCurrency(booking.amountPaid || 0, booking.currency)}</p>
                 </div>
-                <div className="rounded-lg bg-gray-50 p-2.5 dark:bg-gray-800/50">
-                  <p className="text-xs text-gray-500">Balance</p>
+                <div className="rounded-lg bg-neutral-50 p-2.5 dark:bg-neutral-800/50">
+                  <p className="text-xs text-neutral-500">Balance</p>
                   <p className={`mt-0.5 text-sm font-bold ${booking.cost - (booking.amountPaid || 0) > 0 ? 'text-red-600' : 'text-green-600'}`}>
                     {formatCurrency(Math.max(0, booking.cost - (booking.amountPaid || 0)), booking.currency)}
                   </p>
                 </div>
               </div>
 
-              <div className="space-y-2 border-t border-gray-100 pt-3 dark:border-gray-800">
+              <div className="space-y-2 border-t border-neutral-100 pt-3 dark:border-neutral-800">
                 <Input type="number" min="0" placeholder="Amount" value={pay.amount}
                   onChange={(e) => setPay((p) => ({ ...p, amount: e.target.value }))} />
                 <Select value={pay.method} onChange={(e) => setPay((p) => ({ ...p, method: e.target.value }))}>
@@ -251,10 +251,10 @@ export default function BookingDetailPage() {
               </div>
 
               {payments && payments.length > 0 && (
-                <ul className="divide-y divide-gray-50 border-t border-gray-100 pt-2 dark:divide-gray-800 dark:border-gray-800">
+                <ul className="divide-y divide-neutral-50 border-t border-neutral-100 pt-2 dark:divide-neutral-800 dark:border-neutral-800">
                   {payments.map((p: any) => (
                     <li key={p._id} className="flex items-center justify-between py-2 text-xs">
-                      <span className="text-gray-500">{formatDate(p.paidAt)} · <span className="capitalize">{p.method.replace(/_/g, ' ')}</span></span>
+                      <span className="text-neutral-500">{formatDate(p.paidAt)} · <span className="capitalize">{p.method.replace(/_/g, ' ')}</span></span>
                       <span className={p.status === 'verified' ? 'font-semibold text-green-600' : 'text-yellow-600'}>
                         {formatCurrency(p.amount)}
                       </span>
@@ -280,7 +280,7 @@ export default function BookingDetailPage() {
                 onChange={(e) => setReason(e.target.value)}
                 placeholder="Reason (optional)"
                 rows={3}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
+                className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none dark:border-neutral-600 dark:bg-neutral-900 dark:text-neutral-100"
               />
               <Button
                 className="w-full"
@@ -298,10 +298,10 @@ export default function BookingDetailPage() {
             <CardHeader><CardTitle>Financial</CardTitle></CardHeader>
             <CardContent className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-gray-500">Booking Cost</span>
+                <span className="text-neutral-500">Booking Cost</span>
                 <span className="font-semibold">{formatCurrency(booking.cost, booking.currency)}</span>
               </div>
-              <p className="text-xs text-gray-400 pt-1">
+              <p className="text-xs text-neutral-400 pt-1">
                 Payments are managed in the Invoices & Payments module linked to this Travel File.
               </p>
             </CardContent>
@@ -320,7 +320,7 @@ export default function BookingDetailPage() {
                 >
                   Delete Booking
                 </Button>
-                <p className="mt-2 text-xs text-gray-400">Only draft or cancelled bookings can be deleted.</p>
+                <p className="mt-2 text-xs text-neutral-400">Only draft or cancelled bookings can be deleted.</p>
               </CardContent>
             </Card>
           )}
@@ -410,8 +410,8 @@ function BookingDetailsCard({ booking }: { booking: Booking }) {
 function Detail({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <p className="text-xs text-gray-500">{label}</p>
-      <p className="font-medium text-gray-900 dark:text-gray-100 capitalize">{value}</p>
+      <p className="text-xs text-neutral-500">{label}</p>
+      <p className="font-medium text-neutral-900 dark:text-neutral-100 capitalize">{value}</p>
     </div>
   );
 }

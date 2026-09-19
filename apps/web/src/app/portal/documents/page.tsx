@@ -35,7 +35,7 @@ export default function PortalDocumentsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">My Documents</h1>
+        <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">My Documents</h1>
         <>
           <input ref={fileRef} type="file" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadMutation.mutate(f); e.target.value = ''; }} />
           <Button onClick={() => fileRef.current?.click()} loading={uploadMutation.isPending}>
@@ -45,25 +45,25 @@ export default function PortalDocumentsPage() {
       </div>
 
       {isLoading ? (
-        <p className="text-sm text-gray-400">Loading...</p>
+        <p className="text-sm text-neutral-400">Loading...</p>
       ) : !data?.length ? (
-        <Card><CardContent className="py-12 text-center text-sm text-gray-400">No documents uploaded yet</CardContent></Card>
+        <Card><CardContent className="py-12 text-center text-sm text-neutral-400">No documents uploaded yet</CardContent></Card>
       ) : (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {data.map((doc: any) => (
             <Card key={doc._id}>
               <CardContent className="flex items-start justify-between py-4">
                 <div className="min-w-0 flex-1">
-                  <p className="truncate font-medium text-gray-900 dark:text-gray-100">{doc.name}</p>
+                  <p className="truncate font-medium text-neutral-900 dark:text-neutral-100">{doc.name}</p>
                   <div className="mt-1 flex items-center gap-2">
                     <Badge variant="blue" className="capitalize">{doc.category}</Badge>
                     {doc.isExpired && <Badge variant="red"><AlertTriangle className="mr-1 h-3 w-3" />Expired</Badge>}
                   </div>
                   {doc.expiryDate && (
-                    <p className="mt-1 text-xs text-gray-500">Expires: {formatDate(doc.expiryDate)}</p>
+                    <p className="mt-1 text-xs text-neutral-500">Expires: {formatDate(doc.expiryDate)}</p>
                   )}
                 </div>
-                <a href={doc.fileUrl} target="_blank" rel="noopener noreferrer" className="ml-3 rounded p-1.5 text-gray-400 hover:text-blue-500">
+                <a href={doc.fileUrl} target="_blank" rel="noopener noreferrer" className="ml-3 rounded p-1.5 text-neutral-400 hover:text-blue-500">
                   <Eye className="h-4 w-4" />
                 </a>
               </CardContent>

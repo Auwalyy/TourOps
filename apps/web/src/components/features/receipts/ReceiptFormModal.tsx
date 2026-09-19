@@ -163,14 +163,14 @@ export function ReceiptFormModal({ open, onClose }: Props) {
         {/* Customer mode toggle */}
         <div>
           <Label>Customer *</Label>
-          <div className="mt-1.5 flex rounded-xl border border-gray-200 p-1 gap-1 bg-gray-50">
+          <div className="mt-1.5 flex rounded-xl border border-neutral-200 p-1 gap-1 bg-neutral-50">
             <button
               type="button"
               onClick={() => switchMode('existing')}
               className={`flex flex-1 items-center justify-center gap-2 rounded-lg py-2 text-sm font-medium transition-all ${
                 customerMode === 'existing'
                   ? 'bg-white text-blue-600 shadow-sm'
-                  : 'text-gray-500 hover:text-gray-700'
+                  : 'text-neutral-500 hover:text-neutral-700'
               }`}
             >
               <Users className="h-4 w-4" /> Select Existing
@@ -181,7 +181,7 @@ export function ReceiptFormModal({ open, onClose }: Props) {
               className={`flex flex-1 items-center justify-center gap-2 rounded-lg py-2 text-sm font-medium transition-all ${
                 customerMode === 'new'
                   ? 'bg-white text-blue-600 shadow-sm'
-                  : 'text-gray-500 hover:text-gray-700'
+                  : 'text-neutral-500 hover:text-neutral-700'
               }`}
             >
               <UserPlus className="h-4 w-4" /> Add New Customer
@@ -326,7 +326,7 @@ export function ReceiptFormModal({ open, onClose }: Props) {
           </div>
         </div>
 
-        <div className="flex justify-end gap-3 border-t border-gray-100 pt-4">
+        <div className="flex justify-end gap-3 border-t border-neutral-100 pt-4">
           <Button type="button" variant="outline" onClick={handleClose}>Cancel</Button>
           <Button type="submit" loading={isSubmitting}>
             {customerMode === 'new' ? 'Create Customer & Receipt' : 'Create Receipt'}

@@ -12,9 +12,9 @@ const CATEGORY_LABELS: Record<string, string> = {
 const CATEGORY_COLORS: Record<string, string> = {
   tour: 'bg-blue-100 text-blue-700',
   hajj_umrah: 'bg-emerald-100 text-emerald-700',
-  study_abroad: 'bg-purple-100 text-purple-700',
-  visa: 'bg-orange-100 text-orange-700',
-  custom: 'bg-gray-100 text-gray-700',
+  study_abroad: 'bg-neutral-100 text-neutral-700',
+  visa: 'bg-amber-100 text-amber-700',
+  custom: 'bg-neutral-100 text-neutral-700',
 };
 
 function formatPrice(price: number, currency: string) {
@@ -38,7 +38,7 @@ function DealCard({ deal, agencyWhatsapp, agencyPhone }: { deal: any; agencyWhat
   }
 
   return (
-    <div className={`group relative flex flex-col overflow-hidden rounded-2xl border bg-white shadow-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5 ${deal.isFeatured ? 'border-amber-300 ring-1 ring-amber-200' : 'border-gray-200'}`}>
+    <div className={`group relative flex flex-col overflow-hidden rounded-lg border bg-white shadow-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5 ${deal.isFeatured ? 'border-amber-300 ring-1 ring-amber-200' : 'border-neutral-200'}`}>
       {/* Featured badge */}
       {deal.isFeatured && (
         <div className="absolute left-3 top-3 z-10 flex items-center gap-1 rounded-full bg-amber-400 px-2.5 py-1 text-xs font-bold text-amber-900 shadow">
@@ -47,22 +47,22 @@ function DealCard({ deal, agencyWhatsapp, agencyPhone }: { deal: any; agencyWhat
       )}
 
       {/* Cover image */}
-      <div className="relative h-48 w-full overflow-hidden bg-gradient-to-br from-blue-500 to-indigo-600">
+      <div className="relative h-48 w-full overflow-hidden bg-neutral-100">
         {deal.coverImage ? (
           <img src={deal.coverImage} alt={deal.title} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
         ) : (
           <div className="flex h-full w-full items-center justify-center">
-            <Globe className="h-16 w-16 text-white/30" />
+            <Globe className="h-12 w-12 text-neutral-300" strokeWidth={1.5} />
           </div>
         )}
         {/* Price overlay */}
         <div className="absolute bottom-0 right-0 m-3">
           <div className="rounded-xl bg-white/95 px-3 py-1.5 shadow-lg backdrop-blur-sm">
             {hasDiscount && (
-              <p className="text-center text-xs text-gray-400 line-through">{formatPrice(deal.pricing.basePrice, deal.pricing.currency)}</p>
+              <p className="text-center text-xs text-neutral-400 line-through">{formatPrice(deal.pricing.basePrice, deal.pricing.currency)}</p>
             )}
-            <p className="text-center text-base font-bold text-gray-900">{formatPrice(displayPrice, deal.pricing.currency)}</p>
-            {deal.pricing.pricePerPerson && <p className="text-center text-[10px] text-gray-400">per person</p>}
+            <p className="text-center text-base font-bold text-neutral-900">{formatPrice(displayPrice, deal.pricing.currency)}</p>
+            {deal.pricing.pricePerPerson && <p className="text-center text-[10px] text-neutral-400">per person</p>}
           </div>
         </div>
         {/* Event date badge */}
@@ -74,7 +74,7 @@ function DealCard({ deal, agencyWhatsapp, agencyPhone }: { deal: any; agencyWhat
         )}
         {eventPast && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-            <span className="rounded-full bg-white/90 px-4 py-1.5 text-sm font-bold text-gray-700">Event Ended</span>
+            <span className="rounded-full bg-white/90 px-4 py-1.5 text-sm font-bold text-neutral-700">Event Ended</span>
           </div>
         )}
       </div>
@@ -86,21 +86,21 @@ function DealCard({ deal, agencyWhatsapp, agencyPhone }: { deal: any; agencyWhat
             <span className={`mb-1.5 inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${CATEGORY_COLORS[deal.category] || CATEGORY_COLORS.custom}`}>
               {CATEGORY_LABELS[deal.category] || deal.category}
             </span>
-            <h3 className="text-base font-bold text-gray-900 leading-snug">{deal.title}</h3>
+            <h3 className="text-base font-bold text-neutral-900 leading-snug">{deal.title}</h3>
           </div>
         </div>
 
-        <div className="mb-3 flex flex-wrap gap-3 text-xs text-gray-500">
+        <div className="mb-3 flex flex-wrap gap-3 text-xs text-neutral-500">
           <span className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5 text-blue-400" />{deal.destinations.join(', ')}</span>
           <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5 text-blue-400" />{deal.duration.days}D / {deal.duration.nights}N</span>
           {spotsLeft !== null && (
-            <span className={`flex items-center gap-1 font-medium ${spotsLeft <= 5 ? 'text-red-500' : 'text-gray-500'}`}>
+            <span className={`flex items-center gap-1 font-medium ${spotsLeft <= 5 ? 'text-red-500' : 'text-neutral-500'}`}>
               <Users className="h-3.5 w-3.5" />{spotsLeft <= 0 ? 'Fully booked' : `${spotsLeft} spots left`}
             </span>
           )}
         </div>
 
-        <p className={`text-sm text-gray-500 leading-relaxed ${expanded ? '' : 'line-clamp-2'}`}>{deal.description}</p>
+        <p className={`text-sm text-neutral-500 leading-relaxed ${expanded ? '' : 'line-clamp-2'}`}>{deal.description}</p>
 
         {deal.description?.length > 100 && (
           <button onClick={() => setExpanded(!expanded)} className="mt-1 flex items-center gap-0.5 text-xs font-medium text-blue-600 hover:underline">
@@ -111,7 +111,7 @@ function DealCard({ deal, agencyWhatsapp, agencyPhone }: { deal: any; agencyWhat
         {deal.tags?.length > 0 && (
           <div className="mt-3 flex flex-wrap gap-1.5">
             {deal.tags.map((tag: string) => (
-              <span key={tag} className="flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-[11px] text-gray-500">
+              <span key={tag} className="flex items-center gap-1 rounded-full bg-neutral-100 px-2 py-0.5 text-[11px] text-neutral-500">
                 <Tag className="h-2.5 w-2.5" />{tag}
               </span>
             ))}
@@ -131,12 +131,12 @@ function DealCard({ deal, agencyWhatsapp, agencyPhone }: { deal: any; agencyWhat
           ) : agencyPhone ? (
             <a
               href={`tel:${agencyPhone.replace(/\s+/g, '')}`}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-gray-900 px-4 py-3 text-sm font-bold text-white shadow-sm transition-all hover:bg-gray-800 active:scale-95"
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-neutral-900 px-4 py-3 text-sm font-bold text-white shadow-sm transition-all hover:bg-neutral-800 active:scale-95"
             >
               <Phone className="h-4 w-4" /> Call to Enquire
             </a>
           ) : (
-            <div className="rounded-xl bg-gray-50 px-4 py-3 text-center text-xs text-gray-400">Contact agency for details</div>
+            <div className="rounded-xl bg-neutral-50 px-4 py-3 text-center text-xs text-neutral-400">Contact agency for details</div>
           )}
         </div>
       </div>
@@ -146,14 +146,14 @@ function DealCard({ deal, agencyWhatsapp, agencyPhone }: { deal: any; agencyWhat
 
 function DealCardSkeleton() {
   return (
-    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm animate-pulse">
-      <div className="h-48 w-full bg-gray-200" />
+    <div className="overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-sm animate-pulse">
+      <div className="h-48 w-full bg-neutral-200" />
       <div className="p-5 space-y-3">
-        <div className="h-4 w-1/3 rounded bg-gray-200" />
-        <div className="h-5 w-2/3 rounded bg-gray-200" />
-        <div className="h-3 w-full rounded bg-gray-100" />
-        <div className="h-3 w-3/4 rounded bg-gray-100" />
-        <div className="h-11 w-full rounded-xl bg-gray-100 mt-4" />
+        <div className="h-4 w-1/3 rounded bg-neutral-200" />
+        <div className="h-5 w-2/3 rounded bg-neutral-200" />
+        <div className="h-3 w-full rounded bg-neutral-100" />
+        <div className="h-3 w-3/4 rounded bg-neutral-100" />
+        <div className="h-11 w-full rounded-xl bg-neutral-100 mt-4" />
       </div>
     </div>
   );
@@ -203,8 +203,8 @@ export default function DealsPage() {
   const regular = filtered.filter((d: any) => !d.isFeatured);
 
   if (loading) return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="h-52 w-full animate-pulse bg-gradient-to-br from-blue-400 to-indigo-500 opacity-80" />
+    <div className="min-h-screen bg-neutral-50">
+      <div className="h-52 w-full animate-pulse bg-neutral-100" />
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 6 }).map((_, i) => <DealCardSkeleton key={i} />)}
@@ -214,7 +214,7 @@ export default function DealsPage() {
   );
 
   if (error) return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-gray-50 px-4 text-center">
+    <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-neutral-50 px-4 text-center">
       <p className="text-sm text-red-500">{error}</p>
       <button
         onClick={() => setRetryKey((k) => k + 1)}
@@ -226,16 +226,16 @@ export default function DealsPage() {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-neutral-50">
       {/* Hero header */}
       <div className="relative overflow-hidden" style={{ background: `linear-gradient(135deg, ${primaryColor} 0%, ${primaryColor}cc 100%)` }}>
         <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 20% 50%, white 1px, transparent 1px), radial-gradient(circle at 80% 20%, white 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
         <div className="relative mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
           <div className="flex flex-col items-center text-center">
             {logoUrl ? (
-              <img src={logoUrl} alt={companyName} className="mb-4 h-16 w-16 rounded-2xl object-contain bg-white/20 p-2" />
+              <img src={logoUrl} alt={companyName} className="mb-4 h-16 w-16 rounded-lg object-contain bg-white/20 p-2" />
             ) : (
-              <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-white/20">
+              <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-lg bg-white/20">
                 <Globe className="h-8 w-8 text-white" />
               </div>
             )}
@@ -253,12 +253,12 @@ export default function DealsPage() {
         {/* Search */}
         {(data?.deals.length || 0) > 3 && (
           <div className="relative mb-5">
-            <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by name or destination..."
-              className="w-full rounded-full border border-gray-200 bg-white py-3 pl-11 pr-4 text-sm shadow-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100"
+              className="w-full rounded-full border border-neutral-200 bg-white py-3 pl-11 pr-4 text-sm shadow-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100"
             />
           </div>
         )}
@@ -270,7 +270,7 @@ export default function DealsPage() {
               <button
                 key={cat}
                 onClick={() => setFilter(cat)}
-                className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all ${filter === cat ? 'text-white shadow-sm' : 'bg-white text-gray-600 border border-gray-200 hover:border-gray-300'}`}
+                className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all ${filter === cat ? 'text-white shadow-sm' : 'bg-white text-neutral-600 border border-neutral-200 hover:border-neutral-300'}`}
                 style={filter === cat ? { backgroundColor: primaryColor } : {}}
               >
                 {cat === 'all' ? 'All Deals' : CATEGORY_LABELS[cat] || cat}
@@ -281,11 +281,11 @@ export default function DealsPage() {
 
         {filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 text-center">
-            <Globe className="mb-4 h-12 w-12 text-gray-300" />
-            <p className="text-lg font-semibold text-gray-500">
+            <Globe className="mb-4 h-12 w-12 text-neutral-300" />
+            <p className="text-lg font-semibold text-neutral-500">
               {search ? 'No deals match your search' : 'No deals available right now'}
             </p>
-            <p className="mt-1 text-sm text-gray-400">
+            <p className="mt-1 text-sm text-neutral-400">
               {search ? 'Try a different name or destination.' : 'Check back soon for new packages and offers.'}
             </p>
           </div>
@@ -296,7 +296,7 @@ export default function DealsPage() {
               <div className="mb-10">
                 <div className="mb-4 flex items-center gap-2">
                   <Star className="h-5 w-5 fill-amber-400 text-amber-400" />
-                  <h2 className="text-lg font-bold text-gray-900">Featured Deals</h2>
+                  <h2 className="text-lg font-bold text-neutral-900">Featured Deals</h2>
                 </div>
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                   {featured.map((deal: any) => <DealCard key={deal._id} deal={deal} agencyWhatsapp={whatsapp} agencyPhone={agencyPhone} />)}
@@ -308,7 +308,7 @@ export default function DealsPage() {
             {regular.length > 0 && (
               <div>
                 {featured.length > 0 && (
-                  <h2 className="mb-4 text-lg font-bold text-gray-900">All Packages</h2>
+                  <h2 className="mb-4 text-lg font-bold text-neutral-900">All Packages</h2>
                 )}
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                   {regular.map((deal: any) => <DealCard key={deal._id} deal={deal} agencyWhatsapp={whatsapp} agencyPhone={agencyPhone} />)}
@@ -319,7 +319,7 @@ export default function DealsPage() {
         )}
       </div>
 
-      <footer className="mt-12 border-t border-gray-200 bg-white py-6 text-center text-xs text-gray-400">
+      <footer className="mt-12 border-t border-neutral-200 bg-white py-6 text-center text-xs text-neutral-400">
         © {new Date().getFullYear()} {companyName}. All rights reserved.
       </footer>
     </div>

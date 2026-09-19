@@ -59,12 +59,12 @@ export default function NotificationsPage() {
               <div className="h-6 w-6 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
             </div>
           ) : !notifications.length ? (
-            <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+            <div className="flex flex-col items-center justify-center py-16 text-neutral-400">
               <Bell className="mb-3 h-10 w-10 opacity-40" />
               <p className="text-sm">No notifications yet</p>
             </div>
           ) : (
-            <ul className="divide-y divide-gray-50 dark:divide-gray-800">
+            <ul className="divide-y divide-neutral-50 dark:divide-neutral-800">
               {notifications.map((n) => (
                 <li
                   key={n._id}
@@ -77,12 +77,12 @@ export default function NotificationsPage() {
                   <div className={cn('mt-1.5 h-2 w-2 shrink-0 rounded-full', n.isRead ? 'bg-transparent' : 'bg-blue-500')} />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{n.title}</p>
+                      <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">{n.title}</p>
                       <Badge variant={typeColors[n.type] || 'default'} className="capitalize">{n.type}</Badge>
                     </div>
-                    <p className="mt-0.5 text-sm text-gray-500">{n.message}</p>
+                    <p className="mt-0.5 text-sm text-neutral-500">{n.message}</p>
                   </div>
-                  <span className="shrink-0 text-xs text-gray-400">{formatRelativeTime(n.createdAt)}</span>
+                  <span className="shrink-0 text-xs text-neutral-400">{formatRelativeTime(n.createdAt)}</span>
                 </li>
               ))}
             </ul>

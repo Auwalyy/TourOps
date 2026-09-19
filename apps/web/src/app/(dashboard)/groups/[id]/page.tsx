@@ -102,7 +102,7 @@ export default function GroupDetailPage() {
   const allocationMatches = Number(pay.amount) > 0 && allocatedTotal === Number(pay.amount);
 
   if (isLoading) return <Skeleton className="h-96 w-full" />;
-  if (!data) return <p className="text-gray-500">Group not found.</p>;
+  if (!data) return <p className="text-neutral-500">Group not found.</p>;
 
   const group = data.group;
   const contact = group.primaryContactCustomerId;
@@ -112,8 +112,8 @@ export default function GroupDetailPage() {
       <div className="flex flex-wrap items-start gap-4">
         <Button variant="ghost" size="icon" onClick={() => router.back()}><ArrowLeft className="h-4 w-4" /></Button>
         <div className="min-w-0 flex-1">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{group.name}</h1>
-          <p className="mt-1 text-sm text-gray-500">
+          <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">{group.name}</h1>
+          <p className="mt-1 text-sm text-neutral-500">
             {contact?.fullName || `${contact?.firstName || ''} ${contact?.lastName || ''}`.trim()} pays
             {contact?.phone && ` · ${contact.phone}`}
             {group.departureGroup && ` · ${group.departureGroup}`}
@@ -128,14 +128,14 @@ export default function GroupDetailPage() {
       {/* Shared ledger totals */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {[
-          { label: 'Travellers', value: String(totals?.memberCount ?? 0), color: 'text-gray-900 dark:text-gray-100' },
-          { label: 'Group Total', value: formatCurrency(totals?.totalCost ?? 0), color: 'text-gray-900 dark:text-gray-100' },
+          { label: 'Travellers', value: String(totals?.memberCount ?? 0), color: 'text-neutral-900 dark:text-neutral-100' },
+          { label: 'Group Total', value: formatCurrency(totals?.totalCost ?? 0), color: 'text-neutral-900 dark:text-neutral-100' },
           { label: 'Paid', value: formatCurrency(totals?.totalPaid ?? 0), color: 'text-green-600' },
           { label: 'Balance', value: formatCurrency(totals?.balance ?? 0), color: (totals?.balance ?? 0) > 0 ? 'text-red-600' : 'text-green-600' },
         ].map((s) => (
           <Card key={s.label}>
             <CardContent className="py-4">
-              <p className="text-xs text-gray-500">{s.label}</p>
+              <p className="text-xs text-neutral-500">{s.label}</p>
               <p className={`mt-1 text-xl font-bold ${s.color}`}>{s.value}</p>
             </CardContent>
           </Card>
@@ -156,16 +156,16 @@ export default function GroupDetailPage() {
         <CardContent className="p-0">
           {!members.length ? (
             <div className="py-12 text-center">
-              <Users className="mx-auto mb-3 h-10 w-10 text-gray-300" />
-              <p className="text-sm text-gray-500">No travellers in this group yet</p>
+              <Users className="mx-auto mb-3 h-10 w-10 text-neutral-300" />
+              <p className="text-sm text-neutral-500">No travellers in this group yet</p>
               <Button className="mt-4" onClick={() => setShowAdd(true)}>Add Traveller</Button>
             </div>
           ) : (
-            <ul className="divide-y divide-gray-50 dark:divide-gray-800">
+            <ul className="divide-y divide-neutral-50 dark:divide-neutral-800">
               {members.map((m: any) => {
                 const balance = (m.totalCost || 0) - (m.amountPaid || 0);
                 return (
-                  <li key={m._id} className="flex flex-wrap items-center gap-4 px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                  <li key={m._id} className="flex flex-wrap items-center gap-4 px-6 py-4 hover:bg-neutral-50 dark:hover:bg-neutral-800/50">
                     <div
                       className="min-w-0 flex-1 cursor-pointer"
                       onClick={() => router.push(`/travel-files/${m._id}`)}
@@ -174,16 +174,16 @@ export default function GroupDetailPage() {
                         <span className="font-mono text-sm font-semibold text-blue-600">{m.fileNumber}</span>
                         <StatusBadge status={m.status} />
                       </div>
-                      <p className="text-sm text-gray-700 dark:text-gray-300">
+                      <p className="text-sm text-neutral-700 dark:text-neutral-300">
                         {m.customerId?.fullName || `${m.customerId?.firstName || ''} ${m.customerId?.lastName || ''}`.trim()}
                       </p>
-                      <p className="text-xs text-gray-400">
+                      <p className="text-xs text-neutral-400">
                         {m.destination}
                         {m.customerId?.passport?.number ? ` · Passport ${m.customerId.passport.number}` : ' · No passport on file'}
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{formatCurrency(m.amountPaid || 0)}</p>
+                      <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">{formatCurrency(m.amountPaid || 0)}</p>
                       <p className={`text-xs ${balance > 0 ? 'text-red-600' : 'text-green-600'}`}>
                         {balance > 0 ? `${formatCurrency(balance)} left` : 'Fully paid'}
                       </p>
@@ -191,7 +191,7 @@ export default function GroupDetailPage() {
                     <button
                       onClick={() => removeMutation.mutate(m._id)}
                       title="Remove from group"
-                      className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-500"
+                      className="rounded-lg p-1.5 text-neutral-400 transition-colors hover:bg-red-50 hover:text-red-500"
                     >
                       <X className="h-4 w-4" />
                     </button>
@@ -208,25 +208,25 @@ export default function GroupDetailPage() {
         <CardHeader><CardTitle>Shared Ledger ({data.payments?.length || 0})</CardTitle></CardHeader>
         <CardContent className="p-0">
           {!data.payments?.length ? (
-            <p className="py-10 text-center text-sm text-gray-400">No payments recorded for this group yet.</p>
+            <p className="py-10 text-center text-sm text-neutral-400">No payments recorded for this group yet.</p>
           ) : (
-            <ul className="divide-y divide-gray-50 dark:divide-gray-800">
+            <ul className="divide-y divide-neutral-50 dark:divide-neutral-800">
               {data.payments.map((p: any) => (
                 <li key={p._id} className="flex items-center justify-between gap-4 px-6 py-3">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className={`font-semibold ${p.status === 'rejected' ? 'text-gray-400 line-through' : 'text-gray-900 dark:text-gray-100'}`}>
+                      <span className={`font-semibold ${p.status === 'rejected' ? 'text-neutral-400 line-through' : 'text-neutral-900 dark:text-neutral-100'}`}>
                         {formatCurrency(p.amount, p.currency)}
                       </span>
                       <StatusBadge status={p.status} />
                     </div>
-                    <p className="text-xs text-gray-400">
+                    <p className="text-xs text-neutral-400">
                       {p.travelFileId?.fileNumber && `${p.travelFileId.fileNumber} · `}
                       <span className="capitalize">{p.method?.replace(/_/g, ' ')}</span> · {formatDate(p.paidAt)}
                       {p.reference && ` · Ref: ${p.reference}`}
                     </p>
                   </div>
-                  <span className="shrink-0 text-xs text-gray-400">
+                  <span className="shrink-0 text-xs text-neutral-400">
                     {p.customerId?.fullName || ''}
                   </span>
                 </li>
@@ -249,7 +249,7 @@ export default function GroupDetailPage() {
                 </option>
               ))}
             </Select>
-            <p className="mt-1 text-xs text-gray-400">
+            <p className="mt-1 text-xs text-neutral-400">
               Only files not already in a group are listed. Their documents and visa stay on their own file.
             </p>
           </div>
@@ -263,7 +263,7 @@ export default function GroupDetailPage() {
       {/* Record group payment */}
       <Modal open={showPay} onClose={() => setShowPay(false)} title="Record Group Payment" size="lg">
         <div className="space-y-4 p-6">
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-neutral-500">
             One transfer covering several travellers. Enter the total, split it across the family, then record it once.
           </p>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -289,7 +289,7 @@ export default function GroupDetailPage() {
             </div>
           </div>
 
-          <div className="flex items-center justify-between border-t border-gray-100 pt-3 dark:border-gray-800">
+          <div className="flex items-center justify-between border-t border-neutral-100 pt-3 dark:border-neutral-800">
             <Label>Split across travellers</Label>
             <Button size="sm" variant="outline" onClick={autoSplit} disabled={!Number(pay.amount)}>
               Auto-split by balance
@@ -302,10 +302,10 @@ export default function GroupDetailPage() {
               return (
                 <li key={m._id} className="flex items-center gap-3">
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm text-gray-800 dark:text-gray-200">
+                    <p className="truncate text-sm text-neutral-800 dark:text-neutral-200">
                       {m.customerId?.fullName || `${m.customerId?.firstName || ''} ${m.customerId?.lastName || ''}`.trim()}
                     </p>
-                    <p className="text-xs text-gray-400">{m.fileNumber} · {formatCurrency(balance)} outstanding</p>
+                    <p className="text-xs text-neutral-400">{m.fileNumber} · {formatCurrency(balance)} outstanding</p>
                   </div>
                   <Input
                     type="number"
@@ -321,7 +321,7 @@ export default function GroupDetailPage() {
           </ul>
 
           <div className={`flex justify-between rounded-lg px-4 py-2.5 text-sm ${
-            allocationMatches ? 'bg-green-50 text-green-700 dark:bg-green-900/20' : 'bg-gray-50 text-gray-600 dark:bg-gray-800'
+            allocationMatches ? 'bg-green-50 text-green-700 dark:bg-green-900/20' : 'bg-neutral-50 text-neutral-600 dark:bg-neutral-800'
           }`}>
             <span>Allocated</span>
             <span className="font-semibold">

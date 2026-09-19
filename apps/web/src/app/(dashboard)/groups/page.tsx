@@ -53,9 +53,9 @@ export default function GroupsPage() {
       ) : !data?.length ? (
         <Card>
           <CardContent className="py-16 text-center">
-            <Users className="mx-auto mb-3 h-10 w-10 text-gray-300" />
-            <p className="text-sm font-medium text-gray-500">No groups yet</p>
-            <p className="mt-1 text-xs text-gray-400">
+            <Users className="mx-auto mb-3 h-10 w-10 text-neutral-300" />
+            <p className="text-sm font-medium text-neutral-500">No groups yet</p>
+            <p className="mt-1 text-xs text-neutral-400">
               Group a family or a departure batch so one payment can cover everyone.
             </p>
             <Button className="mt-4" onClick={() => setShowForm(true)}>Create First Group</Button>
@@ -75,18 +75,18 @@ export default function GroupsPage() {
               >
                 <CardContent className="space-y-3 py-5">
                   <div>
-                    <p className="font-semibold text-gray-900 dark:text-gray-100">{g.name}</p>
-                    <p className="text-xs text-gray-500">
+                    <p className="font-semibold text-neutral-900 dark:text-neutral-100">{g.name}</p>
+                    <p className="text-xs text-neutral-500">
                       {contact?.fullName || `${contact?.firstName || ''} ${contact?.lastName || ''}`.trim()} pays ·{' '}
                       {g.memberCount} traveller{g.memberCount === 1 ? '' : 's'}
                     </p>
-                    {g.departureGroup && <p className="text-xs text-gray-400">{g.departureGroup}</p>}
+                    {g.departureGroup && <p className="text-xs text-neutral-400">{g.departureGroup}</p>}
                   </div>
-                  <div className="h-2 w-full rounded-full bg-gray-100 dark:bg-gray-800">
+                  <div className="h-2 w-full rounded-full bg-neutral-100 dark:bg-neutral-800">
                     <div className="h-2 rounded-full bg-green-500 transition-all" style={{ width: `${pct}%` }} />
                   </div>
                   <div className="flex justify-between text-xs">
-                    <span className="text-gray-500">Paid {formatCurrency(g.amountPaid || 0)}</span>
+                    <span className="text-neutral-500">Paid {formatCurrency(g.amountPaid || 0)}</span>
                     <span className={balance > 0 ? 'font-semibold text-red-600' : 'font-semibold text-green-600'}>
                       {balance > 0 ? `${formatCurrency(balance)} left` : 'Fully paid'}
                     </span>
@@ -139,7 +139,7 @@ export default function GroupsPage() {
               onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
             />
           </div>
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-neutral-400">
             After creating the group, add each traveller&apos;s travel file to it — every member keeps their own
             documents and visa status.
           </p>

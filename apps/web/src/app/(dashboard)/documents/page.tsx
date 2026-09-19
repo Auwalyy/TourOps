@@ -15,15 +15,15 @@ import { ConfirmDialog } from '@/components/ui/Modal';
 import { cn } from '@/lib/utils';
 
 const FOLDERS = [
-  { key: '', label: 'All Documents', color: 'text-gray-600', bg: 'bg-gray-100', activeBg: 'bg-gray-200' },
-  { key: 'visa', label: 'Visa', color: 'text-purple-700', bg: 'bg-purple-50', activeBg: 'bg-purple-100' },
+  { key: '', label: 'All Documents', color: 'text-neutral-600', bg: 'bg-neutral-100', activeBg: 'bg-neutral-200' },
+  { key: 'visa', label: 'Visa', color: 'text-neutral-700', bg: 'bg-neutral-50', activeBg: 'bg-neutral-100' },
   { key: 'ticket', label: 'Tickets', color: 'text-blue-700', bg: 'bg-blue-50', activeBg: 'bg-blue-100' },
   { key: 'passport', label: 'Passports', color: 'text-green-700', bg: 'bg-green-50', activeBg: 'bg-green-100' },
-  { key: 'hotel', label: 'Hotels', color: 'text-orange-700', bg: 'bg-orange-50', activeBg: 'bg-orange-100' },
+  { key: 'hotel', label: 'Hotels', color: 'text-amber-700', bg: 'bg-amber-50', activeBg: 'bg-amber-100' },
   { key: 'insurance', label: 'Insurance', color: 'text-teal-700', bg: 'bg-teal-50', activeBg: 'bg-teal-100' },
   { key: 'financial', label: 'Financial', color: 'text-yellow-700', bg: 'bg-yellow-50', activeBg: 'bg-yellow-100' },
-  { key: 'photo', label: 'Photos', color: 'text-pink-700', bg: 'bg-pink-50', activeBg: 'bg-pink-100' },
-  { key: 'other', label: 'General', color: 'text-gray-700', bg: 'bg-gray-50', activeBg: 'bg-gray-100' },
+  { key: 'photo', label: 'Photos', color: 'text-neutral-700', bg: 'bg-neutral-50', activeBg: 'bg-neutral-100' },
+  { key: 'other', label: 'General', color: 'text-neutral-700', bg: 'bg-neutral-50', activeBg: 'bg-neutral-100' },
 ];
 
 const CATEGORY_BADGE: Record<string, string> = {
@@ -107,8 +107,8 @@ export default function DocumentsPage() {
       header: 'Document',
       render: (row) => (
         <div>
-          <p className="font-medium text-gray-900 dark:text-gray-100">{row.name}</p>
-          <p className="text-xs text-gray-500">{row.fileType?.split('/')[1] || row.fileType} · {(row.fileSize / 1024).toFixed(0)} KB</p>
+          <p className="font-medium text-neutral-900 dark:text-neutral-100">{row.name}</p>
+          <p className="text-xs text-neutral-500">{row.fileType?.split('/')[1] || row.fileType} · {(row.fileSize / 1024).toFixed(0)} KB</p>
         </div>
       ),
     },
@@ -129,7 +129,7 @@ export default function DocumentsPage() {
           {row.isExpired && <AlertTriangle className="mr-1 inline h-3 w-3" />}
           {formatDate(row.expiryDate)}
         </span>
-      ) : <span className="text-gray-400">—</span>,
+      ) : <span className="text-neutral-400">—</span>,
     },
     { key: 'createdAt', header: 'Uploaded', render: (row) => <span className="text-sm">{formatDate(row.createdAt)}</span> },
     {
@@ -142,13 +142,13 @@ export default function DocumentsPage() {
             target="_blank"
             rel="noopener noreferrer"
             download
-            className="flex items-center gap-1 rounded-lg border border-gray-200 px-2 py-1 text-xs text-gray-600 hover:border-blue-400 hover:text-blue-600 transition-colors dark:border-gray-700"
+            className="flex items-center gap-1 rounded-lg border border-neutral-200 px-2 py-1 text-xs text-neutral-600 hover:border-blue-400 hover:text-blue-600 transition-colors dark:border-neutral-700"
           >
             <Download className="h-3.5 w-3.5" /> View
           </a>
           <button
             onClick={(e) => { e.stopPropagation(); setDeleteTarget(row); }}
-            className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors"
+            className="rounded-lg p-1.5 text-neutral-400 hover:bg-red-50 hover:text-red-500 transition-colors"
           >
             <Trash2 className="h-4 w-4" />
           </button>
@@ -199,7 +199,7 @@ export default function DocumentsPage() {
                   'flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors',
                   isActive
                     ? `${folder.activeBg} ${folder.color}`
-                    : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800'
+                    : 'text-neutral-600 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800'
                 )}
               >
                 {isActive
@@ -210,7 +210,7 @@ export default function DocumentsPage() {
                 {count > 0 && (
                   <span className={cn(
                     'rounded-full px-1.5 py-0.5 text-xs font-semibold',
-                    isActive ? 'bg-white/60' : 'bg-gray-100 text-gray-500 dark:bg-gray-800'
+                    isActive ? 'bg-white/60' : 'bg-neutral-100 text-neutral-500 dark:bg-neutral-800'
                   )}>
                     {count}
                   </span>
@@ -223,7 +223,7 @@ export default function DocumentsPage() {
         {/* Document list */}
         <div className="flex-1 min-w-0">
           <Card>
-            <div className="flex flex-wrap items-center gap-3 border-b border-gray-100 px-6 py-4 dark:border-gray-800">
+            <div className="flex flex-wrap items-center gap-3 border-b border-neutral-100 px-6 py-4 dark:border-neutral-800">
               <SearchInput
                 value={search}
                 onChange={(v) => { setSearch(v); setPage(1); }}

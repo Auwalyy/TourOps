@@ -13,11 +13,11 @@ export default function PortalVisasPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Visa Applications</h1>
+      <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">Visa Applications</h1>
       {isLoading ? (
-        <p className="text-sm text-gray-400">Loading...</p>
+        <p className="text-sm text-neutral-400">Loading...</p>
       ) : !data?.length ? (
-        <Card><CardContent className="py-12 text-center text-sm text-gray-400">No visa applications found</CardContent></Card>
+        <Card><CardContent className="py-12 text-center text-sm text-neutral-400">No visa applications found</CardContent></Card>
       ) : (
         <div className="space-y-3">
           {data.map((v: any) => (
@@ -25,9 +25,9 @@ export default function PortalVisasPage() {
               <CardContent className="py-4">
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="font-medium text-gray-900 dark:text-gray-100">{v.destinationCountry} — {v.visaType}</p>
-                    <p className="text-sm text-gray-500">Purpose: {v.purposeOfTravel}</p>
-                    {v.referenceNumber && <p className="font-mono text-xs text-gray-400">{v.referenceNumber}</p>}
+                    <p className="font-medium text-neutral-900 dark:text-neutral-100">{v.destinationCountry} — {v.visaType}</p>
+                    <p className="text-sm text-neutral-500">Purpose: {v.purposeOfTravel}</p>
+                    {v.referenceNumber && <p className="font-mono text-xs text-neutral-400">{v.referenceNumber}</p>}
                   </div>
                   <StatusBadge status={v.status} />
                 </div>
@@ -41,7 +41,7 @@ export default function PortalVisasPage() {
                   </div>
                 )}
                 <div className="mt-3">
-                  <p className="mb-1 text-xs text-gray-500">Progress</p>
+                  <p className="mb-1 text-xs text-neutral-500">Progress</p>
                   <div className="flex gap-1">
                     {['draft', 'documents_pending', 'documents_submitted', 'appointment_scheduled', 'under_review', 'approved'].map((step) => {
                       const steps = ['draft', 'documents_pending', 'documents_submitted', 'appointment_scheduled', 'under_review', 'approved'];
@@ -50,7 +50,7 @@ export default function PortalVisasPage() {
                       return (
                         <div
                           key={step}
-                          className={`h-1.5 flex-1 rounded-full ${stepIdx <= currentIdx ? 'bg-blue-500' : 'bg-gray-200 dark:bg-gray-700'}`}
+                          className={`h-1.5 flex-1 rounded-full ${stepIdx <= currentIdx ? 'bg-blue-500' : 'bg-neutral-200 dark:bg-neutral-700'}`}
                         />
                       );
                     })}

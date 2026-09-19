@@ -72,7 +72,7 @@ export default function TravelFilesPage() {
       key: 'travelType',
       header: 'Type',
       render: (row) => (
-        <span className="rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-medium text-indigo-700">
+        <span className="rounded-full bg-neutral-50 px-2.5 py-0.5 text-xs font-medium text-neutral-700">
           {TRAVEL_TYPE_LABELS[row.travelType]}
         </span>
       ),
@@ -83,7 +83,7 @@ export default function TravelFilesPage() {
       header: 'Consultant',
       render: (row) => {
         const u = row.assignedConsultant as any;
-        return u ? <span className="text-sm text-gray-600">{u.firstName} {u.lastName}</span> : <span className="text-gray-400">—</span>;
+        return u ? <span className="text-sm text-neutral-600">{u.firstName} {u.lastName}</span> : <span className="text-neutral-400">—</span>;
       },
     },
     {
@@ -92,8 +92,8 @@ export default function TravelFilesPage() {
       render: (row) => {
         const colors: Record<string, string> = {
           urgent: 'bg-red-100 text-red-700',
-          high: 'bg-orange-100 text-orange-700',
-          normal: 'bg-gray-100 text-gray-600',
+          high: 'bg-amber-100 text-amber-700',
+          normal: 'bg-neutral-100 text-neutral-600',
           low: 'bg-green-100 text-green-700',
         };
         return <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${colors[row.priority]}`}>{row.priority}</span>;
@@ -121,16 +121,16 @@ export default function TravelFilesPage() {
           <button
             key={key}
             onClick={() => { setStatus(status === key ? '' : key); setPage(1); }}
-            className={`rounded-xl border p-4 text-left transition-colors hover:border-blue-300 ${status === key ? 'border-blue-500 bg-blue-50' : 'border-gray-100 bg-white'}`}
+            className={`rounded-xl border p-4 text-left transition-colors hover:border-blue-300 ${status === key ? 'border-blue-500 bg-blue-50' : 'border-neutral-100 bg-white'}`}
           >
             <div className="text-2xl font-bold text-blue-600">{summaryMap[key] ?? 0}</div>
-            <div className="mt-1 text-xs font-medium text-gray-500">{label}</div>
+            <div className="mt-1 text-xs font-medium text-neutral-500">{label}</div>
           </button>
         ))}
       </div>
 
       <Card>
-        <div className="flex flex-wrap items-center gap-3 border-b border-gray-100 px-6 py-4 dark:border-gray-800">
+        <div className="flex flex-wrap items-center gap-3 border-b border-neutral-100 px-6 py-4 dark:border-neutral-800">
           <SearchInput value={search} onChange={(v) => { setSearch(v); setPage(1); }} placeholder="Search file #, destination..." className="max-w-xs" />
           <Select value={travelType} onChange={(e) => { setTravelType(e.target.value); setPage(1); }} className="w-44">
             <option value="">All Types</option>

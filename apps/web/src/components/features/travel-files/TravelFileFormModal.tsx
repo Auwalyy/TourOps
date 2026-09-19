@@ -203,17 +203,17 @@ export function TravelFileFormModal({ open, onClose, bookingId, prefill }: Props
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="mt-1 w-full flex flex-col items-center gap-3 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-8 bg-gray-50 dark:bg-gray-800/50 hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 transition-all text-gray-400"
+              className="mt-1 w-full flex flex-col items-center gap-3 border-2 border-dashed border-neutral-300 dark:border-neutral-600 rounded-xl p-8 bg-neutral-50 dark:bg-neutral-800/50 hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 transition-all text-neutral-400"
             >
-              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700">
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-neutral-100 dark:bg-neutral-700">
                 <UploadCloud className="w-7 h-7" />
               </div>
               <div className="text-center">
-                <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">Upload Customer Passport</p>
-                <p className="text-xs text-gray-400 mt-0.5">AI will auto-fill name, passport number & date of birth</p>
-                <p className="text-xs text-gray-300 mt-1">JPG, PNG or PDF · Max 10MB</p>
+                <p className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">Upload Customer Passport</p>
+                <p className="text-xs text-neutral-400 mt-0.5">AI will auto-fill name, passport number & date of birth</p>
+                <p className="text-xs text-neutral-300 mt-1">JPG, PNG or PDF · Max 10MB</p>
               </div>
-              <span className="rounded-lg border border-gray-300 dark:border-gray-600 px-4 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-700">
+              <span className="rounded-lg border border-neutral-300 dark:border-neutral-600 px-4 py-1.5 text-xs font-medium text-neutral-600 dark:text-neutral-300 bg-white dark:bg-neutral-700">
                 Choose File
               </span>
             </button>
@@ -288,7 +288,7 @@ export function TravelFileFormModal({ open, onClose, bookingId, prefill }: Props
             <select
               value={selectedBookingId}
               onChange={(e) => setSelectedBookingId(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
+              className="mt-1 w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none dark:border-neutral-600 dark:bg-neutral-900 dark:text-neutral-100"
             >
               <option value="">None</option>
               {Array.isArray(bookings) && bookings.map((b: any) => (

@@ -99,14 +99,14 @@ export function InvoiceFormModal({ open, onClose }: Props) {
         {/* Customer toggle */}
         <div>
           <Label>Customer</Label>
-          <div className="mt-1 flex rounded-lg border border-gray-200 p-1 dark:border-gray-700">
+          <div className="mt-1 flex rounded-lg border border-neutral-200 p-1 dark:border-neutral-700">
             <button
               type="button"
               onClick={() => setCustomerMode('existing')}
               className={`flex-1 rounded-md py-1.5 text-sm font-medium transition-colors ${
                 customerMode === 'existing'
                   ? 'bg-blue-600 text-white'
-                  : 'text-gray-500 hover:text-gray-700 dark:text-gray-400'
+                  : 'text-neutral-500 hover:text-neutral-700 dark:text-neutral-400'
               }`}
             >
               Select Existing
@@ -117,7 +117,7 @@ export function InvoiceFormModal({ open, onClose }: Props) {
               className={`flex-1 rounded-md py-1.5 text-sm font-medium transition-colors ${
                 customerMode === 'new'
                   ? 'bg-blue-600 text-white'
-                  : 'text-gray-500 hover:text-gray-700 dark:text-gray-400'
+                  : 'text-neutral-500 hover:text-neutral-700 dark:text-neutral-400'
               }`}
             >
               Add New Customer
@@ -202,7 +202,7 @@ export function InvoiceFormModal({ open, onClose }: Props) {
                   <Input type="number" min={0} step="0.01" placeholder="Unit Price" {...register(`lineItems.${i}.unitPrice`)} />
                 </div>
                 <div className="col-span-1 flex justify-center pt-2">
-                  <button type="button" onClick={() => remove(i)} className="text-gray-400 hover:text-red-500">
+                  <button type="button" onClick={() => remove(i)} className="text-neutral-400 hover:text-red-500">
                     <Trash2 className="h-4 w-4" />
                   </button>
                 </div>
@@ -223,11 +223,11 @@ export function InvoiceFormModal({ open, onClose }: Props) {
         </div>
 
         {/* Totals */}
-        <div className="rounded-lg bg-gray-50 p-4 text-sm dark:bg-gray-800">
-          <div className="flex justify-between"><span className="text-gray-500">Subtotal</span><span>₦{subtotal.toFixed(2)}</span></div>
-          <div className="flex justify-between"><span className="text-gray-500">Tax ({taxRate}%)</span><span>₦{tax.toFixed(2)}</span></div>
-          <div className="flex justify-between"><span className="text-gray-500">Discount</span><span>-₦{Number(discount).toFixed(2)}</span></div>
-          <div className="flex justify-between border-t border-gray-200 pt-2 font-bold dark:border-gray-700">
+        <div className="rounded-lg bg-neutral-50 p-4 text-sm dark:bg-neutral-800">
+          <div className="flex justify-between"><span className="text-neutral-500">Subtotal</span><span>₦{subtotal.toFixed(2)}</span></div>
+          <div className="flex justify-between"><span className="text-neutral-500">Tax ({taxRate}%)</span><span>₦{tax.toFixed(2)}</span></div>
+          <div className="flex justify-between"><span className="text-neutral-500">Discount</span><span>-₦{Number(discount).toFixed(2)}</span></div>
+          <div className="flex justify-between border-t border-neutral-200 pt-2 font-bold dark:border-neutral-700">
             <span>Total</span><span>₦{total.toFixed(2)}</span>
           </div>
         </div>

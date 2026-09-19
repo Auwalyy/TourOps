@@ -133,7 +133,7 @@ export function BookingFormModal({ open, onClose, travelFileId, customerId, onCr
               })}
             </Select>
             {selectedTf && (
-              <p className="mt-1 text-xs text-gray-500">
+              <p className="mt-1 text-xs text-neutral-500">
                 Customer: {(selectedTf.customerId as any)?.fullName || '—'} · {selectedTf.destination}
               </p>
             )}
@@ -192,7 +192,7 @@ export function BookingFormModal({ open, onClose, travelFileId, customerId, onCr
                 </option>
               ))}
             </Select>
-            <p className="mt-1 text-xs text-gray-400">
+            <p className="mt-1 text-xs text-neutral-400">
               Linking keeps the charge here and the workflow on the application, so the fee isn&apos;t entered twice.
             </p>
           </div>

@@ -48,8 +48,8 @@ export default function CustomersPage() {
         <div className="flex items-center gap-3">
           <Avatar name={row.fullName} size="sm" />
           <div>
-            <p className="font-medium text-gray-900 dark:text-gray-100">{row.fullName}</p>
-            <p className="text-xs text-gray-500">{row.email}</p>
+            <p className="font-medium text-neutral-900 dark:text-neutral-100">{row.fullName}</p>
+            <p className="text-xs text-neutral-500">{row.email}</p>
           </div>
         </div>
       ),
@@ -72,7 +72,7 @@ export default function CustomersPage() {
       render: (row) => (
         <button
           onClick={(e) => { e.stopPropagation(); setArchiveTarget(row); }}
-          className="rounded p-1 text-gray-400 hover:text-red-500"
+          className="rounded p-1 text-neutral-400 hover:text-red-500"
         >
           <UserX className="h-4 w-4" />
         </button>
@@ -89,7 +89,7 @@ export default function CustomersPage() {
       />
 
       <Card>
-        <div className="flex items-center gap-3 border-b border-gray-100 px-6 py-4 dark:border-gray-800">
+        <div className="flex items-center gap-3 border-b border-neutral-100 px-6 py-4 dark:border-neutral-800">
           <SearchInput value={search} onChange={(v) => { setSearch(v); setPage(1); }} placeholder="Search customers..." className="max-w-xs" />
         </div>
         <DataTable

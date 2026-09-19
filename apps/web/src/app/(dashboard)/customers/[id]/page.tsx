@@ -14,10 +14,10 @@ function InfoRow({ icon: Icon, label, value }: { icon: any; label: string; value
   if (!value) return null;
   return (
     <div className="flex items-start gap-2 text-sm">
-      <Icon className="mt-0.5 h-4 w-4 shrink-0 text-gray-400" />
+      <Icon className="mt-0.5 h-4 w-4 shrink-0 text-neutral-400" />
       <div>
-        <span className="text-gray-500">{label}: </span>
-        <span className="text-gray-900 dark:text-gray-100">{value}</span>
+        <span className="text-neutral-500">{label}: </span>
+        <span className="text-neutral-900 dark:text-neutral-100">{value}</span>
       </div>
     </div>
   );
@@ -52,7 +52,7 @@ export default function CustomerDetailPage() {
     </div>
   );
 
-  if (!customer) return <p className="text-gray-500">Customer not found.</p>;
+  if (!customer) return <p className="text-neutral-500">Customer not found.</p>;
 
   const customerTags = customer.tags ?? [];
 
@@ -63,7 +63,7 @@ export default function CustomerDetailPage() {
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div className="flex-1">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{customer.fullName}</h1>
+          <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">{customer.fullName}</h1>
           <StatusBadge status={customer.status} />
         </div>
         <Button variant="outline" onClick={() => setShowEdit(true)}>
@@ -95,7 +95,7 @@ export default function CustomerDetailPage() {
                 ))}
               </div>
             )}
-            {customer.notes && <p className="pt-2 text-sm text-gray-500">{customer.notes}</p>}
+            {customer.notes && <p className="pt-2 text-sm text-neutral-500">{customer.notes}</p>}
           </CardContent>
         </Card>
 
@@ -104,14 +104,14 @@ export default function CustomerDetailPage() {
             <CardHeader><CardTitle>Recent Bookings</CardTitle></CardHeader>
             <CardContent>
               {!bookings?.length ? (
-                <p className="text-sm text-gray-400">No bookings yet</p>
+                <p className="text-sm text-neutral-400">No bookings yet</p>
               ) : (
-                <ul className="divide-y divide-gray-50 dark:divide-gray-800">
+                <ul className="divide-y divide-neutral-50 dark:divide-neutral-800">
                   {bookings.map((b: any) => (
                     <li key={b._id} className="flex items-center justify-between py-3">
                       <div>
-                        <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{b.bookingNumber}</p>
-                        <p className="text-xs text-gray-500">{b.bookingType} · {formatDate(b.createdAt)}</p>
+                        <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">{b.bookingNumber}</p>
+                        <p className="text-xs text-neutral-500">{b.bookingType} · {formatDate(b.createdAt)}</p>
                       </div>
                       <StatusBadge status={b.status} />
                     </li>
@@ -125,16 +125,16 @@ export default function CustomerDetailPage() {
             <CardHeader><CardTitle>Visa Applications</CardTitle></CardHeader>
             <CardContent>
               {!visas?.length ? (
-                <p className="text-sm text-gray-400">No visa applications</p>
+                <p className="text-sm text-neutral-400">No visa applications</p>
               ) : (
-                <ul className="divide-y divide-gray-50 dark:divide-gray-800">
+                <ul className="divide-y divide-neutral-50 dark:divide-neutral-800">
                   {visas.map((v: any) => (
                     <li key={v._id} className="flex items-center justify-between py-3">
                       <div>
-                        <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                        <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
                           {v.destinationCountry} — {v.visaType}
                         </p>
-                        <p className="text-xs text-gray-500">{formatDate(v.createdAt)}</p>
+                        <p className="text-xs text-neutral-500">{formatDate(v.createdAt)}</p>
                       </div>
                       <StatusBadge status={v.status} />
                     </li>

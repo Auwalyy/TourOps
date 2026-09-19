@@ -47,7 +47,7 @@ export default function AIPage() {
             {!summaryLoaded ? (
               <div className="flex flex-col items-center py-8 text-center">
                 <Sparkles className="mb-3 h-10 w-10 text-blue-400" />
-                <p className="mb-4 text-sm text-gray-500">Generate an AI-powered summary of your business performance</p>
+                <p className="mb-4 text-sm text-neutral-500">Generate an AI-powered summary of your business performance</p>
                 <Button onClick={() => { setSummaryLoaded(true); fetchSummary(); }}>
                   Generate Summary
                 </Button>
@@ -55,11 +55,11 @@ export default function AIPage() {
             ) : summaryLoading ? (
               <div className="flex items-center gap-3 py-6">
                 <div className="h-5 w-5 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
-                <p className="text-sm text-gray-500">Analyzing your business data...</p>
+                <p className="text-sm text-neutral-500">Analyzing your business data...</p>
               </div>
             ) : (
               <div className="prose prose-sm max-w-none dark:prose-invert">
-                <p className="whitespace-pre-wrap text-sm leading-relaxed text-gray-700 dark:text-gray-300">{summary}</p>
+                <p className="whitespace-pre-wrap text-sm leading-relaxed text-neutral-700 dark:text-neutral-300">{summary}</p>
               </div>
             )}
           </CardContent>
@@ -69,7 +69,7 @@ export default function AIPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Package className="h-5 w-5 text-purple-500" />
+              <Package className="h-5 w-5 text-neutral-500" />
               Package Recommendations
             </CardTitle>
           </CardHeader>
@@ -100,16 +100,16 @@ export default function AIPage() {
 
             {recommendations && (
               <div className="space-y-3 pt-2">
-                <p className="text-xs text-gray-500">{recommendations.reasoning}</p>
+                <p className="text-xs text-neutral-500">{recommendations.reasoning}</p>
                 {recommendations.recommendations?.map((rec: any, i: number) => (
-                  <div key={i} className="rounded-lg border border-gray-100 p-3 dark:border-gray-800">
+                  <div key={i} className="rounded-lg border border-neutral-100 p-3 dark:border-neutral-800">
                     <div className="flex items-center justify-between">
-                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{rec.title}</p>
+                      <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">{rec.title}</p>
                       <span className="rounded-full bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-900/20 dark:text-blue-400">
                         {rec.matchScore}% match
                       </span>
                     </div>
-                    <p className="mt-1 text-xs text-gray-500">{rec.reason}</p>
+                    <p className="mt-1 text-xs text-neutral-500">{rec.reason}</p>
                   </div>
                 ))}
               </div>
@@ -126,7 +126,7 @@ export default function AIPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-gray-500 mb-4">
+            <p className="text-sm text-neutral-500 mb-4">
               Use AI to validate customer documents. Navigate to a specific document and use the validate action, or check missing documents for a visa application.
             </p>
             <MissingDocChecker />
@@ -177,7 +177,7 @@ function MissingDocChecker() {
               <p className="text-xs font-semibold text-red-600">Missing (Required)</p>
               <ul className="mt-1 space-y-1">
                 {result.missing.map((d: string) => (
-                  <li key={d} className="text-xs text-gray-700 dark:text-gray-300">• {d}</li>
+                  <li key={d} className="text-xs text-neutral-700 dark:text-neutral-300">• {d}</li>
                 ))}
               </ul>
             </div>
@@ -187,7 +187,7 @@ function MissingDocChecker() {
               <p className="text-xs font-semibold text-yellow-600">Optional</p>
               <ul className="mt-1 space-y-1">
                 {result.optional.map((d: string) => (
-                  <li key={d} className="text-xs text-gray-700 dark:text-gray-300">• {d}</li>
+                  <li key={d} className="text-xs text-neutral-700 dark:text-neutral-300">• {d}</li>
                 ))}
               </ul>
             </div>

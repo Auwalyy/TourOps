@@ -26,13 +26,22 @@ export function Modal({ open, onClose, title, children, size = 'md', className }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-      <div className={cn('relative w-full rounded-xl bg-white shadow-2xl dark:bg-gray-900', modalSizes[size], className)}>
+      <div className="absolute inset-0 bg-neutral-900/30" onClick={onClose} />
+      <div
+        className={cn(
+          'relative w-full rounded-lg border border-neutral-200 bg-white shadow-xl dark:border-neutral-800 dark:bg-neutral-900',
+          modalSizes[size],
+          className
+        )}
+      >
         {title && (
-          <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4 dark:border-gray-800">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{title}</h2>
-            <button onClick={onClose} className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800">
-              <X className="h-5 w-5" />
+          <div className="flex items-center justify-between border-b border-neutral-200 px-5 py-3.5 dark:border-neutral-800">
+            <h2 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">{title}</h2>
+            <button
+              onClick={onClose}
+              className="rounded p-1 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-700 dark:hover:bg-neutral-800"
+            >
+              <X className="h-4 w-4" />
             </button>
           </div>
         )}
@@ -57,7 +66,7 @@ export function ConfirmDialog({ open, onClose, onConfirm, title, description, co
   return (
     <Modal open={open} onClose={onClose} title={title} size="sm">
       <div className="p-6">
-        <p className="text-sm text-gray-600 dark:text-gray-400">{description}</p>
+        <p className="text-sm text-neutral-600 dark:text-neutral-400">{description}</p>
         <div className="mt-6 flex justify-end gap-3">
           <Button variant="outline" onClick={onClose} disabled={loading}>Cancel</Button>
           <Button variant={variant} onClick={onConfirm} loading={loading}>{confirmLabel}</Button>

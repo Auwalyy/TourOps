@@ -82,7 +82,7 @@ const stats = [
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-white text-gray-900 font-sans">
+    <div className="min-h-screen bg-white text-neutral-900 font-sans">
 
       {/* Nav */}
       <header className="sticky top-0 z-50 border-b border-slate-200 bg-white">

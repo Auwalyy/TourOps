@@ -25,11 +25,11 @@ export default function PortalInvoicesPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">My Invoices</h1>
+      <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">My Invoices</h1>
       {isLoading ? (
-        <p className="text-sm text-gray-400">Loading...</p>
+        <p className="text-sm text-neutral-400">Loading...</p>
       ) : !data?.length ? (
-        <Card><CardContent className="py-12 text-center text-sm text-gray-400">No invoices found</CardContent></Card>
+        <Card><CardContent className="py-12 text-center text-sm text-neutral-400">No invoices found</CardContent></Card>
       ) : (
         <div className="space-y-3">
           {data.map((inv: any) => (
@@ -37,7 +37,7 @@ export default function PortalInvoicesPage() {
               <CardContent className="flex items-center justify-between py-4">
                 <div>
                   <p className="font-mono text-sm font-medium text-blue-600">{inv.invoiceNumber}</p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-neutral-500">
                     Issued: {formatDate(inv.issuedAt)}
                     {inv.dueDate ? ` · Due: ${formatDate(inv.dueDate)}` : ''}
                   </p>
@@ -49,14 +49,14 @@ export default function PortalInvoicesPage() {
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="text-right">
-                    <p className="text-sm font-bold text-gray-900 dark:text-gray-100">
+                    <p className="text-sm font-bold text-neutral-900 dark:text-neutral-100">
                       {formatCurrency(inv.totalAmount, inv.currency)}
                     </p>
                     <StatusBadge status={inv.status} />
                   </div>
                   <button
                     onClick={() => downloadPDF(inv._id, inv.invoiceNumber)}
-                    className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-blue-600 dark:hover:bg-gray-800"
+                    className="rounded-lg p-2 text-neutral-400 hover:bg-neutral-100 hover:text-blue-600 dark:hover:bg-neutral-800"
                   >
                     <Download className="h-4 w-4" />
                   </button>

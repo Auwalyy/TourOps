@@ -38,7 +38,7 @@ export default function PackageDetailPage() {
   });
 
   if (isLoading) return <Skeleton className="h-64 w-full" />;
-  if (!pkg) return <p className="text-gray-500">Package not found.</p>;
+  if (!pkg) return <p className="text-neutral-500">Package not found.</p>;
 
   const itinerary = pkg.itinerary ?? [];
   const inclusions = pkg.inclusions ?? [];
@@ -49,10 +49,10 @@ export default function PackageDetailPage() {
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" onClick={() => router.back()}><ArrowLeft className="h-4 w-4" /></Button>
         <div className="flex-1">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{pkg.title}</h1>
+          <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">{pkg.title}</h1>
           <div className="flex items-center gap-2 mt-1">
             <StatusBadge status={pkg.status} />
-            <span className="text-sm text-gray-500 capitalize">{pkg.category.replace(/_/g, ' ')}</span>
+            <span className="text-sm text-neutral-500 capitalize">{pkg.category.replace(/_/g, ' ')}</span>
           </div>
         </div>
         <Button variant="danger" size="sm" onClick={() => setShowDelete(true)}>
@@ -65,7 +65,7 @@ export default function PackageDetailPage() {
           <Card>
             <CardHeader><CardTitle>Package Details</CardTitle></CardHeader>
             <CardContent className="space-y-4">
-              <p className="text-sm text-gray-600 dark:text-gray-400">{pkg.description}</p>
+              <p className="text-sm text-neutral-600 dark:text-neutral-400">{pkg.description}</p>
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <Detail label="Destinations" value={pkg.destinations.join(', ')} />
                 <Detail label="Duration" value={`${pkg.duration.days} Days / ${pkg.duration.nights} Nights`} />
@@ -92,13 +92,13 @@ export default function PackageDetailPage() {
               {!availability ? (
                 <Skeleton className="h-20 w-full" />
               ) : availability.maxCapacity === null ? (
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-neutral-500">
                   No seat limit set on this package — {availability.taken} booking(s) so far.
                   Set a capacity to enforce a hard cap.
                 </p>
               ) : (
                 <>
-                  <div className="flex h-3 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800">
+                  <div className="flex h-3 w-full overflow-hidden rounded-full bg-neutral-100 dark:bg-neutral-800">
                     <div
                       className="bg-green-500"
                       style={{ width: `${Math.min(100, (availability.sold / availability.maxCapacity) * 100)}%` }}
@@ -114,19 +114,19 @@ export default function PackageDetailPage() {
                     {[
                       { label: 'Sold', value: availability.sold, color: 'text-green-600', dot: 'bg-green-500' },
                       { label: 'Held', value: availability.held, color: 'text-yellow-600', dot: 'bg-yellow-400' },
-                      { label: 'Remaining', value: availability.remaining, color: availability.remaining === 0 ? 'text-red-600' : 'text-gray-900 dark:text-gray-100', dot: 'bg-gray-300' },
-                      { label: 'Capacity', value: availability.maxCapacity, color: 'text-gray-900 dark:text-gray-100', dot: 'bg-gray-400' },
+                      { label: 'Remaining', value: availability.remaining, color: availability.remaining === 0 ? 'text-red-600' : 'text-neutral-900 dark:text-neutral-100', dot: 'bg-neutral-300' },
+                      { label: 'Capacity', value: availability.maxCapacity, color: 'text-neutral-900 dark:text-neutral-100', dot: 'bg-neutral-400' },
                     ].map((s) => (
-                      <div key={s.label} className="rounded-xl bg-gray-50 p-3 dark:bg-gray-800/50">
+                      <div key={s.label} className="rounded-xl bg-neutral-50 p-3 dark:bg-neutral-800/50">
                         <div className="flex items-center gap-1.5">
                           <span className={`h-2 w-2 rounded-full ${s.dot}`} />
-                          <p className="text-xs text-gray-500">{s.label}</p>
+                          <p className="text-xs text-neutral-500">{s.label}</p>
                         </div>
                         <p className={`mt-0.5 text-xl font-bold ${s.color}`}>{s.value}</p>
                       </div>
                     ))}
                   </div>
-                  <p className="text-xs text-gray-400">
+                  <p className="text-xs text-neutral-400">
                     Held = draft, pending or reserved bookings. New bookings are refused automatically once sold + held
                     reaches capacity.
                   </p>
@@ -141,11 +141,11 @@ export default function PackageDetailPage() {
               <CardContent className="space-y-4">
                 {itinerary.map((day: { day: number; title: string; description: string; activities: string[] }) => (
                   <div key={day.day} className="border-l-2 border-blue-200 pl-4 dark:border-blue-800">
-                    <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">Day {day.day}: {day.title}</p>
-                    <p className="mt-1 text-xs text-gray-500">{day.description}</p>
+                    <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">Day {day.day}: {day.title}</p>
+                    <p className="mt-1 text-xs text-neutral-500">{day.description}</p>
                     {day.activities.length > 0 && (
                       <ul className="mt-1 space-y-0.5">
-                        {day.activities.map((a: string, i: number) => <li key={i} className="text-xs text-gray-600 dark:text-gray-400">• {a}</li>)}
+                        {day.activities.map((a: string, i: number) => <li key={i} className="text-xs text-neutral-600 dark:text-neutral-400">• {a}</li>)}
                       </ul>
                     )}
                   </div>
@@ -162,7 +162,7 @@ export default function PackageDetailPage() {
               <CardContent>
                 <ul className="space-y-1">
                   {inclusions.map((item: string, i: number) => (
-                    <li key={i} className="flex items-start gap-2 text-sm text-gray-700 dark:text-gray-300">
+                    <li key={i} className="flex items-start gap-2 text-sm text-neutral-700 dark:text-neutral-300">
                       <span className="mt-0.5 text-green-500">✓</span> {item}
                     </li>
                   ))}
@@ -176,7 +176,7 @@ export default function PackageDetailPage() {
               <CardContent>
                 <ul className="space-y-1">
                   {exclusions.map((item: string, i: number) => (
-                    <li key={i} className="flex items-start gap-2 text-sm text-gray-700 dark:text-gray-300">
+                    <li key={i} className="flex items-start gap-2 text-sm text-neutral-700 dark:text-neutral-300">
                       <span className="mt-0.5 text-red-500">✗</span> {item}
                     </li>
                   ))}
@@ -201,5 +201,5 @@ export default function PackageDetailPage() {
 }
 
 function Detail({ label, value }: { label: string; value: string }) {
-  return <div><p className="text-xs text-gray-500">{label}</p><p className="font-medium text-gray-900 dark:text-gray-100">{value}</p></div>;
+  return <div><p className="text-xs text-neutral-500">{label}</p><p className="font-medium text-neutral-900 dark:text-neutral-100">{value}</p></div>;
 }

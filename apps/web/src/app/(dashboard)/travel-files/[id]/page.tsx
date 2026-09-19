@@ -171,7 +171,7 @@ export default function TravelFileDetailPage() {
   }
 
   if (isLoading) return <Skeleton className="h-96 w-full" />;
-  if (!file) return <p className="text-gray-500">Travel file not found.</p>;
+  if (!file) return <p className="text-neutral-500">Travel file not found.</p>;
 
   const customer = file.customerId as any;
   const consultant = file.assignedConsultant as any;
@@ -188,26 +188,26 @@ export default function TravelFileDetailPage() {
         </Button>
         <div className="flex-1 min-w-0">
           <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{file.fileNumber}</h1>
+            <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">{file.fileNumber}</h1>
             <button
               onClick={copyTrackingLink}
               title="Copy customer tracking link"
-              className="flex items-center gap-1.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-300 hover:border-blue-400 hover:text-blue-600 transition-colors"
+              className="flex items-center gap-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 py-1.5 text-xs font-medium text-neutral-600 dark:text-neutral-300 hover:border-blue-400 hover:text-blue-600 transition-colors"
             >
               {copied ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5" />}
               {copied ? 'Copied!' : 'Copy tracking link'}
             </button>
-            <span className="rounded-full bg-indigo-100 px-3 py-0.5 text-sm font-medium text-indigo-700">
+            <span className="rounded-full bg-neutral-100 px-3 py-0.5 text-sm font-medium text-neutral-700">
               {TRAVEL_TYPE_LABELS[file.travelType]} Travel File
             </span>
             <StatusBadge status={file.status} />
             <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${
               file.priority === 'urgent' ? 'bg-red-100 text-red-700' :
-              file.priority === 'high' ? 'bg-orange-100 text-orange-700' :
-              'bg-gray-100 text-gray-600'
+              file.priority === 'high' ? 'bg-amber-100 text-amber-700' :
+              'bg-neutral-100 text-neutral-600'
             }`}>{file.priority}</span>
           </div>
-          <p className="mt-1 text-sm text-gray-500">
+          <p className="mt-1 text-sm text-neutral-500">
             {customer?.fullName || `${customer?.firstName} ${customer?.lastName}`} · {file.destination}
             {file.departureGroup && ` · ${file.departureGroup}`}
           </p>
@@ -229,7 +229,7 @@ export default function TravelFileDetailPage() {
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-gray-200 dark:border-gray-800">
+      <div className="border-b border-neutral-200 dark:border-neutral-800">
         <nav className="-mb-px flex gap-1 overflow-x-auto">
           {TABS.map(({ id: tabId, label, icon: Icon }) => (
             <button
@@ -238,7 +238,7 @@ export default function TravelFileDetailPage() {
               className={`flex items-center gap-2 whitespace-nowrap border-b-2 px-4 py-3 text-sm font-medium transition-colors ${
                 activeTab === tabId
                   ? 'border-blue-600 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400'
+                  : 'border-transparent text-neutral-500 hover:text-neutral-700 dark:text-neutral-400'
               }`}
             >
               <Icon className="h-4 w-4" />
@@ -249,7 +249,7 @@ export default function TravelFileDetailPage() {
                 </span>
               )}
               {tabId === 'bookings' && (bookings?.length ?? 0) > 0 && (
-                <span className="rounded-full bg-indigo-100 px-1.5 py-0.5 text-xs font-bold text-indigo-700">
+                <span className="rounded-full bg-neutral-100 px-1.5 py-0.5 text-xs font-bold text-neutral-700">
                   {bookings!.length}
                 </span>
               )}
@@ -307,21 +307,21 @@ export default function TravelFileDetailPage() {
               <CardHeader><CardTitle>Financial Summary</CardTitle></CardHeader>
               <CardContent className="space-y-3">
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">Total Cost</span>
-                  <span className="font-semibold text-gray-900 dark:text-gray-100">{formatCurrency(file.totalCost)}</span>
+                  <span className="text-neutral-500">Total Cost</span>
+                  <span className="font-semibold text-neutral-900 dark:text-neutral-100">{formatCurrency(file.totalCost)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">Amount Paid</span>
+                  <span className="text-neutral-500">Amount Paid</span>
                   <span className="font-semibold text-green-600">{formatCurrency(file.amountPaid)}</span>
                 </div>
-                <div className="flex justify-between border-t border-gray-100 pt-3 text-sm dark:border-gray-800">
-                  <span className="font-semibold text-gray-700 dark:text-gray-300">Balance</span>
+                <div className="flex justify-between border-t border-neutral-100 pt-3 text-sm dark:border-neutral-800">
+                  <span className="font-semibold text-neutral-700 dark:text-neutral-300">Balance</span>
                   <span className={`font-bold ${file.balance > 0 ? 'text-red-600' : 'text-green-600'}`}>
                     {formatCurrency(file.balance)}
                   </span>
                 </div>
                 {file.totalCost > 0 && (
-                  <div className="h-2 w-full rounded-full bg-gray-100 dark:bg-gray-800">
+                  <div className="h-2 w-full rounded-full bg-neutral-100 dark:bg-neutral-800">
                     <div
                       className="h-2 rounded-full bg-green-500 transition-all"
                       style={{ width: `${Math.min(100, Math.round((file.amountPaid / file.totalCost) * 100))}%` }}
@@ -355,14 +355,14 @@ export default function TravelFileDetailPage() {
                     { label: 'Tasks', pct: health.progress.tasks },
                   ].map(({ label, pct }) => (
                     <div key={label}>
-                      <div className="mb-1 flex justify-between text-xs text-gray-500">
+                      <div className="mb-1 flex justify-between text-xs text-neutral-500">
                         <span>{label}</span>
                         <span>{pct}%</span>
                       </div>
-                      <div className="h-2 w-full rounded-full bg-gray-100">
+                      <div className="h-2 w-full rounded-full bg-neutral-100">
                         <div
                           className={`h-2 rounded-full transition-all ${
-                            pct >= 80 ? 'bg-green-500' : pct >= 40 ? 'bg-blue-500' : 'bg-orange-400'
+                            pct >= 80 ? 'bg-green-500' : pct >= 40 ? 'bg-blue-500' : 'bg-amber-400'
                           }`}
                           style={{ width: `${pct}%` }}
                         />
@@ -388,44 +388,46 @@ export default function TravelFileDetailPage() {
           {!bookings || bookings.length === 0 ? (
             <Card>
               <CardContent className="py-12 text-center">
-                <Plane className="mx-auto h-10 w-10 text-gray-300 mb-3" />
-                <p className="text-sm font-medium text-gray-500">No bookings yet</p>
-                <p className="text-xs text-gray-400 mt-1">Add a flight, hotel, transport or other arrangement to this travel file.</p>
+                <Plane className="mx-auto h-10 w-10 text-neutral-300 mb-3" />
+                <p className="text-sm font-medium text-neutral-500">No bookings yet</p>
+                <p className="text-xs text-neutral-400 mt-1">Add a flight, hotel, transport or other arrangement to this travel file.</p>
                 <Button className="mt-4" onClick={() => setShowBookingForm(true)}>Add First Booking</Button>
               </CardContent>
             </Card>
           ) : (
             <Card>
               <CardContent className="p-0">
-                <ul className="divide-y divide-gray-50 dark:divide-gray-800">
+                <ul className="divide-y divide-neutral-50 dark:divide-neutral-800">
                   {bookings.map((bk) => {
                     const TYPE_ICON: Record<string, string> = {
-                      flight: '✈️', ticket: '🎫', visa: '🛂', hotel: '🏨', transport: '🚌', tour: '🗺️',
-                      activity: '🎯', package: '📦', other: '📋',
+                      flight: 'FLT', ticket: 'TKT', visa: 'VIS', hotel: 'HTL', transport: 'TRN', tour: 'TUR',
+                      activity: 'ACT', package: 'PKG', other: 'OTH',
                     };
                     return (
                       <li
                         key={bk._id}
-                        className="flex items-center gap-4 px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer transition-colors"
+                        className="flex items-center gap-4 px-6 py-4 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 cursor-pointer transition-colors"
                         onClick={() => router.push(`/bookings/${bk._id}`)}
                       >
-                        <span className="text-2xl">{TYPE_ICON[bk.bookingType] || '📋'}</span>
+                        <span className="flex h-8 w-9 shrink-0 items-center justify-center rounded border border-neutral-200 bg-neutral-50 text-[10px] font-semibold tracking-wide text-neutral-500 dark:border-neutral-700 dark:bg-neutral-800">
+                          {TYPE_ICON[bk.bookingType] || 'OTH'}
+                        </span>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
                             <span className="font-mono text-sm font-semibold text-blue-600">{bk.bookingNumber}</span>
-                            <span className="text-xs text-gray-400 capitalize">{bk.bookingType}</span>
+                            <span className="text-xs text-neutral-400 capitalize">{bk.bookingType}</span>
                           </div>
-                          <p className="text-sm text-gray-700 dark:text-gray-300 truncate">{bk.title}</p>
-                          {bk.provider && <p className="text-xs text-gray-400">{bk.provider}</p>}
+                          <p className="text-sm text-neutral-700 dark:text-neutral-300 truncate">{bk.title}</p>
+                          {bk.provider && <p className="text-xs text-neutral-400">{bk.provider}</p>}
                         </div>
                         <div className="text-right shrink-0">
                           <StatusBadge status={bk.status} />
                           {bk.startDate && (
-                            <p className="text-xs text-gray-400 mt-1">{formatDate(bk.startDate)}</p>
+                            <p className="text-xs text-neutral-400 mt-1">{formatDate(bk.startDate)}</p>
                           )}
                         </div>
                         <div className="text-right shrink-0">
-                          <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                          <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
                             {formatCurrency(bk.cost, bk.currency)}
                           </p>
                         </div>
@@ -433,8 +435,8 @@ export default function TravelFileDetailPage() {
                     );
                   })}
                 </ul>
-                <div className="border-t border-gray-100 dark:border-gray-800 px-6 py-3 flex justify-between text-sm">
-                  <span className="text-gray-500">Total booking cost</span>
+                <div className="border-t border-neutral-100 dark:border-neutral-800 px-6 py-3 flex justify-between text-sm">
+                  <span className="text-neutral-500">Total booking cost</span>
                   <span className="font-semibold">
                     {formatCurrency(bookings.reduce((s, b) => s + (b.cost || 0), 0))}
                   </span>
@@ -450,20 +452,20 @@ export default function TravelFileDetailPage() {
           <CardHeader><CardTitle>Workflow Timeline</CardTitle></CardHeader>
           <CardContent>
             {file.timeline.length === 0 ? (
-              <p className="text-sm text-gray-400">No timeline entries yet.</p>
+              <p className="text-sm text-neutral-400">No timeline entries yet.</p>
             ) : (
-              <ol className="relative border-l border-gray-200 dark:border-gray-700 ml-3 space-y-6">
+              <ol className="relative border-l border-neutral-200 dark:border-neutral-700 ml-3 space-y-6">
                 {[...file.timeline].reverse().map((entry) => {
                   const user = entry.performedBy as any;
                   return (
                     <li key={entry._id} className="ml-6">
-                      <span className="absolute -left-3 flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 ring-4 ring-white dark:ring-gray-900">
+                      <span className="absolute -left-3 flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 ring-4 ring-white dark:ring-neutral-900">
                         <Clock className="h-3 w-3 text-blue-600" />
                       </span>
-                      <div className="rounded-lg border border-gray-100 bg-gray-50 p-3 dark:border-gray-800 dark:bg-gray-900">
-                        <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{entry.action}</p>
-                        <p className="text-xs text-gray-500 mt-0.5">{entry.description}</p>
-                        <p className="mt-1 text-xs text-gray-400">
+                      <div className="rounded-lg border border-neutral-100 bg-neutral-50 p-3 dark:border-neutral-800 dark:bg-neutral-900">
+                        <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">{entry.action}</p>
+                        <p className="text-xs text-neutral-500 mt-0.5">{entry.description}</p>
+                        <p className="mt-1 text-xs text-neutral-400">
                           {user?.firstName} {user?.lastName} · {formatRelativeTime(entry.performedAt)}
                         </p>
                       </div>
@@ -513,27 +515,27 @@ export default function TravelFileDetailPage() {
             <CardHeader><CardTitle>Tasks ({file.tasks.length})</CardTitle></CardHeader>
             <CardContent>
               {file.tasks.length === 0 ? (
-                <p className="text-sm text-gray-400">No tasks yet.</p>
+                <p className="text-sm text-neutral-400">No tasks yet.</p>
               ) : (
-                <ul className="divide-y divide-gray-50 dark:divide-gray-800">
+                <ul className="divide-y divide-neutral-50 dark:divide-neutral-800">
                   {file.tasks.map((task) => (
                     <li key={task._id} className="flex items-center gap-4 py-3">
                       <input
                         type="checkbox"
                         checked={task.status === 'completed'}
                         onChange={() => taskUpdateMutation.mutate({ taskId: task._id, status: task.status === 'completed' ? 'todo' : 'completed' })}
-                        className="h-4 w-4 rounded border-gray-300 text-blue-600"
+                        className="h-4 w-4 rounded border-neutral-300 text-blue-600"
                       />
                       <div className="flex-1 min-w-0">
-                        <p className={`text-sm font-medium ${task.status === 'completed' ? 'line-through text-gray-400' : 'text-gray-900 dark:text-gray-100'}`}>
+                        <p className={`text-sm font-medium ${task.status === 'completed' ? 'line-through text-neutral-400' : 'text-neutral-900 dark:text-neutral-100'}`}>
                           {task.title}
                         </p>
-                        {task.dueDate && <p className="text-xs text-gray-400">Due {formatDate(task.dueDate)}</p>}
+                        {task.dueDate && <p className="text-xs text-neutral-400">Due {formatDate(task.dueDate)}</p>}
                       </div>
                       <span className={`rounded-full px-2 py-0.5 text-xs font-medium capitalize ${
                         task.priority === 'high' ? 'bg-red-100 text-red-700' :
                         task.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' :
-                        'bg-gray-100 text-gray-600'
+                        'bg-neutral-100 text-neutral-600'
                       }`}>{task.priority}</span>
                       <StatusBadge status={task.status} />
                     </li>
@@ -566,15 +568,15 @@ export default function TravelFileDetailPage() {
             <CardHeader><CardTitle>Notes ({file.notes.length})</CardTitle></CardHeader>
             <CardContent>
               {file.notes.length === 0 ? (
-                <p className="text-sm text-gray-400">No notes yet.</p>
+                <p className="text-sm text-neutral-400">No notes yet.</p>
               ) : (
                 <ul className="space-y-3">
                   {[...file.notes].reverse().map((note) => {
                     const author = note.createdBy as any;
                     return (
-                      <li key={note._id} className="rounded-lg border border-gray-100 bg-gray-50 p-4 dark:border-gray-800 dark:bg-gray-900">
-                        <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{note.content}</p>
-                        <p className="mt-2 text-xs text-gray-400">
+                      <li key={note._id} className="rounded-lg border border-neutral-100 bg-neutral-50 p-4 dark:border-neutral-800 dark:bg-neutral-900">
+                        <p className="text-sm text-neutral-700 dark:text-neutral-300 whitespace-pre-wrap">{note.content}</p>
+                        <p className="mt-2 text-xs text-neutral-400">
                           {author?.firstName} {author?.lastName} · {formatRelativeTime(note.createdAt)}
                         </p>
                       </li>
@@ -624,7 +626,7 @@ export default function TravelFileDetailPage() {
                   </Button>
                 </div>
               </div>
-              <p className="mt-2 text-xs text-gray-400">JPG, PNG, WebP or PDF · Max 10MB</p>
+              <p className="mt-2 text-xs text-neutral-400">JPG, PNG, WebP or PDF · Max 10MB</p>
             </CardContent>
           </Card>
 
@@ -633,16 +635,16 @@ export default function TravelFileDetailPage() {
             <CardHeader><CardTitle>Documents ({file.documentIds.length})</CardTitle></CardHeader>
             <CardContent>
               {file.documentIds.length === 0 ? (
-                <p className="text-sm text-gray-400">No documents uploaded yet. Use the form above to upload a visa, ticket, itinerary, or any other document.</p>
+                <p className="text-sm text-neutral-400">No documents uploaded yet. Use the form above to upload a visa, ticket, itinerary, or any other document.</p>
               ) : (
-                <ul className="divide-y divide-gray-50 dark:divide-gray-800">
+                <ul className="divide-y divide-neutral-50 dark:divide-neutral-800">
                   {(file.documentIds as any[]).map((doc) => (
                     <li key={doc._id} className="flex items-center justify-between gap-4 py-3">
                       <div className="min-w-0">
-                        <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                        <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100 truncate">
                           {doc.name || doc.originalName}
                         </p>
-                        <p className="text-xs text-gray-500 capitalize">
+                        <p className="text-xs text-neutral-500 capitalize">
                           {doc.category} · {doc.fileType?.split('/')[1] || doc.fileType}
                           {doc.expiryDate && ` · Expires ${formatDate(doc.expiryDate)}`}
                         </p>
@@ -653,13 +655,13 @@ export default function TravelFileDetailPage() {
                           target="_blank"
                           rel="noreferrer"
                           download
-                          className="flex items-center gap-1 rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs font-medium text-gray-600 hover:border-blue-400 hover:text-blue-600 transition-colors dark:border-gray-700 dark:text-gray-300"
+                          className="flex items-center gap-1 rounded-lg border border-neutral-200 px-2.5 py-1.5 text-xs font-medium text-neutral-600 hover:border-blue-400 hover:text-blue-600 transition-colors dark:border-neutral-700 dark:text-neutral-300"
                         >
                           <Download className="h-3.5 w-3.5" /> View
                         </a>
                         <button
                           onClick={() => docDeleteMutation.mutate(doc._id)}
-                          className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors"
+                          className="rounded-lg p-1.5 text-neutral-400 hover:bg-red-50 hover:text-red-500 transition-colors"
                           title="Remove document"
                         >
                           <Trash2 className="h-4 w-4" />
@@ -721,17 +723,17 @@ export default function TravelFileDetailPage() {
             <CardHeader><CardTitle>Payment History ({payments?.length || 0})</CardTitle></CardHeader>
             <CardContent>
               {!payments || payments.length === 0 ? (
-                <p className="text-sm text-gray-400">No payments recorded yet.</p>
+                <p className="text-sm text-neutral-400">No payments recorded yet.</p>
               ) : (
-                <ul className="divide-y divide-gray-50 dark:divide-gray-800">
+                <ul className="divide-y divide-neutral-50 dark:divide-neutral-800">
                   {payments.map((p: any) => (
                     <li key={p._id} className="flex items-center justify-between gap-4 py-3">
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
-                          <p className="text-sm text-gray-700 dark:text-gray-300 capitalize">{p.method.replace(/_/g, ' ')}</p>
+                          <p className="text-sm text-neutral-700 dark:text-neutral-300 capitalize">{p.method.replace(/_/g, ' ')}</p>
                           <StatusBadge status={p.status} />
                         </div>
-                        <p className="text-xs text-gray-400">
+                        <p className="text-xs text-neutral-400">
                           {formatDate(p.paidAt)}{p.reference && ` · Ref: ${p.reference}`}{p.notes && ` · ${p.notes}`}
                         </p>
                         {p.status === 'rejected' && p.rejectionReason && (
@@ -741,7 +743,7 @@ export default function TravelFileDetailPage() {
                       <div className="flex shrink-0 items-center gap-2">
                         {p.proofUrl && (
                           <a href={p.proofUrl} target="_blank" rel="noreferrer"
-                            className="rounded-lg border border-gray-200 px-2 py-1 text-xs text-gray-600 hover:border-blue-400 hover:text-blue-600 dark:border-gray-700 dark:text-gray-300">
+                            className="rounded-lg border border-neutral-200 px-2 py-1 text-xs text-neutral-600 hover:border-blue-400 hover:text-blue-600 dark:border-neutral-700 dark:text-neutral-300">
                             View proof
                           </a>
                         )}
@@ -754,7 +756,7 @@ export default function TravelFileDetailPage() {
                             }}>Reject</Button>
                           </>
                         )}
-                        <span className={`font-semibold ${p.status === 'verified' ? 'text-green-600' : p.status === 'rejected' ? 'text-gray-400 line-through' : 'text-yellow-600'}`}>
+                        <span className={`font-semibold ${p.status === 'verified' ? 'text-green-600' : p.status === 'rejected' ? 'text-neutral-400 line-through' : 'text-yellow-600'}`}>
                           +{formatCurrency(p.amount)}
                         </span>
                       </div>
@@ -769,18 +771,18 @@ export default function TravelFileDetailPage() {
           <CardHeader><CardTitle>Invoices ({file.invoiceIds.length})</CardTitle></CardHeader>
           <CardContent>
             {file.invoiceIds.length === 0 ? (
-              <p className="text-sm text-gray-400">No invoices linked. Create invoices in the Invoices module and link them here.</p>
+              <p className="text-sm text-neutral-400">No invoices linked. Create invoices in the Invoices module and link them here.</p>
             ) : (
               <>
-                <ul className="divide-y divide-gray-50 dark:divide-gray-800">
+                <ul className="divide-y divide-neutral-50 dark:divide-neutral-800">
                   {(file.invoiceIds as any[]).map((inv) => (
                     <li key={inv._id} className="flex items-center justify-between py-3">
                       <div>
                         <p className="font-mono text-sm font-semibold text-blue-600">{inv.invoiceNumber}</p>
-                        <p className="text-xs text-gray-500">Issued {inv.issuedAt ? formatDate(inv.issuedAt) : '—'}</p>
+                        <p className="text-xs text-neutral-500">Issued {inv.issuedAt ? formatDate(inv.issuedAt) : '—'}</p>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{formatCurrency(inv.totalAmount)}</p>
+                        <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">{formatCurrency(inv.totalAmount)}</p>
                         <p className={`text-xs font-medium ${inv.outstandingBalance > 0 ? 'text-red-600' : 'text-green-600'}`}>
                           {inv.outstandingBalance > 0 ? `${formatCurrency(inv.outstandingBalance)} outstanding` : 'Fully paid'}
                         </p>
@@ -789,17 +791,17 @@ export default function TravelFileDetailPage() {
                     </li>
                   ))}
                 </ul>
-                <div className="mt-4 rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
+                <div className="mt-4 rounded-lg bg-neutral-50 p-4 dark:bg-neutral-800">
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-500">Total Invoiced</span>
+                    <span className="text-neutral-500">Total Invoiced</span>
                     <span className="font-semibold">{formatCurrency((file.invoiceIds as any[]).reduce((s, i) => s + (i.totalAmount || 0), 0))}</span>
                   </div>
                   <div className="flex justify-between text-sm mt-1">
-                    <span className="text-gray-500">Total Paid</span>
+                    <span className="text-neutral-500">Total Paid</span>
                     <span className="font-semibold text-green-600">{formatCurrency((file.invoiceIds as any[]).reduce((s, i) => s + (i.amountPaid || 0), 0))}</span>
                   </div>
-                  <div className="flex justify-between text-sm mt-1 border-t border-gray-200 pt-2 dark:border-gray-700">
-                    <span className="font-semibold text-gray-700 dark:text-gray-300">Outstanding</span>
+                  <div className="flex justify-between text-sm mt-1 border-t border-neutral-200 pt-2 dark:border-neutral-700">
+                    <span className="font-semibold text-neutral-700 dark:text-neutral-300">Outstanding</span>
                     <span className="font-bold text-red-600">{formatCurrency((file.invoiceIds as any[]).reduce((s, i) => s + (i.outstandingBalance || 0), 0))}</span>
                   </div>
                 </div>
@@ -823,24 +825,24 @@ export default function TravelFileDetailPage() {
           <CardHeader><CardTitle>Status History</CardTitle></CardHeader>
           <CardContent>
             {file.statusHistory.length === 0 ? (
-              <p className="text-sm text-gray-400">No status changes recorded yet.</p>
+              <p className="text-sm text-neutral-400">No status changes recorded yet.</p>
             ) : (
-              <ol className="relative border-l border-gray-200 dark:border-gray-700 ml-3 space-y-5">
+              <ol className="relative border-l border-neutral-200 dark:border-neutral-700 ml-3 space-y-5">
                 {[...file.statusHistory].reverse().map((entry) => {
                   const user = entry.changedBy as any;
                   return (
                     <li key={entry._id} className="ml-6">
-                      <span className="absolute -left-3 flex h-6 w-6 items-center justify-center rounded-full bg-indigo-100 ring-4 ring-white dark:ring-gray-900">
-                        <Clock className="h-3 w-3 text-indigo-600" />
+                      <span className="absolute -left-3 flex h-6 w-6 items-center justify-center rounded-full bg-neutral-100 ring-4 ring-white dark:ring-neutral-900">
+                        <Clock className="h-3 w-3 text-neutral-600" />
                       </span>
-                      <div className="rounded-lg border border-gray-100 bg-gray-50 p-3 dark:border-gray-800 dark:bg-gray-900">
+                      <div className="rounded-lg border border-neutral-100 bg-neutral-50 p-3 dark:border-neutral-800 dark:bg-neutral-900">
                         <div className="flex items-center gap-2 flex-wrap">
                           <StatusBadge status={entry.previousStatus} />
-                          <span className="text-xs text-gray-400">→</span>
+                          <span className="text-xs text-neutral-400">→</span>
                           <StatusBadge status={entry.newStatus} />
                         </div>
-                        {entry.reason && <p className="text-xs text-gray-500 mt-1">{entry.reason}</p>}
-                        <p className="mt-1 text-xs text-gray-400">
+                        {entry.reason && <p className="text-xs text-neutral-500 mt-1">{entry.reason}</p>}
+                        <p className="mt-1 text-xs text-neutral-400">
                           {user?.firstName} {user?.lastName} · {formatRelativeTime(entry.changedAt)}
                         </p>
                       </div>
@@ -859,8 +861,8 @@ export default function TravelFileDetailPage() {
 function Detail({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <p className="text-xs text-gray-500">{label}</p>
-      <p className="font-medium text-gray-900 dark:text-gray-100">{value}</p>
+      <p className="text-xs text-neutral-500">{label}</p>
+      <p className="font-medium text-neutral-900 dark:text-neutral-100">{value}</p>
     </div>
   );
 }

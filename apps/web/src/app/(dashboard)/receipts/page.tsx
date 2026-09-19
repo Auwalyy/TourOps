@@ -51,13 +51,13 @@ export default function ReceiptsPage() {
       header: 'Customer',
       render: (row) => {
         const c = row.customerId as any;
-        return <span className="font-medium text-gray-900 dark:text-gray-100">{c?.fullName || `${c?.firstName} ${c?.lastName}`}</span>;
+        return <span className="font-medium text-neutral-900 dark:text-neutral-100">{c?.fullName || `${c?.firstName} ${c?.lastName}`}</span>;
       },
     },
     {
       key: 'description',
       header: 'Description',
-      render: (row) => <span className="text-sm text-gray-600 dark:text-gray-400 line-clamp-1">{row.description}</span>,
+      render: (row) => <span className="text-sm text-neutral-600 dark:text-neutral-400 line-clamp-1">{row.description}</span>,
     },
     {
       key: 'method',
@@ -97,7 +97,7 @@ export default function ReceiptsPage() {
       />
 
       <Card>
-        <div className="flex items-center gap-3 border-b border-gray-100 px-6 py-4 dark:border-gray-800">
+        <div className="flex items-center gap-3 border-b border-neutral-100 px-6 py-4 dark:border-neutral-800">
           <SearchInput
             value={search}
             onChange={(v) => { setSearch(v); setPage(1); }}

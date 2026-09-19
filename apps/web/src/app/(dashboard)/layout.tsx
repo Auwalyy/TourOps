@@ -17,11 +17,13 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   if (!isAuthenticated) return null;
 
   return (
-    <div className="flex h-screen overflow-hidden bg-slate-100 dark:bg-[#0a0f1e]">
+    <div className="flex h-screen overflow-hidden bg-[var(--background)]">
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
         <Topbar onMenuClick={() => setSidebarOpen(true)} />
-        <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6 lg:p-8">{children}</main>
+        <main className="flex-1 overflow-y-auto overflow-x-hidden">
+          <div className="mx-auto max-w-[1400px] p-5 sm:p-6 lg:p-8">{children}</div>
+        </main>
       </div>
     </div>
   );

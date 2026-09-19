@@ -16,10 +16,10 @@ import { toast } from 'sonner';
 const STATUS_CONFIG: Record<string, { label: string; bg: string; text: string; border: string; icon: typeof CheckCircle2 }> = {
   open:                { label: 'Open',                bg: 'bg-blue-50',    text: 'text-blue-700',   border: 'border-blue-200',   icon: Clock },
   pending_payment:     { label: 'Pending Payment',     bg: 'bg-yellow-50',  text: 'text-yellow-700', border: 'border-yellow-200', icon: AlertCircle },
-  awaiting_documents:  { label: 'Awaiting Documents',  bg: 'bg-orange-50',  text: 'text-orange-700', border: 'border-orange-200', icon: AlertCircle },
-  visa_processing:     { label: 'Visa Processing',     bg: 'bg-purple-50',  text: 'text-purple-700', border: 'border-purple-200', icon: Clock },
+  awaiting_documents:  { label: 'Awaiting Documents',  bg: 'bg-amber-50',  text: 'text-amber-700', border: 'border-amber-200', icon: AlertCircle },
+  visa_processing:     { label: 'Visa Processing',     bg: 'bg-neutral-50',  text: 'text-neutral-700', border: 'border-neutral-200', icon: Clock },
   ready_for_departure: { label: 'Ready for Departure', bg: 'bg-green-50',   text: 'text-green-700',  border: 'border-green-200',  icon: CheckCircle2 },
-  completed:           { label: 'Completed',           bg: 'bg-gray-100',   text: 'text-gray-700',   border: 'border-gray-200',   icon: CheckCircle2 },
+  completed:           { label: 'Completed',           bg: 'bg-neutral-100',   text: 'text-neutral-700',   border: 'border-neutral-200',   icon: CheckCircle2 },
   cancelled:           { label: 'Cancelled',           bg: 'bg-red-50',     text: 'text-red-700',    border: 'border-red-200',    icon: XCircle },
 };
 
@@ -47,13 +47,13 @@ function ProgressStepper({ status }: { status: string }) {
         return (
           <div key={step.key} className="flex flex-1 items-center">
             <div className="flex flex-col items-center">
-              <div className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold transition-all ${done ? 'bg-green-500 text-white' : active ? 'bg-blue-600 text-white ring-4 ring-blue-100' : 'bg-gray-100 text-gray-400'}`}>
+              <div className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold transition-all ${done ? 'bg-green-500 text-white' : active ? 'bg-blue-600 text-white ring-4 ring-blue-100' : 'bg-neutral-100 text-neutral-400'}`}>
                 {done ? <CheckCircle2 className="h-4 w-4" /> : i + 1}
               </div>
-              <p className={`mt-1 text-[10px] font-medium text-center leading-tight ${active ? 'text-blue-600' : done ? 'text-green-600' : 'text-gray-400'}`}>{step.label}</p>
+              <p className={`mt-1 text-[10px] font-medium text-center leading-tight ${active ? 'text-blue-600' : done ? 'text-green-600' : 'text-neutral-400'}`}>{step.label}</p>
             </div>
             {i < STEPS.length - 1 && (
-              <div className={`mb-4 h-0.5 flex-1 transition-all ${done ? 'bg-green-400' : 'bg-gray-200'}`} />
+              <div className={`mb-4 h-0.5 flex-1 transition-all ${done ? 'bg-green-400' : 'bg-neutral-200'}`} />
             )}
           </div>
         );
@@ -65,17 +65,17 @@ function ProgressStepper({ status }: { status: string }) {
 function Section({ title, icon: Icon, children, defaultOpen = true }: { title: string; icon: any; children: React.ReactNode; defaultOpen?: boolean }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+    <div className="overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-sm">
       <button onClick={() => setOpen(!open)} className="flex w-full items-center justify-between px-5 py-4 text-left">
         <div className="flex items-center gap-2.5">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50">
             <Icon className="h-4 w-4 text-blue-600" />
           </div>
-          <span className="text-sm font-semibold text-gray-800">{title}</span>
+          <span className="text-sm font-semibold text-neutral-800">{title}</span>
         </div>
-        {open ? <ChevronUp className="h-4 w-4 text-gray-400" /> : <ChevronDown className="h-4 w-4 text-gray-400" />}
+        {open ? <ChevronUp className="h-4 w-4 text-neutral-400" /> : <ChevronDown className="h-4 w-4 text-neutral-400" />}
       </button>
-      {open && <div className="border-t border-gray-100 px-5 py-4">{children}</div>}
+      {open && <div className="border-t border-neutral-100 px-5 py-4">{children}</div>}
     </div>
   );
 }
@@ -83,9 +83,9 @@ function Section({ title, icon: Icon, children, defaultOpen = true }: { title: s
 function Row({ label, value }: { label: string; value?: string | null }) {
   if (!value) return null;
   return (
-    <div className="flex justify-between gap-4 py-2 text-sm border-b border-gray-50 last:border-0">
-      <span className="text-gray-400 shrink-0">{label}</span>
-      <span className="font-medium text-gray-800 text-right">{value}</span>
+    <div className="flex justify-between gap-4 py-2 text-sm border-b border-neutral-50 last:border-0">
+      <span className="text-neutral-400 shrink-0">{label}</span>
+      <span className="font-medium text-neutral-800 text-right">{value}</span>
     </div>
   );
 }
@@ -156,7 +156,7 @@ function TrackFilePageContent() {
     finally { setSendingNote(false); }
   }
 
-  const status = file ? (STATUS_CONFIG[file.status] ?? { label: file.status, bg: 'bg-gray-100', text: 'text-gray-700', border: 'border-gray-200', icon: Clock }) : null;
+  const status = file ? (STATUS_CONFIG[file.status] ?? { label: file.status, bg: 'bg-neutral-100', text: 'text-neutral-700', border: 'border-neutral-200', icon: Clock }) : null;
   const customer = file?.customerId as any;
   const consultant = file?.assignedConsultant as any;
   const officer = file?.assignedVisaOfficer as any;
@@ -167,9 +167,9 @@ function TrackFilePageContent() {
   const sharedNotes = file?.notes?.filter((n: any) => n.content?.startsWith('[Customer]') || n.visibility === 'shared') ?? [];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-neutral-50">
       {/* Header */}
-      <header className="sticky top-0 z-20 border-b border-gray-200 bg-white/90 backdrop-blur-md">
+      <header className="sticky top-0 z-20 border-b border-neutral-200 bg-white/90 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-3xl items-center gap-3 px-4">
           {logoUrl ? (
             <img src={logoUrl} alt={companyName} className="h-8 w-8 rounded-lg object-contain" />
@@ -178,16 +178,16 @@ function TrackFilePageContent() {
               <Globe className="h-4 w-4 text-white" />
             </div>
           )}
-          <span className="font-bold text-gray-900">{companyName}</span>
-          <span className="ml-1 rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-500">File Tracker</span>
+          <span className="font-bold text-neutral-900">{companyName}</span>
+          <span className="ml-1 rounded-full bg-neutral-100 px-2 py-0.5 text-xs text-neutral-500">File Tracker</span>
         </div>
       </header>
 
       <main className="mx-auto w-full max-w-3xl px-4 py-8 space-y-5">
         {/* Search */}
-        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-          <p className="mb-1 text-base font-semibold text-gray-800">Track Your Travel File</p>
-          <p className="mb-4 text-sm text-gray-400">Enter your file number to view full status and details.</p>
+        <div className="rounded-lg border border-neutral-200 bg-white p-6 shadow-sm">
+          <p className="mb-1 text-base font-semibold text-neutral-800">Track Your Travel File</p>
+          <p className="mb-4 text-sm text-neutral-400">Enter your file number to view full status and details.</p>
           <form onSubmit={(e) => { e.preventDefault(); if (fileNumber.trim()) doTrack(fileNumber.trim()); }} className="flex gap-2">
             <Input
               placeholder="e.g. TF-202608-70956"
@@ -210,16 +210,16 @@ function TrackFilePageContent() {
         {file && status && (
           <>
             {/* Status hero card */}
-            <div className={`rounded-2xl border-2 p-6 ${status.bg} ${status.border}`}>
+            <div className={`rounded-lg border-2 p-6 ${status.bg} ${status.border}`}>
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-widest opacity-50 mb-1">Travel File</p>
-                  <p className="text-3xl font-extrabold font-mono tracking-tight text-gray-900">{file.fileNumber}</p>
+                  <p className="text-3xl font-extrabold font-mono tracking-tight text-neutral-900">{file.fileNumber}</p>
                   <p className={`mt-1 text-sm font-medium ${status.text}`}>
                     {TRAVEL_LABELS[file.travelType] ?? file.travelType} · {file.destination}
                     {file.departureGroup && ` · ${file.departureGroup}`}
                   </p>
-                  {pkg && <p className="mt-0.5 text-xs text-gray-500">Package: {pkg.title}</p>}
+                  {pkg && <p className="mt-0.5 text-xs text-neutral-500">Package: {pkg.title}</p>}
                 </div>
                 <span className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-bold ${status.bg} ${status.text} ${status.border}`}>
                   <status.icon className="h-4 w-4" />
@@ -252,12 +252,12 @@ function TrackFilePageContent() {
             <Section title="Payment Summary" icon={CreditCard}>
               <div className="mb-4 grid grid-cols-3 gap-3">
                 {[
-                  { label: 'Total Cost', value: `₦${(file.totalCost || 0).toLocaleString()}`, color: 'text-gray-900' },
+                  { label: 'Total Cost', value: `₦${(file.totalCost || 0).toLocaleString()}`, color: 'text-neutral-900' },
                   { label: 'Amount Paid', value: `₦${(file.amountPaid || 0).toLocaleString()}`, color: 'text-green-600' },
                   { label: 'Balance', value: `₦${balance.toLocaleString()}`, color: balance > 0 ? 'text-red-600' : 'text-green-600' },
                 ].map(({ label, value, color }) => (
-                  <div key={label} className="rounded-xl bg-gray-50 p-3 text-center">
-                    <p className="text-xs text-gray-400 mb-1">{label}</p>
+                  <div key={label} className="rounded-xl bg-neutral-50 p-3 text-center">
+                    <p className="text-xs text-neutral-400 mb-1">{label}</p>
                     <p className={`text-base font-bold ${color}`}>{value}</p>
                   </div>
                 ))}
@@ -265,14 +265,14 @@ function TrackFilePageContent() {
 
               {file.payments?.length > 0 && (
                 <div className="mb-4 space-y-2">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">Payment History</p>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-neutral-400">Payment History</p>
                   {file.payments.map((p: any, i: number) => (
-                    <div key={i} className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2 text-sm">
+                    <div key={i} className="flex items-center justify-between rounded-lg bg-neutral-50 px-3 py-2 text-sm">
                       <div>
-                        <span className="text-gray-600">{format(new Date(p.paidAt), 'dd MMM yyyy')}</span>
-                        <span className="mx-1.5 text-gray-300">·</span>
-                        <span className="capitalize text-gray-500">{p.method?.replace(/_/g, ' ')}</span>
-                        {p.note && <span className="ml-1.5 text-xs text-gray-400">— {p.note}</span>}
+                        <span className="text-neutral-600">{format(new Date(p.paidAt), 'dd MMM yyyy')}</span>
+                        <span className="mx-1.5 text-neutral-300">·</span>
+                        <span className="capitalize text-neutral-500">{p.method?.replace(/_/g, ' ')}</span>
+                        {p.note && <span className="ml-1.5 text-xs text-neutral-400">— {p.note}</span>}
                       </div>
                       <span className="font-bold text-green-600">+₦{p.amount.toLocaleString()}</span>
                     </div>
@@ -287,23 +287,23 @@ function TrackFilePageContent() {
                   <p className="mb-3 text-xs text-blue-600">Made a payment? Upload your receipt and we'll confirm it.</p>
                   <div className="grid grid-cols-2 gap-2 mb-3">
                     <div>
-                      <label className="mb-1 block text-xs font-medium text-gray-600">Amount Paid (₦)</label>
+                      <label className="mb-1 block text-xs font-medium text-neutral-600">Amount Paid (₦)</label>
                       <input
                         type="number"
                         placeholder="e.g. 50000"
                         value={receiptAmount}
                         onChange={(e) => setReceiptAmount(e.target.value)}
-                        className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:border-blue-400 focus:outline-none"
+                        className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm focus:border-blue-400 focus:outline-none"
                       />
                     </div>
                     <div>
-                      <label className="mb-1 block text-xs font-medium text-gray-600">Note (optional)</label>
+                      <label className="mb-1 block text-xs font-medium text-neutral-600">Note (optional)</label>
                       <input
                         type="text"
                         placeholder="e.g. Bank transfer"
                         value={receiptNote}
                         onChange={(e) => setReceiptNote(e.target.value)}
-                        className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:border-blue-400 focus:outline-none"
+                        className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm focus:border-blue-400 focus:outline-none"
                       />
                     </div>
                   </div>
@@ -345,24 +345,24 @@ function TrackFilePageContent() {
             {(consultant || officer) && (
               <Section title="Your Team" icon={Phone}>
                 {consultant && (
-                  <div className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
+                  <div className="flex items-center justify-between py-2 border-b border-neutral-50 last:border-0">
                     <div>
-                      <p className="text-xs text-gray-400">Consultant</p>
-                      <p className="text-sm font-semibold text-gray-800">{consultant.firstName} {consultant.lastName}</p>
+                      <p className="text-xs text-neutral-400">Consultant</p>
+                      <p className="text-sm font-semibold text-neutral-800">{consultant.firstName} {consultant.lastName}</p>
                     </div>
                     <div className="flex gap-2">
-                      {consultant.phone && <a href={`tel:${consultant.phone}`} className="flex items-center gap-1 rounded-lg bg-gray-100 px-2.5 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-200"><Phone className="h-3 w-3" />{consultant.phone}</a>}
-                      {consultant.email && <a href={`mailto:${consultant.email}`} className="flex items-center gap-1 rounded-lg bg-gray-100 px-2.5 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-200"><Mail className="h-3 w-3" />Email</a>}
+                      {consultant.phone && <a href={`tel:${consultant.phone}`} className="flex items-center gap-1 rounded-lg bg-neutral-100 px-2.5 py-1.5 text-xs font-medium text-neutral-600 hover:bg-neutral-200"><Phone className="h-3 w-3" />{consultant.phone}</a>}
+                      {consultant.email && <a href={`mailto:${consultant.email}`} className="flex items-center gap-1 rounded-lg bg-neutral-100 px-2.5 py-1.5 text-xs font-medium text-neutral-600 hover:bg-neutral-200"><Mail className="h-3 w-3" />Email</a>}
                     </div>
                   </div>
                 )}
                 {officer && (
                   <div className="flex items-center justify-between py-2">
                     <div>
-                      <p className="text-xs text-gray-400">Visa Officer</p>
-                      <p className="text-sm font-semibold text-gray-800">{officer.firstName} {officer.lastName}</p>
+                      <p className="text-xs text-neutral-400">Visa Officer</p>
+                      <p className="text-sm font-semibold text-neutral-800">{officer.firstName} {officer.lastName}</p>
                     </div>
-                    {officer.phone && <a href={`tel:${officer.phone}`} className="flex items-center gap-1 rounded-lg bg-gray-100 px-2.5 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-200"><Phone className="h-3 w-3" />{officer.phone}</a>}
+                    {officer.phone && <a href={`tel:${officer.phone}`} className="flex items-center gap-1 rounded-lg bg-neutral-100 px-2.5 py-1.5 text-xs font-medium text-neutral-600 hover:bg-neutral-200"><Phone className="h-3 w-3" />{officer.phone}</a>}
                   </div>
                 )}
               </Section>
@@ -374,12 +374,12 @@ function TrackFilePageContent() {
                 <ul className="space-y-2">
                   {file.tasks.map((t: any, i: number) => (
                     <li key={i} className="flex items-start gap-3">
-                      <div className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 ${t.status === 'completed' ? 'border-green-500 bg-green-500' : 'border-gray-300 bg-white'}`}>
+                      <div className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 ${t.status === 'completed' ? 'border-green-500 bg-green-500' : 'border-neutral-300 bg-white'}`}>
                         {t.status === 'completed' && <CheckCircle2 className="h-3.5 w-3.5 text-white" />}
                       </div>
                       <div className="flex-1">
-                        <p className={`text-sm ${t.status === 'completed' ? 'line-through text-gray-400' : 'text-gray-800 font-medium'}`}>{t.title}</p>
-                        <p className="text-xs text-gray-400 capitalize mt-0.5">
+                        <p className={`text-sm ${t.status === 'completed' ? 'line-through text-neutral-400' : 'text-neutral-800 font-medium'}`}>{t.title}</p>
+                        <p className="text-xs text-neutral-400 capitalize mt-0.5">
                           {t.priority} priority{t.dueDate && ` · Due ${format(new Date(t.dueDate), 'dd MMM yyyy')}`}
                         </p>
                       </div>
@@ -394,10 +394,10 @@ function TrackFilePageContent() {
               <Section title={`Documents (${file.documentIds.length})`} icon={FolderOpen}>
                 <ul className="space-y-2">
                   {file.documentIds.map((doc: any, i: number) => (
-                    <li key={i} className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2.5">
+                    <li key={i} className="flex items-center justify-between rounded-lg bg-neutral-50 px-3 py-2.5">
                       <div>
-                        <p className="text-sm font-medium text-gray-800">{doc.name || doc.originalName}</p>
-                        <p className="text-xs text-gray-400 capitalize">{doc.category}{doc.expiryDate && ` · Expires ${format(new Date(doc.expiryDate), 'dd MMM yyyy')}`}</p>
+                        <p className="text-sm font-medium text-neutral-800">{doc.name || doc.originalName}</p>
+                        <p className="text-xs text-neutral-400 capitalize">{doc.category}{doc.expiryDate && ` · Expires ${format(new Date(doc.expiryDate), 'dd MMM yyyy')}`}</p>
                       </div>
                       {doc.fileUrl && (
                         <a href={doc.fileUrl} target="_blank" rel="noreferrer" className="rounded-lg bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-600 hover:bg-blue-100 transition-colors">View</a>
@@ -415,7 +415,7 @@ function TrackFilePageContent() {
                   {sharedNotes.map((note: any, i: number) => {
                     const isCustomer = note.content?.startsWith('[Customer]');
                     return (
-                      <div key={i} className={`rounded-xl px-4 py-3 text-sm ${isCustomer ? 'ml-8 bg-blue-50 text-blue-900' : 'mr-8 bg-gray-100 text-gray-800'}`}>
+                      <div key={i} className={`rounded-xl px-4 py-3 text-sm ${isCustomer ? 'ml-8 bg-blue-50 text-blue-900' : 'mr-8 bg-neutral-100 text-neutral-800'}`}>
                         <p className="font-medium text-xs mb-1 opacity-60">{isCustomer ? 'You' : 'Your Consultant'}</p>
                         <p>{note.content.replace('[Customer] ', '')}</p>
                         <p className="mt-1 text-xs opacity-40">{format(new Date(note.createdAt), 'dd MMM, HH:mm')}</p>
@@ -431,7 +431,7 @@ function TrackFilePageContent() {
                   value={noteContent}
                   onChange={(e) => setNoteContent(e.target.value)}
                   onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendNote(); } }}
-                  className="flex-1 rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm focus:border-blue-400 focus:bg-white focus:outline-none transition-colors"
+                  className="flex-1 rounded-xl border border-neutral-200 bg-neutral-50 px-4 py-2.5 text-sm focus:border-blue-400 focus:bg-white focus:outline-none transition-colors"
                 />
                 <button
                   onClick={handleSendNote}
@@ -446,15 +446,15 @@ function TrackFilePageContent() {
             {/* Timeline */}
             {file.timeline?.length > 0 && (
               <Section title={`Activity Timeline (${file.timeline.length})`} icon={Calendar} defaultOpen={false}>
-                <ol className="relative border-l-2 border-gray-100 ml-2 space-y-5">
+                <ol className="relative border-l-2 border-neutral-100 ml-2 space-y-5">
                   {[...file.timeline].reverse().map((t: any, i: number) => (
                     <li key={i} className="ml-5">
                       <span className="absolute -left-2 flex h-4 w-4 items-center justify-center rounded-full bg-blue-100 ring-2 ring-white">
                         <span className="h-1.5 w-1.5 rounded-full bg-blue-600" />
                       </span>
-                      <p className="text-sm font-semibold text-gray-800">{t.action}</p>
-                      <p className="text-xs text-gray-500 mt-0.5">{t.description}</p>
-                      <p className="text-xs text-gray-400 mt-0.5">{format(new Date(t.performedAt), 'dd MMM yyyy, HH:mm')}</p>
+                      <p className="text-sm font-semibold text-neutral-800">{t.action}</p>
+                      <p className="text-xs text-neutral-500 mt-0.5">{t.description}</p>
+                      <p className="text-xs text-neutral-400 mt-0.5">{format(new Date(t.performedAt), 'dd MMM yyyy, HH:mm')}</p>
                     </li>
                   ))}
                 </ol>
@@ -464,7 +464,7 @@ function TrackFilePageContent() {
         )}
       </main>
 
-      <footer className="py-8 text-center text-xs text-gray-400">
+      <footer className="py-8 text-center text-xs text-neutral-400">
         © {new Date().getFullYear()} {companyName}. All rights reserved.
       </footer>
     </div>
@@ -473,7 +473,7 @@ function TrackFilePageContent() {
 
 export default function TrackFilePage() {
   return (
-    <Suspense fallback={<div className="flex min-h-screen items-center justify-center bg-gray-50"><Loader2 className="h-8 w-8 animate-spin text-blue-500" /></div>}>
+    <Suspense fallback={<div className="flex min-h-screen items-center justify-center bg-neutral-50"><Loader2 className="h-8 w-8 animate-spin text-blue-500" /></div>}>
       <TrackFilePageContent />
     </Suspense>
   );

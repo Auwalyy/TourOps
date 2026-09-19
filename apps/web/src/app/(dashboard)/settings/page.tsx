@@ -167,7 +167,7 @@ export default function SettingsPage() {
                 <form onSubmit={companyForm.handleSubmit(onCompanySave)} className="space-y-6">
                   {/* Basic info */}
                   <div>
-                    <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-gray-400">Basic Information</p>
+                    <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-neutral-400">Basic Information</p>
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                       <div className="sm:col-span-2">
                         <Label>Company / Agency Name *</Label>
@@ -184,7 +184,7 @@ export default function SettingsPage() {
                       <div>
                         <Label>WhatsApp Number</Label>
                         <Input placeholder="+234 800 000 0000" {...companyForm.register('whatsappNumber')} />
-                        <p className="mt-1 text-xs text-gray-400">Used for the WhatsApp button on your deals page</p>
+                        <p className="mt-1 text-xs text-neutral-400">Used for the WhatsApp button on your deals page</p>
                       </div>
                       <div>
                         <Label>Website</Label>
@@ -203,12 +203,12 @@ export default function SettingsPage() {
 
                   {/* Legal */}
                   <div>
-                    <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-gray-400">Legal & Registration</p>
+                    <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-neutral-400">Legal & Registration</p>
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                       <div>
                         <Label>RC Number (CAC)</Label>
                         <Input placeholder="RC 1234567" {...companyForm.register('rcNumber')} />
-                        <p className="mt-1 text-xs text-gray-400">Printed on invoices and receipts</p>
+                        <p className="mt-1 text-xs text-neutral-400">Printed on invoices and receipts</p>
                       </div>
                       <div>
                         <Label>License Number</Label>
@@ -219,8 +219,8 @@ export default function SettingsPage() {
 
                   {/* Bank details */}
                   <div>
-                    <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-gray-400">Bank Details</p>
-                    <p className="mb-3 text-xs text-gray-400">These appear on invoices and receipts so customers know where to pay.</p>
+                    <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-neutral-400">Bank Details</p>
+                    <p className="mb-3 text-xs text-neutral-400">These appear on invoices and receipts so customers know where to pay.</p>
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                       <div>
                         <Label>Bank Name</Label>
@@ -237,7 +237,7 @@ export default function SettingsPage() {
                     </div>
                   </div>
 
-                  <div className="flex justify-end border-t border-gray-100 pt-4">
+                  <div className="flex justify-end border-t border-neutral-100 pt-4">
                     <Button type="submit" loading={companyForm.formState.isSubmitting}>Save Company Details</Button>
                   </div>
                 </form>
@@ -255,13 +255,13 @@ export default function SettingsPage() {
                     <div>
                       <Label>Display Name</Label>
                       <Input placeholder="Sunrise Travel" error={brandingForm.formState.errors.companyName?.message} {...brandingForm.register('companyName')} />
-                      <p className="mt-1 text-xs text-gray-400">Shown in the sidebar, login page, and customer portal</p>
+                      <p className="mt-1 text-xs text-neutral-400">Shown in the sidebar, login page, and customer portal</p>
                     </div>
                     <div>
                       <Label>Primary Color</Label>
                       <div className="flex gap-2">
                         <Input placeholder="#0d6e52" error={brandingForm.formState.errors.primaryColor?.message} {...brandingForm.register('primaryColor')} />
-                        <input type="color" {...brandingForm.register('primaryColor')} className="h-10 w-10 cursor-pointer rounded-lg border border-gray-200 p-0.5" />
+                        <input type="color" {...brandingForm.register('primaryColor')} className="h-10 w-10 cursor-pointer rounded-lg border border-neutral-200 p-0.5" />
                       </div>
                     </div>
                     <div className="sm:col-span-2">
@@ -277,7 +277,7 @@ export default function SettingsPage() {
                       <Input placeholder="https://cdn.example.com/favicon.ico" error={brandingForm.formState.errors.faviconUrl?.message} {...brandingForm.register('faviconUrl')} />
                     </div>
                   </div>
-                  <div className="flex justify-end border-t border-gray-100 pt-4">
+                  <div className="flex justify-end border-t border-neutral-100 pt-4">
                     <Button type="submit" loading={brandingForm.formState.isSubmitting}>Save Branding</Button>
                   </div>
                 </form>
@@ -358,14 +358,14 @@ export default function SettingsPage() {
 }
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
-  return <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-gray-500">{children}</h2>;
+  return <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-neutral-500">{children}</h2>;
 }
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex justify-between">
-      <span className="text-gray-500">{label}</span>
-      <span className="font-medium capitalize text-gray-900 dark:text-gray-100">{value}</span>
+      <span className="text-neutral-500">{label}</span>
+      <span className="font-medium capitalize text-neutral-900 dark:text-neutral-100">{value}</span>
     </div>
   );
 }

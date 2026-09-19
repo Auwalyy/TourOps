@@ -43,9 +43,9 @@ export function DataTable<T>({
 
   if (!data.length) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 text-gray-400">
-        <Inbox className="mb-3 h-12 w-12 opacity-40" />
-        <p className="text-sm">{emptyMessage}</p>
+      <div className="flex flex-col items-center justify-center px-6 py-16">
+        <Inbox className="mb-3 h-8 w-8 text-neutral-300" strokeWidth={1.5} />
+        <p className="text-sm text-neutral-500">{emptyMessage}</p>
       </div>
     );
   }
@@ -53,25 +53,37 @@ export function DataTable<T>({
   return (
     <div>
       <div className="overflow-x-auto">
-        <table className="min-w-[720px] w-full text-sm sm:min-w-full">
+        <table className="w-full min-w-[720px] text-[13px] sm:min-w-full">
           <thead>
-            <tr className="border-b border-gray-100 dark:border-gray-800">
+            <tr className="border-b border-neutral-200 dark:border-neutral-800">
               {columns.map((col) => (
-                <th key={col.key} className={cn('px-3 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-gray-500 sm:px-4 sm:text-xs dark:text-gray-400', col.className)}>
+                <th
+                  key={col.key}
+                  className={cn(
+                    'whitespace-nowrap px-4 py-2.5 text-left text-[11px] font-medium text-neutral-500 dark:text-neutral-400',
+                    col.className
+                  )}
+                >
                   {col.header}
                 </th>
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
+          <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
             {data.map((row) => (
               <tr
                 key={keyExtractor(row)}
                 onClick={() => onRowClick?.(row)}
-                className={cn('transition-colors hover:bg-gray-50 dark:hover:bg-gray-800/50', onRowClick && 'cursor-pointer')}
+                className={cn(
+                  'transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/40',
+                  onRowClick && 'cursor-pointer'
+                )}
               >
                 {columns.map((col) => (
-                  <td key={col.key} className={cn('px-3 py-3 text-gray-700 sm:px-4 dark:text-gray-300', col.className)}>
+                  <td
+                    key={col.key}
+                    className={cn('px-4 py-2.5 text-neutral-700 dark:text-neutral-300', col.className)}
+                  >
                     {col.render ? col.render(row) : String((row as any)[col.key] ?? '')}
                   </td>
                 ))}
@@ -82,17 +94,17 @@ export function DataTable<T>({
       </div>
 
       {totalPages > 1 && (
-        <div className="flex flex-col gap-3 border-t border-gray-100 px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-4 dark:border-gray-800">
-          <p className="text-xs text-gray-500">
-            Showing {(page - 1) * limit + 1}–{Math.min(page * limit, total)} of {total}
+        <div className="flex flex-col gap-3 border-t border-neutral-200 px-4 py-2.5 sm:flex-row sm:items-center sm:justify-between dark:border-neutral-800">
+          <p className="text-xs text-neutral-500">
+            {(page - 1) * limit + 1}–{Math.min(page * limit, total)} of {total}
           </p>
           <div className="flex items-center gap-1">
-            <Button variant="ghost" size="icon" disabled={page <= 1} onClick={() => onPageChange?.(page - 1)}>
-              <ChevronLeft className="h-4 w-4" />
+            <Button variant="outline" size="icon" disabled={page <= 1} onClick={() => onPageChange?.(page - 1)}>
+              <ChevronLeft className="h-3.5 w-3.5" />
             </Button>
-            <span className="px-2 text-xs text-gray-600 dark:text-gray-400">{page} / {totalPages}</span>
-            <Button variant="ghost" size="icon" disabled={page >= totalPages} onClick={() => onPageChange?.(page + 1)}>
-              <ChevronRight className="h-4 w-4" />
+            <span className="px-2 text-xs text-neutral-500">{page} / {totalPages}</span>
+            <Button variant="outline" size="icon" disabled={page >= totalPages} onClick={() => onPageChange?.(page + 1)}>
+              <ChevronRight className="h-3.5 w-3.5" />
             </Button>
           </div>
         </div>
