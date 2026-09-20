@@ -46,7 +46,7 @@ export default function PackagesPage() {
       header: 'Package',
       render: (row) => (
         <div>
-          <p className="font-medium text-neutral-900 dark:text-neutral-100">{row.title}</p>
+          <p className="font-medium text-neutral-900">{row.title}</p>
           <p className="text-xs text-neutral-500">{row.destinations.join(', ')}</p>
         </div>
       ),
@@ -82,7 +82,7 @@ export default function PackagesPage() {
         }
       />
       <Card>
-        <div className="flex flex-wrap items-center gap-3 border-b border-neutral-100 px-6 py-4 dark:border-neutral-800">
+        <div className="flex flex-wrap items-center gap-3 border-b border-neutral-100 px-6 py-4">
           <SearchInput value={search} onChange={(v) => { setSearch(v); setPage(1); }} placeholder="Search packages..." className="max-w-xs" />
           <Select value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }} className="w-36">
             <option value="">All</option>

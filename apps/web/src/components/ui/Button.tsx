@@ -4,11 +4,11 @@ import { cn } from '@/lib/utils';
 
 const variants = {
   primary: 'bg-blue-600 text-white hover:bg-blue-700 focus-visible:ring-blue-600',
-  secondary: 'bg-neutral-100 text-neutral-900 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-100 dark:hover:bg-neutral-700',
+  secondary: 'bg-neutral-100 text-neutral-900 hover:bg-neutral-200',
   danger: 'bg-red-600 text-white hover:bg-red-700 focus-visible:ring-red-600',
-  ghost: 'text-neutral-600 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-800',
+  ghost: 'text-neutral-600 hover:bg-neutral-100',
   outline:
-    'border border-neutral-300 bg-white text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:bg-transparent dark:text-neutral-300 dark:hover:bg-neutral-800',
+    'border border-neutral-300 bg-white text-neutral-700 hover:bg-neutral-50',
 };
 
 const sizes = {

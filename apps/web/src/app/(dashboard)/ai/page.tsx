@@ -58,8 +58,8 @@ export default function AIPage() {
                 <p className="text-sm text-neutral-500">Analyzing your business data...</p>
               </div>
             ) : (
-              <div className="prose prose-sm max-w-none dark:prose-invert">
-                <p className="whitespace-pre-wrap text-sm leading-relaxed text-neutral-700 dark:text-neutral-300">{summary}</p>
+              <div className="prose prose-sm max-w-none">
+                <p className="whitespace-pre-wrap text-sm leading-relaxed text-neutral-700">{summary}</p>
               </div>
             )}
           </CardContent>
@@ -102,10 +102,10 @@ export default function AIPage() {
               <div className="space-y-3 pt-2">
                 <p className="text-xs text-neutral-500">{recommendations.reasoning}</p>
                 {recommendations.recommendations?.map((rec: any, i: number) => (
-                  <div key={i} className="rounded-lg border border-neutral-100 p-3 dark:border-neutral-800">
+                  <div key={i} className="rounded-lg border border-neutral-100 p-3">
                     <div className="flex items-center justify-between">
-                      <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">{rec.title}</p>
-                      <span className="rounded-full bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-900/20 dark:text-blue-400">
+                      <p className="text-sm font-medium text-neutral-900">{rec.title}</p>
+                      <span className="rounded-full bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700">
                         {rec.matchScore}% match
                       </span>
                     </div>
@@ -177,7 +177,7 @@ function MissingDocChecker() {
               <p className="text-xs font-semibold text-red-600">Missing (Required)</p>
               <ul className="mt-1 space-y-1">
                 {result.missing.map((d: string) => (
-                  <li key={d} className="text-xs text-neutral-700 dark:text-neutral-300">• {d}</li>
+                  <li key={d} className="text-xs text-neutral-700">• {d}</li>
                 ))}
               </ul>
             </div>
@@ -187,7 +187,7 @@ function MissingDocChecker() {
               <p className="text-xs font-semibold text-yellow-600">Optional</p>
               <ul className="mt-1 space-y-1">
                 {result.optional.map((d: string) => (
-                  <li key={d} className="text-xs text-neutral-700 dark:text-neutral-300">• {d}</li>
+                  <li key={d} className="text-xs text-neutral-700">• {d}</li>
                 ))}
               </ul>
             </div>

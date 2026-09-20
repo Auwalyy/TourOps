@@ -35,7 +35,7 @@ export default function PortalDocumentsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">My Documents</h1>
+        <h1 className="text-2xl font-bold text-neutral-900">My Documents</h1>
         <>
           <input ref={fileRef} type="file" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadMutation.mutate(f); e.target.value = ''; }} />
           <Button onClick={() => fileRef.current?.click()} loading={uploadMutation.isPending}>
@@ -54,7 +54,7 @@ export default function PortalDocumentsPage() {
             <Card key={doc._id}>
               <CardContent className="flex items-start justify-between py-4">
                 <div className="min-w-0 flex-1">
-                  <p className="truncate font-medium text-neutral-900 dark:text-neutral-100">{doc.name}</p>
+                  <p className="truncate font-medium text-neutral-900">{doc.name}</p>
                   <div className="mt-1 flex items-center gap-2">
                     <Badge variant="blue" className="capitalize">{doc.category}</Badge>
                     {doc.isExpired && <Badge variant="red"><AlertTriangle className="mr-1 h-3 w-3" />Expired</Badge>}

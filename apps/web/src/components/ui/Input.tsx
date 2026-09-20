@@ -3,7 +3,7 @@ import { forwardRef, InputHTMLAttributes, TextareaHTMLAttributes, SelectHTMLAttr
 import { cn } from '@/lib/utils';
 
 const inputBase =
-  'w-full rounded-md border border-neutral-300 bg-white px-2.5 py-1.5 text-[13px] text-neutral-900 placeholder-neutral-400 transition-colors focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/15 disabled:cursor-not-allowed disabled:bg-neutral-50 disabled:opacity-60 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:placeholder-neutral-500';
+  'w-full rounded-md border border-neutral-300 bg-white px-2.5 py-1.5 text-[13px] text-neutral-900 placeholder-neutral-400 transition-colors focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/15 disabled:cursor-not-allowed disabled:bg-neutral-50 disabled:opacity-60';
 
 export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement> & { error?: string }>(
   ({ className, error, ...props }, ref) => (
@@ -52,7 +52,7 @@ Select.displayName = 'Select';
 
 export const Label = ({ className, ...props }: LabelHTMLAttributes<HTMLLabelElement>) => (
   <label
-    className={cn('mb-1 block text-xs font-medium text-neutral-600 dark:text-neutral-400', className)}
+    className={cn('mb-1 block text-xs font-medium text-neutral-600', className)}
     {...props}
   />
 );

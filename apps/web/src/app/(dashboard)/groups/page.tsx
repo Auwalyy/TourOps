@@ -75,14 +75,14 @@ export default function GroupsPage() {
               >
                 <CardContent className="space-y-3 py-5">
                   <div>
-                    <p className="font-semibold text-neutral-900 dark:text-neutral-100">{g.name}</p>
+                    <p className="font-semibold text-neutral-900">{g.name}</p>
                     <p className="text-xs text-neutral-500">
                       {contact?.fullName || `${contact?.firstName || ''} ${contact?.lastName || ''}`.trim()} pays ·{' '}
                       {g.memberCount} traveller{g.memberCount === 1 ? '' : 's'}
                     </p>
                     {g.departureGroup && <p className="text-xs text-neutral-400">{g.departureGroup}</p>}
                   </div>
-                  <div className="h-2 w-full rounded-full bg-neutral-100 dark:bg-neutral-800">
+                  <div className="h-2 w-full rounded-full bg-neutral-100">
                     <div className="h-2 rounded-full bg-green-500 transition-all" style={{ width: `${pct}%` }} />
                   </div>
                   <div className="flex justify-between text-xs">

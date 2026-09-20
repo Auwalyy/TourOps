@@ -56,7 +56,7 @@ export default function VisasPage() {
       header: 'Fee',
       render: (row) => (
         <div>
-          <p className="text-sm text-neutral-900 dark:text-neutral-100">{row.fees ? formatCurrency(row.fees) : '—'}</p>
+          <p className="text-sm text-neutral-900">{row.fees ? formatCurrency(row.fees) : '—'}</p>
           {!!row.fees && (row.amountPaid || 0) > 0 && (row.amountPaid || 0) < row.fees && (
             <p className="text-xs text-neutral-400">{formatCurrency(row.amountPaid || 0)} paid</p>
           )}
@@ -84,7 +84,7 @@ export default function VisasPage() {
       />
 
       <Card>
-        <div className="flex flex-wrap items-center gap-3 border-b border-neutral-100 px-6 py-4 dark:border-neutral-800">
+        <div className="flex flex-wrap items-center gap-3 border-b border-neutral-100 px-6 py-4">
           <SearchInput value={search} onChange={(v) => { setSearch(v); setPage(1); }} placeholder="Search by reference..." className="max-w-xs" />
           <Select value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }} className="w-48">
             {STATUS_OPTIONS.map((s) => (

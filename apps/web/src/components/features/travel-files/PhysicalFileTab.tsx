@@ -109,7 +109,7 @@ export function PhysicalFileTab({ fileId, physicalFile }: Props) {
               {physicalFile.notes && (
                 <div className="col-span-2">
                   <p className="text-xs text-neutral-500">Notes</p>
-                  <p className="font-medium text-neutral-900 dark:text-neutral-100">{physicalFile.notes}</p>
+                  <p className="font-medium text-neutral-900">{physicalFile.notes}</p>
                 </div>
               )}
             </div>
@@ -124,7 +124,7 @@ function Detail({ label, value }: { label: string; value: string }) {
   return (
     <div>
       <p className="text-xs text-neutral-500">{label}</p>
-      <p className="font-medium text-neutral-900 dark:text-neutral-100">{value}</p>
+      <p className="font-medium text-neutral-900">{value}</p>
     </div>
   );
 }

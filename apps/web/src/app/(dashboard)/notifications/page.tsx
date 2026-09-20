@@ -64,20 +64,20 @@ export default function NotificationsPage() {
               <p className="text-sm">No notifications yet</p>
             </div>
           ) : (
-            <ul className="divide-y divide-neutral-50 dark:divide-neutral-800">
+            <ul className="divide-y divide-neutral-50">
               {notifications.map((n) => (
                 <li
                   key={n._id}
                   onClick={() => !n.isRead && markReadMutation.mutate(n._id)}
                   className={cn(
                     'flex items-start gap-4 px-6 py-4 transition-colors',
-                    !n.isRead && 'cursor-pointer bg-blue-50/50 hover:bg-blue-50 dark:bg-blue-900/10 dark:hover:bg-blue-900/20'
+                    !n.isRead && 'cursor-pointer bg-blue-50/50 hover:bg-blue-50'
                   )}
                 >
                   <div className={cn('mt-1.5 h-2 w-2 shrink-0 rounded-full', n.isRead ? 'bg-transparent' : 'bg-blue-500')} />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                      <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">{n.title}</p>
+                      <p className="text-sm font-medium text-neutral-900">{n.title}</p>
                       <Badge variant={typeColors[n.type] || 'default'} className="capitalize">{n.type}</Badge>
                     </div>
                     <p className="mt-0.5 text-sm text-neutral-500">{n.message}</p>

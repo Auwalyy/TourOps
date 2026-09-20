@@ -74,12 +74,12 @@ export default function ReportsPage() {
         <div className="flex items-center gap-2">
           <label className="text-sm text-neutral-500">From</label>
           <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)}
-            className="rounded-lg border border-neutral-300 px-3 py-1.5 text-sm focus:border-blue-500 focus:outline-none dark:border-neutral-600 dark:bg-neutral-900 dark:text-neutral-100" />
+            className="rounded-lg border border-neutral-300 px-3 py-1.5 text-sm focus:border-blue-500 focus:outline-none" />
         </div>
         <div className="flex items-center gap-2">
           <label className="text-sm text-neutral-500">To</label>
           <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)}
-            className="rounded-lg border border-neutral-300 px-3 py-1.5 text-sm focus:border-blue-500 focus:outline-none dark:border-neutral-600 dark:bg-neutral-900 dark:text-neutral-100" />
+            className="rounded-lg border border-neutral-300 px-3 py-1.5 text-sm focus:border-blue-500 focus:outline-none" />
         </div>
       </div>
 
@@ -114,7 +114,7 @@ export default function ReportsPage() {
                   <li key={item._id} className="flex items-center justify-between">
                     <StatusBadge status={item._id} />
                     <div className="text-right">
-                      <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">{item.count} bookings</p>
+                      <p className="text-sm font-medium text-neutral-900">{item.count} bookings</p>
                       <p className="text-xs text-neutral-500">{formatCurrency(item.totalValue || 0)}</p>
                     </div>
                   </li>
@@ -131,13 +131,13 @@ export default function ReportsPage() {
             {!outstanding?.length ? (
               <p className="text-sm text-neutral-400">No outstanding invoices</p>
             ) : (
-              <ul className="divide-y divide-neutral-50 dark:divide-neutral-800">
+              <ul className="divide-y divide-neutral-50">
                 {outstanding.slice(0, 8).map((inv: any) => {
                   const customer = inv.customerId as any;
                   return (
                     <li key={inv._id} className="flex items-center justify-between py-3">
                       <div>
-                        <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">{customer?.fullName || '—'}</p>
+                        <p className="text-sm font-medium text-neutral-900">{customer?.fullName || '—'}</p>
                         <p className="text-xs text-neutral-500">{inv.invoiceNumber} · Due {inv.dueDate ? formatDate(inv.dueDate) : 'N/A'}</p>
                       </div>
                       <span className="text-sm font-semibold text-red-600">{formatCurrency(inv.outstandingBalance, inv.currency)}</span>

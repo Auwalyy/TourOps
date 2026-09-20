@@ -28,10 +28,10 @@ const TRAVEL_LABELS: Record<string, string> = {
 
 function Section({ title, icon: Icon, children }: { title: string; icon: any; children: React.ReactNode }) {
   return (
-    <div className="rounded-xl border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900 overflow-hidden">
-      <div className="flex items-center gap-2 border-b border-neutral-100 dark:border-neutral-800 px-5 py-3.5 bg-neutral-50 dark:bg-neutral-800/50">
+    <div className="rounded-xl border border-neutral-200 bg-white overflow-hidden">
+      <div className="flex items-center gap-2 border-b border-neutral-100 px-5 py-3.5 bg-neutral-50">
         <Icon className="h-4 w-4 text-blue-600" />
-        <h2 className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">{title}</h2>
+        <h2 className="text-sm font-semibold text-neutral-700">{title}</h2>
       </div>
       <div className="p-5">{children}</div>
     </div>
@@ -41,9 +41,9 @@ function Section({ title, icon: Icon, children }: { title: string; icon: any; ch
 function Row({ label, value }: { label: string; value?: string | null }) {
   if (!value) return null;
   return (
-    <div className="flex justify-between gap-4 py-1.5 text-sm border-b border-neutral-50 dark:border-neutral-800 last:border-0">
+    <div className="flex justify-between gap-4 py-1.5 text-sm border-b border-neutral-50 last:border-0">
       <span className="text-neutral-400 shrink-0">{label}</span>
-      <span className="font-medium text-neutral-800 dark:text-neutral-200 text-right">{value}</span>
+      <span className="font-medium text-neutral-800 text-right">{value}</span>
     </div>
   );
 }
@@ -86,20 +86,20 @@ function TrackFilePageContent() {
   const totalTasks = file?.tasks?.length ?? 0;
 
   return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 flex flex-col">
-      <header className="border-b border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-950 sticky top-0 z-10">
+    <div className="min-h-screen bg-neutral-50 flex flex-col">
+      <header className="border-b border-neutral-200 bg-white sticky top-0 z-10">
         <div className="mx-auto flex h-16 max-w-3xl items-center gap-3 px-4">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600">
             <Globe className="h-4 w-4 text-white" />
           </div>
-          <span className="font-bold text-neutral-900 dark:text-neutral-100">TourOps — File Tracker</span>
+          <span className="font-bold text-neutral-900">TourOps — File Tracker</span>
         </div>
       </header>
 
       <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-8 space-y-5">
 
         {/* Search */}
-        <div className="rounded-xl border border-neutral-200 bg-white p-5 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="rounded-xl border border-neutral-200 bg-white p-5 shadow-sm">
           <p className="text-sm text-neutral-500 mb-3">Enter your travel file number to see full details.</p>
           <form onSubmit={handleTrack} className="flex gap-2">
             <Input
@@ -183,10 +183,10 @@ function TrackFilePageContent() {
             {(consultant || officer) && (
               <Section title="Your Team" icon={Phone}>
                 {consultant && (
-                  <div className="flex items-center justify-between py-2 border-b border-neutral-50 dark:border-neutral-800 last:border-0">
+                  <div className="flex items-center justify-between py-2 border-b border-neutral-50 last:border-0">
                     <div>
                       <p className="text-xs text-neutral-400">Consultant</p>
-                      <p className="text-sm font-medium text-neutral-800 dark:text-neutral-200">{consultant.firstName} {consultant.lastName}</p>
+                      <p className="text-sm font-medium text-neutral-800">{consultant.firstName} {consultant.lastName}</p>
                     </div>
                     <div className="flex gap-2">
                       {consultant.phone && (
@@ -206,7 +206,7 @@ function TrackFilePageContent() {
                   <div className="flex items-center justify-between py-2">
                     <div>
                       <p className="text-xs text-neutral-400">Visa Officer</p>
-                      <p className="text-sm font-medium text-neutral-800 dark:text-neutral-200">{officer.firstName} {officer.lastName}</p>
+                      <p className="text-sm font-medium text-neutral-800">{officer.firstName} {officer.lastName}</p>
                     </div>
                     <div className="flex gap-2">
                       {officer.phone && (
@@ -224,12 +224,12 @@ function TrackFilePageContent() {
             <Section title="Payment Summary" icon={CreditCard}>
               <Row label="Total Cost" value={`₦${(file.totalCost || 0).toLocaleString()}`} />
               <Row label="Amount Paid" value={`₦${(file.amountPaid || 0).toLocaleString()}`} />
-              <div className={`flex justify-between py-2 text-sm font-bold border-t border-neutral-100 dark:border-neutral-800 mt-1 ${balance > 0 ? 'text-red-600' : 'text-green-600'}`}>
+              <div className={`flex justify-between py-2 text-sm font-bold border-t border-neutral-100 mt-1 ${balance > 0 ? 'text-red-600' : 'text-green-600'}`}>
                 <span>Balance Remaining</span>
                 <span>₦{balance.toLocaleString()}</span>
               </div>
               {file.payments?.length > 0 && (
-                <div className="mt-3 pt-3 border-t border-neutral-100 dark:border-neutral-800 space-y-2">
+                <div className="mt-3 pt-3 border-t border-neutral-100 space-y-2">
                   <p className="text-xs text-neutral-400 uppercase tracking-wide">Payment History</p>
                   {file.payments.map((p: any, i: number) => (
                     <div key={i} className="flex justify-between text-sm">
@@ -255,7 +255,7 @@ function TrackFilePageContent() {
                         {t.status === 'completed' && <CheckCircle2 className="h-3 w-3 text-white" />}
                       </span>
                       <div className="flex-1">
-                        <p className={t.status === 'completed' ? 'line-through text-neutral-400' : 'text-neutral-800 dark:text-neutral-200'}>{t.title}</p>
+                        <p className={t.status === 'completed' ? 'line-through text-neutral-400' : 'text-neutral-800'}>{t.title}</p>
                         <p className="text-xs text-neutral-400 mt-0.5 capitalize">
                           {t.priority} priority
                           {t.dueDate && ` · Due ${format(new Date(t.dueDate), 'dd MMM yyyy')}`}
@@ -275,7 +275,7 @@ function TrackFilePageContent() {
                   {file.documentIds.map((doc: any, i: number) => (
                     <li key={i} className="flex items-center justify-between gap-4">
                       <div className="min-w-0">
-                        <p className="text-sm font-medium text-neutral-800 dark:text-neutral-200 truncate">
+                        <p className="text-sm font-medium text-neutral-800 truncate">
                           {doc.name || doc.originalName}
                         </p>
                         <p className="text-xs text-neutral-400 capitalize">
@@ -302,24 +302,24 @@ function TrackFilePageContent() {
 
             {/* Timeline */}
             {file.timeline?.length > 0 && (
-              <div className="rounded-xl border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900 overflow-hidden">
+              <div className="rounded-xl border border-neutral-200 bg-white overflow-hidden">
                 <button
                   type="button"
                   onClick={() => setShowTimeline(!showTimeline)}
-                  className="flex w-full items-center justify-between px-5 py-4 text-sm font-semibold text-neutral-700 dark:text-neutral-300 bg-neutral-50 dark:bg-neutral-800/50 border-b border-neutral-100 dark:border-neutral-800"
+                  className="flex w-full items-center justify-between px-5 py-4 text-sm font-semibold text-neutral-700 bg-neutral-50 border-b border-neutral-100"
                 >
                   <span className="flex items-center gap-2"><Calendar className="h-4 w-4 text-blue-600" /> Activity Timeline ({file.timeline.length} events)</span>
                   {showTimeline ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                 </button>
                 {showTimeline && (
                   <div className="p-5">
-                    <ol className="relative border-l-2 border-neutral-100 dark:border-neutral-800 ml-2 space-y-5">
+                    <ol className="relative border-l-2 border-neutral-100 ml-2 space-y-5">
                       {[...file.timeline].reverse().map((t: any, i: number) => (
                         <li key={i} className="ml-5">
-                          <span className="absolute -left-2 flex h-4 w-4 items-center justify-center rounded-full bg-blue-100 ring-2 ring-white dark:ring-neutral-900">
+                          <span className="absolute -left-2 flex h-4 w-4 items-center justify-center rounded-full bg-blue-100 ring-2 ring-white">
                             <span className="h-1.5 w-1.5 rounded-full bg-blue-600" />
                           </span>
-                          <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">{t.action}</p>
+                          <p className="text-sm font-semibold text-neutral-800">{t.action}</p>
                           <p className="text-xs text-neutral-500 mt-0.5">{t.description}</p>
                           <p className="text-xs text-neutral-400 mt-0.5">{format(new Date(t.performedAt), 'dd MMM yyyy, HH:mm')}</p>
                         </li>
@@ -342,7 +342,7 @@ function TrackFilePageContent() {
 
 export default function PortalTrackPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-neutral-50 p-6 text-sm text-neutral-500 dark:bg-neutral-950">Loading tracker...</div>}>
+    <Suspense fallback={<div className="min-h-screen bg-neutral-50 p-6 text-sm text-neutral-500">Loading tracker...</div>}>
       <TrackFilePageContent />
     </Suspense>
   );

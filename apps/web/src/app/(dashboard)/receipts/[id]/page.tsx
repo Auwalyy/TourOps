@@ -58,7 +58,7 @@ export default function ReceiptDetailPage() {
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div className="flex-1">
-          <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">{receipt.receiptNumber}</h1>
+          <h1 className="text-2xl font-bold text-neutral-900">{receipt.receiptNumber}</h1>
           <p className="text-sm text-neutral-500">{formatDate(receipt.paidAt)}</p>
         </div>
         <Button variant="outline" onClick={downloadPDF}>
@@ -70,9 +70,9 @@ export default function ReceiptDetailPage() {
       </div>
 
       {/* Big amount card */}
-      <div className="rounded-lg border border-neutral-200 bg-white p-8 text-center dark:border-neutral-800 dark:bg-neutral-900">
+      <div className="rounded-lg border border-neutral-200 bg-white p-8 text-center">
         <p className="mb-1.5 text-xs font-medium uppercase tracking-wide text-neutral-500">Amount Received</p>
-        <p className="text-4xl font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">
+        <p className="text-4xl font-semibold tracking-tight text-neutral-900">
           {formatCurrency(receipt.amount, receipt.currency)}
         </p>
         <p className="mt-2 text-sm capitalize text-neutral-500">{METHOD_LABELS[receipt.method] || receipt.method}</p>
@@ -117,11 +117,11 @@ export default function ReceiptDetailPage() {
         <Card>
           <CardHeader><CardTitle>Description</CardTitle></CardHeader>
           <CardContent>
-            <p className="text-sm text-neutral-700 dark:text-neutral-300">{receipt.description}</p>
+            <p className="text-sm text-neutral-700">{receipt.description}</p>
             {receipt.notes && (
-              <div className="mt-3 rounded-lg bg-neutral-50 p-3 dark:bg-neutral-800">
+              <div className="mt-3 rounded-lg bg-neutral-50 p-3">
                 <p className="text-xs font-semibold text-neutral-400 mb-1">Notes</p>
-                <p className="text-sm text-neutral-600 dark:text-neutral-400">{receipt.notes}</p>
+                <p className="text-sm text-neutral-600">{receipt.notes}</p>
               </div>
             )}
           </CardContent>
@@ -133,7 +133,7 @@ export default function ReceiptDetailPage() {
             <CardHeader><CardTitle>Linked Records</CardTitle></CardHeader>
             <CardContent className="space-y-3">
               {invoice && (
-                <div className="flex items-center gap-3 rounded-lg border border-neutral-100 p-3 dark:border-neutral-800">
+                <div className="flex items-center gap-3 rounded-lg border border-neutral-100 p-3">
                   <FileText className="h-4 w-4 text-blue-500 shrink-0" />
                   <div>
                     <p className="text-xs text-neutral-400">Invoice</p>
@@ -142,7 +142,7 @@ export default function ReceiptDetailPage() {
                 </div>
               )}
               {travelFile && (
-                <div className="flex items-center gap-3 rounded-lg border border-neutral-100 p-3 dark:border-neutral-800">
+                <div className="flex items-center gap-3 rounded-lg border border-neutral-100 p-3">
                   <FolderKanban className="h-4 w-4 text-neutral-500 shrink-0" />
                   <div>
                     <p className="text-xs text-neutral-400">Travel File</p>
@@ -172,7 +172,7 @@ function Detail({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex justify-between gap-4">
       <span className="text-neutral-400 shrink-0">{label}</span>
-      <span className="font-medium text-neutral-900 dark:text-neutral-100 text-right">{value}</span>
+      <span className="font-medium text-neutral-900 text-right">{value}</span>
     </div>
   );
 }

@@ -79,12 +79,12 @@ export function Sidebar({ open, onClose }: SidebarProps) {
         'flex h-screen w-[85vw] max-w-[248px] flex-col border-r border-neutral-200 bg-white',
         'fixed inset-y-0 left-0 z-30 transition-transform duration-200',
         'lg:static lg:w-[248px] lg:translate-x-0',
-        'dark:border-neutral-800 dark:bg-neutral-950',
+        '',
         open ? 'translate-x-0' : '-translate-x-full'
       )}>
 
         {/* Agency identity */}
-        <div className="flex h-14 items-center gap-2.5 border-b border-neutral-200 px-4 dark:border-neutral-800">
+        <div className="flex h-14 items-center gap-2.5 border-b border-neutral-200 px-4">
           {branding.logoUrl ? (
             <Image src={branding.logoUrl} alt={displayName} width={24} height={24} className="h-6 w-6 rounded object-contain" />
           ) : (
@@ -92,7 +92,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
               <Plane className="h-3.5 w-3.5 text-white" />
             </span>
           )}
-          <span className="truncate text-sm font-semibold text-neutral-900 dark:text-neutral-100">{displayName}</span>
+          <span className="truncate text-sm font-semibold text-neutral-900">{displayName}</span>
         </div>
 
         {/* Navigation */}
@@ -115,8 +115,8 @@ export function Sidebar({ open, onClose }: SidebarProps) {
                       className={cn(
                         'flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-[13px] transition-colors',
                         active
-                          ? 'bg-neutral-100 font-medium text-neutral-900 dark:bg-neutral-800 dark:text-white'
-                          : 'text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-900 dark:hover:text-neutral-100'
+                          ? 'bg-neutral-100 font-medium text-neutral-900'
+                          : 'text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900'
                       )}
                     >
                       <Icon className={cn('h-4 w-4 shrink-0', active ? 'text-blue-600' : 'text-neutral-400')} />
@@ -131,19 +131,19 @@ export function Sidebar({ open, onClose }: SidebarProps) {
 
         {/* Current user */}
         {user && (
-          <div className="border-t border-neutral-200 p-2 dark:border-neutral-800">
+          <div className="border-t border-neutral-200 p-2">
             <div className="flex items-center gap-2.5 rounded-md px-2.5 py-2">
-              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-neutral-100 text-[11px] font-semibold text-neutral-600 dark:bg-neutral-800 dark:text-neutral-300">
+              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-neutral-100 text-[11px] font-semibold text-neutral-600">
                 {user.firstName?.[0]}{user.lastName?.[0]}
               </span>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-[13px] font-medium text-neutral-900 dark:text-neutral-100">{user.fullName}</p>
+                <p className="truncate text-[13px] font-medium text-neutral-900">{user.fullName}</p>
                 <p className="truncate text-[11px] capitalize text-neutral-500">{user.role.replace(/_/g, ' ')}</p>
               </div>
               <button
                 onClick={handleLogout}
                 title="Sign out"
-                className="rounded p-1.5 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-700 dark:hover:bg-neutral-800"
+                className="rounded p-1.5 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-700"
               >
                 <LogOut className="h-3.5 w-3.5" />
               </button>

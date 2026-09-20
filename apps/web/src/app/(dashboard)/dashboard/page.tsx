@@ -33,8 +33,8 @@ const STAT_CONFIGS = [
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="rounded-lg border border-neutral-200 bg-white px-4 py-3 shadow-xl text-xs dark:border-neutral-800 dark:bg-neutral-900">
-      <p className="mb-2 font-bold text-neutral-600 dark:text-neutral-300">{label}</p>
+    <div className="rounded-lg border border-neutral-200 bg-white px-4 py-3 shadow-xl text-xs">
+      <p className="mb-2 font-bold text-neutral-600">{label}</p>
       {payload.map((p: any) => (
         <p key={p.name} className="font-semibold" style={{ color: p.color }}>
           {p.name}: {formatCurrency(p.value)}
@@ -55,13 +55,13 @@ function StatCard({ title, value, href, sub }: {
   return (
     <Link
       href={href}
-      className="group rounded-lg border border-neutral-200 bg-white p-4 transition-colors hover:border-neutral-300 dark:border-neutral-800 dark:bg-neutral-900"
+      className="group rounded-lg border border-neutral-200 bg-white p-4 transition-colors hover:border-neutral-300"
     >
       <div className="flex items-center justify-between">
         <span className="text-xs text-neutral-500">{title}</span>
         <ArrowUpRight className="h-3.5 w-3.5 text-neutral-300 transition-colors group-hover:text-neutral-500" />
       </div>
-      <p className="mt-2 text-[22px] font-semibold leading-none tracking-tight text-neutral-900 dark:text-neutral-100">
+      <p className="mt-2 text-[22px] font-semibold leading-none tracking-tight text-neutral-900">
         {value}
       </p>
       {sub && <p className="mt-1.5 text-[11px] text-neutral-400">{sub}</p>}
@@ -140,9 +140,9 @@ export default function DashboardPage() {
     <div className="space-y-6">
 
       {/* ── Greeting ── */}
-      <div className="flex flex-wrap items-end justify-between gap-4 border-b border-neutral-200 pb-5 dark:border-neutral-800">
+      <div className="flex flex-wrap items-end justify-between gap-4 border-b border-neutral-200 pb-5">
         <div>
-          <h1 className="text-xl font-semibold text-neutral-900 dark:text-neutral-100">
+          <h1 className="text-xl font-semibold text-neutral-900">
             {greeting}, {user?.firstName}
           </h1>
           <p className="mt-0.5 text-sm text-neutral-500">
@@ -152,11 +152,11 @@ export default function DashboardPage() {
         <div className="flex items-center gap-6">
           <div>
             <p className="text-xs text-neutral-400">Outstanding</p>
-            <p className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">{formatCurrency(kpis?.totalOutstanding ?? 0)}</p>
+            <p className="text-lg font-semibold text-neutral-900">{formatCurrency(kpis?.totalOutstanding ?? 0)}</p>
           </div>
           <div>
             <p className="text-xs text-neutral-400">Revenue</p>
-            <p className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">{formatCurrency(kpis?.totalRevenue ?? 0)}</p>
+            <p className="text-lg font-semibold text-neutral-900">{formatCurrency(kpis?.totalRevenue ?? 0)}</p>
           </div>
         </div>
       </div>
@@ -184,10 +184,10 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
 
         {/* Revenue chart */}
-        <div className="xl:col-span-2 rounded-lg border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="xl:col-span-2 rounded-lg border border-neutral-200 bg-white p-5">
           <div className="mb-5 flex items-center justify-between">
             <div>
-              <h2 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">Revenue Overview</h2>
+              <h2 className="text-sm font-semibold text-neutral-900">Revenue Overview</h2>
               <p className="text-xs text-neutral-400 mt-0.5">Monthly revenue vs outstanding — {new Date().getFullYear()}</p>
             </div>
             <div className="flex items-center gap-4 text-xs text-neutral-400">
@@ -223,8 +223,8 @@ export default function DashboardPage() {
         </div>
 
         {/* Booking status */}
-        <div className="rounded-lg border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
-          <h2 className="mb-1 text-sm font-semibold text-neutral-900 dark:text-neutral-100">Booking Status</h2>
+        <div className="rounded-lg border border-neutral-200 bg-white p-5">
+          <h2 className="mb-1 text-sm font-semibold text-neutral-900">Booking Status</h2>
           <p className="mb-5 text-xs text-neutral-400">Distribution by status</p>
           {bookingStatusData.length > 0 ? (
             <ResponsiveContainer width="100%" height={230}>
@@ -259,15 +259,15 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
 
         {/* Attention required */}
-        <div className="xl:col-span-2 overflow-hidden rounded-lg border border-neutral-200/60 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
-          <div className="flex items-center justify-between border-b border-neutral-200 px-6 py-4 dark:border-neutral-800">
+        <div className="xl:col-span-2 overflow-hidden rounded-lg border border-neutral-200/60 bg-white shadow-sm">
+          <div className="flex items-center justify-between border-b border-neutral-200 px-6 py-4">
             <div className="flex items-center gap-2.5">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-50 dark:bg-amber-500/10">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-50">
                 <AlertTriangle className="h-4 w-4 text-amber-500" />
               </div>
-              <h2 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">Needs Attention</h2>
+              <h2 className="text-sm font-semibold text-neutral-900">Needs Attention</h2>
               {attentionFiles?.length > 0 && (
-                <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-bold text-amber-600 dark:bg-amber-500/20 dark:text-amber-400">
+                <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-bold text-amber-600">
                   {attentionFiles.length}
                 </span>
               )}
@@ -279,32 +279,32 @@ export default function DashboardPage() {
 
           {!attentionFiles?.length ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
-              <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-500/10">
+              <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-50">
                 <CheckCircle2 className="h-6 w-6 text-emerald-500" />
               </div>
-              <p className="text-sm font-semibold text-neutral-600 dark:text-neutral-300">All clear!</p>
+              <p className="text-sm font-semibold text-neutral-600">All clear!</p>
               <p className="text-xs text-neutral-400">No files need attention right now.</p>
             </div>
           ) : (
-            <div className="divide-y divide-neutral-50 dark:divide-white/5">
+            <div className="divide-y divide-neutral-50">
               {attentionFiles.slice(0, 6).map((f: any) => {
                 const c = f.customerId as any;
                 return (
                   <Link key={f._id} href={`/travel-files/${f._id}`}
-                    className="flex items-center gap-4 px-6 py-3.5 transition-colors hover:bg-neutral-50 dark:hover:bg-white/5">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-neutral-50 dark:bg-neutral-500/10">
+                    className="flex items-center gap-4 px-6 py-3.5 transition-colors hover:bg-neutral-50">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-neutral-50">
                       <Plane className="h-4 w-4 text-neutral-500" />
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
                         <span className="font-mono text-xs font-bold text-blue-600">{f.fileNumber}</span>
                         <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold capitalize ${
-                          f.priority === 'urgent' ? 'bg-red-100 text-red-600 dark:bg-red-500/20 dark:text-red-400' :
-                          f.priority === 'high' ? 'bg-amber-100 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400' :
-                          'bg-neutral-100 text-neutral-500 dark:bg-white/10 dark:text-neutral-400'
+                          f.priority === 'urgent' ? 'bg-red-100 text-red-600' :
+                          f.priority === 'high' ? 'bg-amber-100 text-amber-600' :
+                          'bg-neutral-100 text-neutral-500'
                         }`}>{f.priority}</span>
                       </div>
-                      <p className="truncate text-sm text-neutral-600 dark:text-neutral-300">
+                      <p className="truncate text-sm text-neutral-600">
                         {c?.firstName} {c?.lastName} · {f.destination}
                       </p>
                     </div>
@@ -323,20 +323,20 @@ export default function DashboardPage() {
         <div className="space-y-6">
 
           {/* Upcoming appointments */}
-          <div className="overflow-hidden rounded-lg border border-neutral-200/60 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
-            <div className="flex items-center gap-2.5 border-b border-neutral-200 px-5 py-4 dark:border-neutral-800">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-500/10">
+          <div className="overflow-hidden rounded-lg border border-neutral-200/60 bg-white shadow-sm">
+            <div className="flex items-center gap-2.5 border-b border-neutral-200 px-5 py-4">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50">
                 <Calendar className="h-4 w-4 text-blue-500" />
               </div>
-              <h2 className="text-sm font-bold text-neutral-900 dark:text-neutral-100">Upcoming Appointments</h2>
+              <h2 className="text-sm font-bold text-neutral-900">Upcoming Appointments</h2>
             </div>
-            <div className="divide-y divide-neutral-50 dark:divide-white/5">
+            <div className="divide-y divide-neutral-50">
               {!appointments?.length ? (
                 <p className="px-5 py-6 text-center text-sm text-neutral-300">No upcoming appointments</p>
               ) : (
                 appointments.slice(0, 4).map((appt: any) => (
                   <div key={appt._id} className="flex items-center gap-3 px-5 py-3">
-                    <div className="flex h-8 w-8 shrink-0 flex-col items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-500/10">
+                    <div className="flex h-8 w-8 shrink-0 flex-col items-center justify-center rounded-lg bg-blue-50">
                       <span className="text-xs font-bold text-blue-600 leading-none">
                         {new Date(appt.appointment?.date).getDate() || '—'}
                       </span>
@@ -345,7 +345,7 @@ export default function DashboardPage() {
                       </span>
                     </div>
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-medium text-neutral-800 dark:text-neutral-200">
+                      <p className="truncate text-sm font-medium text-neutral-800">
                         {(appt.customerId as any)?.fullName || 'Customer'}
                       </p>
                       <p className="text-xs text-neutral-400">{appt.destinationCountry}</p>
@@ -357,14 +357,14 @@ export default function DashboardPage() {
           </div>
 
           {/* Recent activity */}
-          <div className="overflow-hidden rounded-lg border border-neutral-200/60 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
-            <div className="flex items-center gap-2.5 border-b border-neutral-200 px-5 py-4 dark:border-neutral-800">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-neutral-100 dark:bg-white/10">
-                <Clock className="h-4 w-4 text-neutral-500 dark:text-neutral-400" />
+          <div className="overflow-hidden rounded-lg border border-neutral-200/60 bg-white shadow-sm">
+            <div className="flex items-center gap-2.5 border-b border-neutral-200 px-5 py-4">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-neutral-100">
+                <Clock className="h-4 w-4 text-neutral-500" />
               </div>
-              <h2 className="text-sm font-bold text-neutral-900 dark:text-neutral-100">Recent Activity</h2>
+              <h2 className="text-sm font-bold text-neutral-900">Recent Activity</h2>
             </div>
-            <div className="divide-y divide-neutral-50 dark:divide-white/5">
+            <div className="divide-y divide-neutral-50">
               {!activity?.length ? (
                 <p className="px-5 py-6 text-center text-sm text-neutral-300">No recent activity</p>
               ) : (
@@ -372,8 +372,8 @@ export default function DashboardPage() {
                   <div key={log._id} className="flex items-start gap-3 px-5 py-3">
                     <div className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: primaryColor }} />
                     <div className="min-w-0 flex-1">
-                      <p className="text-xs text-neutral-600 dark:text-neutral-300">
-                        <span className="font-semibold text-neutral-800 dark:text-neutral-100">
+                      <p className="text-xs text-neutral-600">
+                        <span className="font-semibold text-neutral-800">
                           {(log.userId as any)?.firstName}
                         </span>
                         {' '}{log.action} {log.resource}

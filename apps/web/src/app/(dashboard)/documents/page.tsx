@@ -107,7 +107,7 @@ export default function DocumentsPage() {
       header: 'Document',
       render: (row) => (
         <div>
-          <p className="font-medium text-neutral-900 dark:text-neutral-100">{row.name}</p>
+          <p className="font-medium text-neutral-900">{row.name}</p>
           <p className="text-xs text-neutral-500">{row.fileType?.split('/')[1] || row.fileType} · {(row.fileSize / 1024).toFixed(0)} KB</p>
         </div>
       ),
@@ -142,7 +142,7 @@ export default function DocumentsPage() {
             target="_blank"
             rel="noopener noreferrer"
             download
-            className="flex items-center gap-1 rounded-lg border border-neutral-200 px-2 py-1 text-xs text-neutral-600 hover:border-blue-400 hover:text-blue-600 transition-colors dark:border-neutral-700"
+            className="flex items-center gap-1 rounded-lg border border-neutral-200 px-2 py-1 text-xs text-neutral-600 hover:border-blue-400 hover:text-blue-600 transition-colors"
           >
             <Download className="h-3.5 w-3.5" /> View
           </a>
@@ -175,10 +175,10 @@ export default function DocumentsPage() {
       />
 
       {expiring && expiring.length > 0 && (
-        <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-800 dark:bg-yellow-900/20">
+        <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4">
           <div className="flex items-center gap-2">
             <AlertTriangle className="h-4 w-4 text-yellow-600" />
-            <p className="text-sm font-medium text-yellow-800 dark:text-yellow-400">
+            <p className="text-sm font-medium text-yellow-800">
               {expiring.length} document{expiring.length > 1 ? 's' : ''} expiring within 30 days
             </p>
           </div>
@@ -199,7 +199,7 @@ export default function DocumentsPage() {
                   'flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors',
                   isActive
                     ? `${folder.activeBg} ${folder.color}`
-                    : 'text-neutral-600 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800'
+                    : 'text-neutral-600 hover:bg-neutral-100'
                 )}
               >
                 {isActive
@@ -210,7 +210,7 @@ export default function DocumentsPage() {
                 {count > 0 && (
                   <span className={cn(
                     'rounded-full px-1.5 py-0.5 text-xs font-semibold',
-                    isActive ? 'bg-white/60' : 'bg-neutral-100 text-neutral-500 dark:bg-neutral-800'
+                    isActive ? 'bg-white/60' : 'bg-neutral-100 text-neutral-500'
                   )}>
                     {count}
                   </span>
@@ -223,7 +223,7 @@ export default function DocumentsPage() {
         {/* Document list */}
         <div className="flex-1 min-w-0">
           <Card>
-            <div className="flex flex-wrap items-center gap-3 border-b border-neutral-100 px-6 py-4 dark:border-neutral-800">
+            <div className="flex flex-wrap items-center gap-3 border-b border-neutral-100 px-6 py-4">
               <SearchInput
                 value={search}
                 onChange={(v) => { setSearch(v); setPage(1); }}

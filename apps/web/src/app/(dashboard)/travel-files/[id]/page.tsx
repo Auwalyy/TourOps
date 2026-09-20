@@ -188,11 +188,11 @@ export default function TravelFileDetailPage() {
         </Button>
         <div className="flex-1 min-w-0">
           <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">{file.fileNumber}</h1>
+            <h1 className="text-2xl font-bold text-neutral-900">{file.fileNumber}</h1>
             <button
               onClick={copyTrackingLink}
               title="Copy customer tracking link"
-              className="flex items-center gap-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 py-1.5 text-xs font-medium text-neutral-600 dark:text-neutral-300 hover:border-blue-400 hover:text-blue-600 transition-colors"
+              className="flex items-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-xs font-medium text-neutral-600 hover:border-blue-400 hover:text-blue-600 transition-colors"
             >
               {copied ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5" />}
               {copied ? 'Copied!' : 'Copy tracking link'}
@@ -229,7 +229,7 @@ export default function TravelFileDetailPage() {
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-neutral-200 dark:border-neutral-800">
+      <div className="border-b border-neutral-200">
         <nav className="-mb-px flex gap-1 overflow-x-auto">
           {TABS.map(({ id: tabId, label, icon: Icon }) => (
             <button
@@ -238,7 +238,7 @@ export default function TravelFileDetailPage() {
               className={`flex items-center gap-2 whitespace-nowrap border-b-2 px-4 py-3 text-sm font-medium transition-colors ${
                 activeTab === tabId
                   ? 'border-blue-600 text-blue-600'
-                  : 'border-transparent text-neutral-500 hover:text-neutral-700 dark:text-neutral-400'
+                  : 'border-transparent text-neutral-500 hover:text-neutral-700'
               }`}
             >
               <Icon className="h-4 w-4" />
@@ -308,20 +308,20 @@ export default function TravelFileDetailPage() {
               <CardContent className="space-y-3">
                 <div className="flex justify-between text-sm">
                   <span className="text-neutral-500">Total Cost</span>
-                  <span className="font-semibold text-neutral-900 dark:text-neutral-100">{formatCurrency(file.totalCost)}</span>
+                  <span className="font-semibold text-neutral-900">{formatCurrency(file.totalCost)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-neutral-500">Amount Paid</span>
                   <span className="font-semibold text-green-600">{formatCurrency(file.amountPaid)}</span>
                 </div>
-                <div className="flex justify-between border-t border-neutral-100 pt-3 text-sm dark:border-neutral-800">
-                  <span className="font-semibold text-neutral-700 dark:text-neutral-300">Balance</span>
+                <div className="flex justify-between border-t border-neutral-100 pt-3 text-sm">
+                  <span className="font-semibold text-neutral-700">Balance</span>
                   <span className={`font-bold ${file.balance > 0 ? 'text-red-600' : 'text-green-600'}`}>
                     {formatCurrency(file.balance)}
                   </span>
                 </div>
                 {file.totalCost > 0 && (
-                  <div className="h-2 w-full rounded-full bg-neutral-100 dark:bg-neutral-800">
+                  <div className="h-2 w-full rounded-full bg-neutral-100">
                     <div
                       className="h-2 rounded-full bg-green-500 transition-all"
                       style={{ width: `${Math.min(100, Math.round((file.amountPaid / file.totalCost) * 100))}%` }}
@@ -397,7 +397,7 @@ export default function TravelFileDetailPage() {
           ) : (
             <Card>
               <CardContent className="p-0">
-                <ul className="divide-y divide-neutral-50 dark:divide-neutral-800">
+                <ul className="divide-y divide-neutral-50">
                   {bookings.map((bk) => {
                     const TYPE_ICON: Record<string, string> = {
                       flight: 'FLT', ticket: 'TKT', visa: 'VIS', hotel: 'HTL', transport: 'TRN', tour: 'TUR',
@@ -406,10 +406,10 @@ export default function TravelFileDetailPage() {
                     return (
                       <li
                         key={bk._id}
-                        className="flex items-center gap-4 px-6 py-4 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 cursor-pointer transition-colors"
+                        className="flex items-center gap-4 px-6 py-4 hover:bg-neutral-50 cursor-pointer transition-colors"
                         onClick={() => router.push(`/bookings/${bk._id}`)}
                       >
-                        <span className="flex h-8 w-9 shrink-0 items-center justify-center rounded border border-neutral-200 bg-neutral-50 text-[10px] font-semibold tracking-wide text-neutral-500 dark:border-neutral-700 dark:bg-neutral-800">
+                        <span className="flex h-8 w-9 shrink-0 items-center justify-center rounded border border-neutral-200 bg-neutral-50 text-[10px] font-semibold tracking-wide text-neutral-500">
                           {TYPE_ICON[bk.bookingType] || 'OTH'}
                         </span>
                         <div className="flex-1 min-w-0">
@@ -417,7 +417,7 @@ export default function TravelFileDetailPage() {
                             <span className="font-mono text-sm font-semibold text-blue-600">{bk.bookingNumber}</span>
                             <span className="text-xs text-neutral-400 capitalize">{bk.bookingType}</span>
                           </div>
-                          <p className="text-sm text-neutral-700 dark:text-neutral-300 truncate">{bk.title}</p>
+                          <p className="text-sm text-neutral-700 truncate">{bk.title}</p>
                           {bk.provider && <p className="text-xs text-neutral-400">{bk.provider}</p>}
                         </div>
                         <div className="text-right shrink-0">
@@ -427,7 +427,7 @@ export default function TravelFileDetailPage() {
                           )}
                         </div>
                         <div className="text-right shrink-0">
-                          <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
+                          <p className="text-sm font-semibold text-neutral-900">
                             {formatCurrency(bk.cost, bk.currency)}
                           </p>
                         </div>
@@ -435,7 +435,7 @@ export default function TravelFileDetailPage() {
                     );
                   })}
                 </ul>
-                <div className="border-t border-neutral-100 dark:border-neutral-800 px-6 py-3 flex justify-between text-sm">
+                <div className="border-t border-neutral-100 px-6 py-3 flex justify-between text-sm">
                   <span className="text-neutral-500">Total booking cost</span>
                   <span className="font-semibold">
                     {formatCurrency(bookings.reduce((s, b) => s + (b.cost || 0), 0))}
@@ -454,16 +454,16 @@ export default function TravelFileDetailPage() {
             {file.timeline.length === 0 ? (
               <p className="text-sm text-neutral-400">No timeline entries yet.</p>
             ) : (
-              <ol className="relative border-l border-neutral-200 dark:border-neutral-700 ml-3 space-y-6">
+              <ol className="relative border-l border-neutral-200 ml-3 space-y-6">
                 {[...file.timeline].reverse().map((entry) => {
                   const user = entry.performedBy as any;
                   return (
                     <li key={entry._id} className="ml-6">
-                      <span className="absolute -left-3 flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 ring-4 ring-white dark:ring-neutral-900">
+                      <span className="absolute -left-3 flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 ring-4 ring-white">
                         <Clock className="h-3 w-3 text-blue-600" />
                       </span>
-                      <div className="rounded-lg border border-neutral-100 bg-neutral-50 p-3 dark:border-neutral-800 dark:bg-neutral-900">
-                        <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">{entry.action}</p>
+                      <div className="rounded-lg border border-neutral-100 bg-neutral-50 p-3">
+                        <p className="text-sm font-semibold text-neutral-900">{entry.action}</p>
                         <p className="text-xs text-neutral-500 mt-0.5">{entry.description}</p>
                         <p className="mt-1 text-xs text-neutral-400">
                           {user?.firstName} {user?.lastName} · {formatRelativeTime(entry.performedAt)}
@@ -517,7 +517,7 @@ export default function TravelFileDetailPage() {
               {file.tasks.length === 0 ? (
                 <p className="text-sm text-neutral-400">No tasks yet.</p>
               ) : (
-                <ul className="divide-y divide-neutral-50 dark:divide-neutral-800">
+                <ul className="divide-y divide-neutral-50">
                   {file.tasks.map((task) => (
                     <li key={task._id} className="flex items-center gap-4 py-3">
                       <input
@@ -527,7 +527,7 @@ export default function TravelFileDetailPage() {
                         className="h-4 w-4 rounded border-neutral-300 text-blue-600"
                       />
                       <div className="flex-1 min-w-0">
-                        <p className={`text-sm font-medium ${task.status === 'completed' ? 'line-through text-neutral-400' : 'text-neutral-900 dark:text-neutral-100'}`}>
+                        <p className={`text-sm font-medium ${task.status === 'completed' ? 'line-through text-neutral-400' : 'text-neutral-900'}`}>
                           {task.title}
                         </p>
                         {task.dueDate && <p className="text-xs text-neutral-400">Due {formatDate(task.dueDate)}</p>}
@@ -574,8 +574,8 @@ export default function TravelFileDetailPage() {
                   {[...file.notes].reverse().map((note) => {
                     const author = note.createdBy as any;
                     return (
-                      <li key={note._id} className="rounded-lg border border-neutral-100 bg-neutral-50 p-4 dark:border-neutral-800 dark:bg-neutral-900">
-                        <p className="text-sm text-neutral-700 dark:text-neutral-300 whitespace-pre-wrap">{note.content}</p>
+                      <li key={note._id} className="rounded-lg border border-neutral-100 bg-neutral-50 p-4">
+                        <p className="text-sm text-neutral-700 whitespace-pre-wrap">{note.content}</p>
                         <p className="mt-2 text-xs text-neutral-400">
                           {author?.firstName} {author?.lastName} · {formatRelativeTime(note.createdAt)}
                         </p>
@@ -637,11 +637,11 @@ export default function TravelFileDetailPage() {
               {file.documentIds.length === 0 ? (
                 <p className="text-sm text-neutral-400">No documents uploaded yet. Use the form above to upload a visa, ticket, itinerary, or any other document.</p>
               ) : (
-                <ul className="divide-y divide-neutral-50 dark:divide-neutral-800">
+                <ul className="divide-y divide-neutral-50">
                   {(file.documentIds as any[]).map((doc) => (
                     <li key={doc._id} className="flex items-center justify-between gap-4 py-3">
                       <div className="min-w-0">
-                        <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100 truncate">
+                        <p className="text-sm font-medium text-neutral-900 truncate">
                           {doc.name || doc.originalName}
                         </p>
                         <p className="text-xs text-neutral-500 capitalize">
@@ -655,7 +655,7 @@ export default function TravelFileDetailPage() {
                           target="_blank"
                           rel="noreferrer"
                           download
-                          className="flex items-center gap-1 rounded-lg border border-neutral-200 px-2.5 py-1.5 text-xs font-medium text-neutral-600 hover:border-blue-400 hover:text-blue-600 transition-colors dark:border-neutral-700 dark:text-neutral-300"
+                          className="flex items-center gap-1 rounded-lg border border-neutral-200 px-2.5 py-1.5 text-xs font-medium text-neutral-600 hover:border-blue-400 hover:text-blue-600 transition-colors"
                         >
                           <Download className="h-3.5 w-3.5" /> View
                         </a>
@@ -725,12 +725,12 @@ export default function TravelFileDetailPage() {
               {!payments || payments.length === 0 ? (
                 <p className="text-sm text-neutral-400">No payments recorded yet.</p>
               ) : (
-                <ul className="divide-y divide-neutral-50 dark:divide-neutral-800">
+                <ul className="divide-y divide-neutral-50">
                   {payments.map((p: any) => (
                     <li key={p._id} className="flex items-center justify-between gap-4 py-3">
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
-                          <p className="text-sm text-neutral-700 dark:text-neutral-300 capitalize">{p.method.replace(/_/g, ' ')}</p>
+                          <p className="text-sm text-neutral-700 capitalize">{p.method.replace(/_/g, ' ')}</p>
                           <StatusBadge status={p.status} />
                         </div>
                         <p className="text-xs text-neutral-400">
@@ -743,7 +743,7 @@ export default function TravelFileDetailPage() {
                       <div className="flex shrink-0 items-center gap-2">
                         {p.proofUrl && (
                           <a href={p.proofUrl} target="_blank" rel="noreferrer"
-                            className="rounded-lg border border-neutral-200 px-2 py-1 text-xs text-neutral-600 hover:border-blue-400 hover:text-blue-600 dark:border-neutral-700 dark:text-neutral-300">
+                            className="rounded-lg border border-neutral-200 px-2 py-1 text-xs text-neutral-600 hover:border-blue-400 hover:text-blue-600">
                             View proof
                           </a>
                         )}
@@ -774,7 +774,7 @@ export default function TravelFileDetailPage() {
               <p className="text-sm text-neutral-400">No invoices linked. Create invoices in the Invoices module and link them here.</p>
             ) : (
               <>
-                <ul className="divide-y divide-neutral-50 dark:divide-neutral-800">
+                <ul className="divide-y divide-neutral-50">
                   {(file.invoiceIds as any[]).map((inv) => (
                     <li key={inv._id} className="flex items-center justify-between py-3">
                       <div>
@@ -782,7 +782,7 @@ export default function TravelFileDetailPage() {
                         <p className="text-xs text-neutral-500">Issued {inv.issuedAt ? formatDate(inv.issuedAt) : '—'}</p>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">{formatCurrency(inv.totalAmount)}</p>
+                        <p className="text-sm font-medium text-neutral-900">{formatCurrency(inv.totalAmount)}</p>
                         <p className={`text-xs font-medium ${inv.outstandingBalance > 0 ? 'text-red-600' : 'text-green-600'}`}>
                           {inv.outstandingBalance > 0 ? `${formatCurrency(inv.outstandingBalance)} outstanding` : 'Fully paid'}
                         </p>
@@ -791,7 +791,7 @@ export default function TravelFileDetailPage() {
                     </li>
                   ))}
                 </ul>
-                <div className="mt-4 rounded-lg bg-neutral-50 p-4 dark:bg-neutral-800">
+                <div className="mt-4 rounded-lg bg-neutral-50 p-4">
                   <div className="flex justify-between text-sm">
                     <span className="text-neutral-500">Total Invoiced</span>
                     <span className="font-semibold">{formatCurrency((file.invoiceIds as any[]).reduce((s, i) => s + (i.totalAmount || 0), 0))}</span>
@@ -800,8 +800,8 @@ export default function TravelFileDetailPage() {
                     <span className="text-neutral-500">Total Paid</span>
                     <span className="font-semibold text-green-600">{formatCurrency((file.invoiceIds as any[]).reduce((s, i) => s + (i.amountPaid || 0), 0))}</span>
                   </div>
-                  <div className="flex justify-between text-sm mt-1 border-t border-neutral-200 pt-2 dark:border-neutral-700">
-                    <span className="font-semibold text-neutral-700 dark:text-neutral-300">Outstanding</span>
+                  <div className="flex justify-between text-sm mt-1 border-t border-neutral-200 pt-2">
+                    <span className="font-semibold text-neutral-700">Outstanding</span>
                     <span className="font-bold text-red-600">{formatCurrency((file.invoiceIds as any[]).reduce((s, i) => s + (i.outstandingBalance || 0), 0))}</span>
                   </div>
                 </div>
@@ -827,15 +827,15 @@ export default function TravelFileDetailPage() {
             {file.statusHistory.length === 0 ? (
               <p className="text-sm text-neutral-400">No status changes recorded yet.</p>
             ) : (
-              <ol className="relative border-l border-neutral-200 dark:border-neutral-700 ml-3 space-y-5">
+              <ol className="relative border-l border-neutral-200 ml-3 space-y-5">
                 {[...file.statusHistory].reverse().map((entry) => {
                   const user = entry.changedBy as any;
                   return (
                     <li key={entry._id} className="ml-6">
-                      <span className="absolute -left-3 flex h-6 w-6 items-center justify-center rounded-full bg-neutral-100 ring-4 ring-white dark:ring-neutral-900">
+                      <span className="absolute -left-3 flex h-6 w-6 items-center justify-center rounded-full bg-neutral-100 ring-4 ring-white">
                         <Clock className="h-3 w-3 text-neutral-600" />
                       </span>
-                      <div className="rounded-lg border border-neutral-100 bg-neutral-50 p-3 dark:border-neutral-800 dark:bg-neutral-900">
+                      <div className="rounded-lg border border-neutral-100 bg-neutral-50 p-3">
                         <div className="flex items-center gap-2 flex-wrap">
                           <StatusBadge status={entry.previousStatus} />
                           <span className="text-xs text-neutral-400">→</span>
@@ -862,7 +862,7 @@ function Detail({ label, value }: { label: string; value: string }) {
   return (
     <div>
       <p className="text-xs text-neutral-500">{label}</p>
-      <p className="font-medium text-neutral-900 dark:text-neutral-100">{value}</p>
+      <p className="font-medium text-neutral-900">{value}</p>
     </div>
   );
 }

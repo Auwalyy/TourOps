@@ -99,14 +99,14 @@ export function InvoiceFormModal({ open, onClose }: Props) {
         {/* Customer toggle */}
         <div>
           <Label>Customer</Label>
-          <div className="mt-1 flex rounded-lg border border-neutral-200 p-1 dark:border-neutral-700">
+          <div className="mt-1 flex rounded-lg border border-neutral-200 p-1">
             <button
               type="button"
               onClick={() => setCustomerMode('existing')}
               className={`flex-1 rounded-md py-1.5 text-sm font-medium transition-colors ${
                 customerMode === 'existing'
                   ? 'bg-blue-600 text-white'
-                  : 'text-neutral-500 hover:text-neutral-700 dark:text-neutral-400'
+                  : 'text-neutral-500 hover:text-neutral-700'
               }`}
             >
               Select Existing
@@ -117,7 +117,7 @@ export function InvoiceFormModal({ open, onClose }: Props) {
               className={`flex-1 rounded-md py-1.5 text-sm font-medium transition-colors ${
                 customerMode === 'new'
                   ? 'bg-blue-600 text-white'
-                  : 'text-neutral-500 hover:text-neutral-700 dark:text-neutral-400'
+                  : 'text-neutral-500 hover:text-neutral-700'
               }`}
             >
               Add New Customer
@@ -223,11 +223,11 @@ export function InvoiceFormModal({ open, onClose }: Props) {
         </div>
 
         {/* Totals */}
-        <div className="rounded-lg bg-neutral-50 p-4 text-sm dark:bg-neutral-800">
+        <div className="rounded-lg bg-neutral-50 p-4 text-sm">
           <div className="flex justify-between"><span className="text-neutral-500">Subtotal</span><span>₦{subtotal.toFixed(2)}</span></div>
           <div className="flex justify-between"><span className="text-neutral-500">Tax ({taxRate}%)</span><span>₦{tax.toFixed(2)}</span></div>
           <div className="flex justify-between"><span className="text-neutral-500">Discount</span><span>-₦{Number(discount).toFixed(2)}</span></div>
-          <div className="flex justify-between border-t border-neutral-200 pt-2 font-bold dark:border-neutral-700">
+          <div className="flex justify-between border-t border-neutral-200 pt-2 font-bold">
             <span>Total</span><span>₦{total.toFixed(2)}</span>
           </div>
         </div>

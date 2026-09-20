@@ -14,17 +14,12 @@
 
 :root {
   /* Near-white canvas with white surfaces — the light, airy base that reads as
-     considered rather than decorated. */
+     considered rather than decorated. One fixed appearance, no dark mode. */
   --background: #fbfbfa;
   --surface: #ffffff;
   --foreground: #1a1a1a;
   --color-primary: #0d6e52;
-}
-
-.dark {
-  --background: #0a0a0a;
-  --surface: #141414;
-  --foreground: #ededed;
+  --color-navy: #1c3a5e;
 }
 
 html {
@@ -80,11 +75,6 @@ canvas {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #a3a3a3;
-  border: 3px solid transparent;
-  background-clip: content-box;
-}
-.dark ::-webkit-scrollbar-thumb {
-  background: #333;
   border: 3px solid transparent;
   background-clip: content-box;
 }

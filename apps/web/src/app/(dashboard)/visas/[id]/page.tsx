@@ -96,7 +96,7 @@ export default function VisaDetailPage() {
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div className="flex-1">
-          <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">
+          <h1 className="text-2xl font-bold text-neutral-900">
             {visa.destinationCountry} — {visa.visaType}
           </h1>
           <div className="flex flex-wrap items-center gap-2 mt-1">
@@ -130,7 +130,7 @@ export default function VisaDetailPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               {visa.billedVia && (
-                <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-2.5 text-sm text-blue-700 dark:border-blue-900/40 dark:bg-blue-900/20 dark:text-blue-300">
+                <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-2.5 text-sm text-blue-700">
                   Billed via booking{' '}
                   <button
                     onClick={() => router.push(`/bookings/${visa.billedVia._id}`)}
@@ -150,7 +150,7 @@ export default function VisaDetailPage() {
                 <>
                   <div className="grid grid-cols-3 gap-3">
                     {[
-                      { label: 'Fee', value: formatCurrency(visa.fees), color: 'text-neutral-900 dark:text-neutral-100' },
+                      { label: 'Fee', value: formatCurrency(visa.fees), color: 'text-neutral-900' },
                       { label: 'Paid', value: formatCurrency(visa.amountPaid || 0), color: 'text-green-600' },
                       {
                         label: 'Balance',
@@ -158,13 +158,13 @@ export default function VisaDetailPage() {
                         color: visa.fees - (visa.amountPaid || 0) > 0 ? 'text-red-600' : 'text-green-600',
                       },
                     ].map((s) => (
-                      <div key={s.label} className="rounded-xl bg-neutral-50 p-3 text-center dark:bg-neutral-800/50">
+                      <div key={s.label} className="rounded-xl bg-neutral-50 p-3 text-center">
                         <p className="text-xs text-neutral-500">{s.label}</p>
                         <p className={`mt-0.5 text-base font-bold ${s.color}`}>{s.value}</p>
                       </div>
                     ))}
                   </div>
-                  <div className="h-2 w-full rounded-full bg-neutral-100 dark:bg-neutral-800">
+                  <div className="h-2 w-full rounded-full bg-neutral-100">
                     <div
                       className="h-2 rounded-full bg-green-500 transition-all"
                       style={{ width: `${Math.min(100, Math.round(((visa.amountPaid || 0) / visa.fees) * 100))}%` }}
@@ -174,7 +174,7 @@ export default function VisaDetailPage() {
               )}
 
               {/* Record a payment against the fee */}
-              <div className="border-t border-neutral-100 pt-4 dark:border-neutral-800">
+              <div className="border-t border-neutral-100 pt-4">
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-4">
                   <div>
                     <Label>Amount</Label>
@@ -214,12 +214,12 @@ export default function VisaDetailPage() {
 
               {/* Payment history */}
               {payments && payments.length > 0 && (
-                <ul className="divide-y divide-neutral-50 border-t border-neutral-100 pt-2 dark:divide-neutral-800 dark:border-neutral-800">
+                <ul className="divide-y divide-neutral-50 border-t border-neutral-100 pt-2">
                   {payments.map((p: any) => (
                     <li key={p._id} className="flex items-center justify-between gap-3 py-2.5">
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
-                          <span className="text-sm capitalize text-neutral-700 dark:text-neutral-300">
+                          <span className="text-sm capitalize text-neutral-700">
                             {p.method.replace(/_/g, ' ')}
                           </span>
                           <StatusBadge status={p.status} />
@@ -255,10 +255,10 @@ export default function VisaDetailPage() {
           <Card>
             <CardHeader><CardTitle>Status Timeline</CardTitle></CardHeader>
             <CardContent>
-              <ol className="relative border-l border-neutral-200 dark:border-neutral-700 pl-4 space-y-4">
+              <ol className="relative border-l border-neutral-200 pl-4 space-y-4">
                 {[...visa.statusHistory].reverse().map((h: any, i: number) => (
                   <li key={i} className="ml-2">
-                    <div className="absolute -left-1.5 mt-1.5 h-3 w-3 rounded-full border-2 border-white bg-blue-500 dark:border-neutral-900" />
+                    <div className="absolute -left-1.5 mt-1.5 h-3 w-3 rounded-full border-2 border-white bg-blue-500" />
                     <div className="flex items-center gap-2">
                       <StatusBadge status={h.status} />
                       <span className="text-xs text-neutral-400">{formatDate(h.changedAt)}</span>
@@ -286,7 +286,7 @@ export default function VisaDetailPage() {
                 onChange={(e) => setNote(e.target.value)}
                 placeholder="Note (optional)"
                 rows={2}
-                className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none dark:border-neutral-600 dark:bg-neutral-900 dark:text-neutral-100"
+                className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
               />
               <Button className="w-full" disabled={!newStatus} loading={statusMutation.isPending} onClick={() => statusMutation.mutate()}>
                 Update
@@ -332,7 +332,7 @@ function Detail({ label, value }: { label: string; value: string }) {
   return (
     <div>
       <p className="text-xs text-neutral-500">{label}</p>
-      <p className="font-medium text-neutral-900 dark:text-neutral-100">{value}</p>
+      <p className="font-medium text-neutral-900">{value}</p>
     </div>
   );
 }

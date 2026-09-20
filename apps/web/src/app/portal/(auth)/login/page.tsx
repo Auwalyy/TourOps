@@ -40,17 +40,17 @@ export default function PortalLoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-neutral-50 p-8 dark:bg-neutral-950">
+    <div className="flex min-h-screen items-center justify-center bg-neutral-50 p-8">
       <div className="w-full max-w-md">
         <div className="mb-8 flex flex-col items-center text-center">
           <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-blue-600">
             <Globe className="h-6 w-6 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">Customer Portal</h1>
+          <h1 className="text-2xl font-bold text-neutral-900">Customer Portal</h1>
           <p className="mt-1 text-sm text-neutral-500">Track your bookings, visas, and documents</p>
         </div>
 
-        <div className="rounded-xl border border-neutral-200 bg-white p-8 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="rounded-xl border border-neutral-200 bg-white p-8 shadow-sm">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div>
               <Label>Email address</Label>

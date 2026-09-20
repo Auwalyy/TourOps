@@ -29,7 +29,7 @@ export default function PortalDashboardPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">
+        <h1 className="text-2xl font-bold text-neutral-900">
           Welcome back, {user?.firstName}
         </h1>
         <p className="text-sm text-neutral-500">Here's an overview of your travel activity</p>
@@ -71,11 +71,11 @@ export default function PortalDashboardPage() {
             {!bookings?.length ? (
               <p className="text-sm text-neutral-400">No bookings yet</p>
             ) : (
-              <ul className="divide-y divide-neutral-50 dark:divide-neutral-800">
+              <ul className="divide-y divide-neutral-50">
                 {bookings.map((b: any) => (
                   <li key={b._id} className="flex items-center justify-between py-3">
                     <div>
-                      <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">{b.bookingNumber}</p>
+                      <p className="text-sm font-medium text-neutral-900">{b.bookingNumber}</p>
                       <p className="text-xs text-neutral-500">{b.bookingType} · {formatDate(b.createdAt)}</p>
                     </div>
                     <StatusBadge status={b.status} />
@@ -97,11 +97,11 @@ export default function PortalDashboardPage() {
             {!visas?.length ? (
               <p className="text-sm text-neutral-400">No visa applications</p>
             ) : (
-              <ul className="divide-y divide-neutral-50 dark:divide-neutral-800">
+              <ul className="divide-y divide-neutral-50">
                 {visas.map((v: any) => (
                   <li key={v._id} className="flex items-center justify-between py-3">
                     <div>
-                      <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">{v.destinationCountry}</p>
+                      <p className="text-sm font-medium text-neutral-900">{v.destinationCountry}</p>
                       <p className="text-xs text-neutral-500">{v.visaType} · {formatDate(v.createdAt)}</p>
                     </div>
                     <StatusBadge status={v.status} />
@@ -126,7 +126,7 @@ function SummaryCard({ title, count, icon: Icon, href, color }: { title: string;
           </div>
           <div>
             <p className="text-sm text-neutral-500">{title}</p>
-            <p className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">{count}</p>
+            <p className="text-2xl font-bold text-neutral-900">{count}</p>
           </div>
         </CardContent>
       </Card>

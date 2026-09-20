@@ -13,7 +13,7 @@ export default function PortalVisasPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">Visa Applications</h1>
+      <h1 className="text-2xl font-bold text-neutral-900">Visa Applications</h1>
       {isLoading ? (
         <p className="text-sm text-neutral-400">Loading...</p>
       ) : !data?.length ? (
@@ -25,16 +25,16 @@ export default function PortalVisasPage() {
               <CardContent className="py-4">
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="font-medium text-neutral-900 dark:text-neutral-100">{v.destinationCountry} — {v.visaType}</p>
+                    <p className="font-medium text-neutral-900">{v.destinationCountry} — {v.visaType}</p>
                     <p className="text-sm text-neutral-500">Purpose: {v.purposeOfTravel}</p>
                     {v.referenceNumber && <p className="font-mono text-xs text-neutral-400">{v.referenceNumber}</p>}
                   </div>
                   <StatusBadge status={v.status} />
                 </div>
                 {v.appointment?.date && (
-                  <div className="mt-3 rounded-lg bg-blue-50 p-3 dark:bg-blue-900/20">
-                    <p className="text-xs font-medium text-blue-700 dark:text-blue-400">Appointment Scheduled</p>
-                    <p className="text-xs text-blue-600 dark:text-blue-300">
+                  <div className="mt-3 rounded-lg bg-blue-50 p-3">
+                    <p className="text-xs font-medium text-blue-700">Appointment Scheduled</p>
+                    <p className="text-xs text-blue-600">
                       {formatDate(v.appointment.date)} {v.appointment.time ? `at ${v.appointment.time}` : ''}
                       {v.appointment.location ? ` — ${v.appointment.location}` : ''}
                     </p>
@@ -50,7 +50,7 @@ export default function PortalVisasPage() {
                       return (
                         <div
                           key={step}
-                          className={`h-1.5 flex-1 rounded-full ${stepIdx <= currentIdx ? 'bg-blue-500' : 'bg-neutral-200 dark:bg-neutral-700'}`}
+                          className={`h-1.5 flex-1 rounded-full ${stepIdx <= currentIdx ? 'bg-blue-500' : 'bg-neutral-200'}`}
                         />
                       );
                     })}

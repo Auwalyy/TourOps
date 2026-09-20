@@ -79,7 +79,7 @@ export default function UsersPage() {
         <div className="flex items-center gap-3">
           <Avatar name={row.fullName} src={row.avatar} size="sm" />
           <div>
-            <p className="font-medium text-neutral-900 dark:text-neutral-100">{row.fullName}</p>
+            <p className="font-medium text-neutral-900">{row.fullName}</p>
             <p className="text-xs text-neutral-500">{row.email}</p>
           </div>
         </div>

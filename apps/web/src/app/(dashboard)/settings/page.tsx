@@ -365,7 +365,7 @@ function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex justify-between">
       <span className="text-neutral-500">{label}</span>
-      <span className="font-medium capitalize text-neutral-900 dark:text-neutral-100">{value}</span>
+      <span className="font-medium capitalize text-neutral-900">{value}</span>
     </div>
   );
 }

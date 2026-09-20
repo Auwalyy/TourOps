@@ -1,6 +1,5 @@
 'use client';
-import { Bell, Sun, Moon, Menu, Search } from 'lucide-react';
-import { useTheme } from 'next-themes';
+import { Bell, Menu } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { notificationsApi } from '@/services/api.service';
 import { useBrandingStore } from '@/stores/branding.store';
@@ -11,7 +10,6 @@ interface TopbarProps {
 }
 
 export function Topbar({ onMenuClick }: TopbarProps) {
-  const { theme, setTheme } = useTheme();
   const { branding } = useBrandingStore();
 
   const { data } = useQuery({
@@ -23,11 +21,11 @@ export function Topbar({ onMenuClick }: TopbarProps) {
   const unread = data?.count ?? 0;
 
   return (
-    <header className="flex h-14 shrink-0 items-center justify-between gap-4 border-b border-neutral-200 bg-white px-4 dark:border-neutral-800 dark:bg-neutral-950 sm:px-6">
+    <header className="flex h-14 shrink-0 items-center justify-between gap-4 border-b border-neutral-200 bg-white px-4 sm:px-6">
       <div className="flex min-w-0 items-center gap-3">
         <button
           onClick={onMenuClick}
-          className="rounded-md p-1.5 text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 lg:hidden"
+          className="rounded-md p-1.5 text-neutral-500 hover:bg-neutral-100 lg:hidden"
         >
           <Menu className="h-4 w-4" />
         </button>
@@ -37,18 +35,10 @@ export function Topbar({ onMenuClick }: TopbarProps) {
       </div>
 
       <div className="flex items-center gap-1">
-        <button
-          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-          title="Toggle theme"
-          className="rounded-md p-2 text-neutral-500 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800"
-        >
-          {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-        </button>
-
         <Link
           href="/notifications"
           title="Notifications"
-          className="relative rounded-md p-2 text-neutral-500 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800"
+          className="relative rounded-md p-2 text-neutral-500 transition-colors hover:bg-neutral-100"
         >
           <Bell className="h-4 w-4" />
           {unread > 0 && (

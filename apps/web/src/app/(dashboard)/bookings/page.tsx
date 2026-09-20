@@ -67,7 +67,7 @@ export default function BookingsPage() {
     {
       key: 'provider',
       header: 'Provider',
-      render: (row) => <span className="text-neutral-600 dark:text-neutral-400">{row.provider || '—'}</span>,
+      render: (row) => <span className="text-neutral-600">{row.provider || '—'}</span>,
     },
     {
       key: 'startDate',
@@ -104,7 +104,7 @@ export default function BookingsPage() {
       />
 
       <Card>
-        <div className="flex flex-wrap items-center gap-3 border-b border-neutral-100 px-6 py-4 dark:border-neutral-800">
+        <div className="flex flex-wrap items-center gap-3 border-b border-neutral-100 px-6 py-4">
           <SearchInput
             value={search}
             onChange={(v) => { setSearch(v); setPage(1); }}

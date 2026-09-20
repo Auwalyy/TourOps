@@ -38,7 +38,7 @@ function ResetPasswordForm() {
   return (
     <div>
       <div className="mb-8">
-        <h2 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">Set new password</h2>
+        <h2 className="text-2xl font-bold text-neutral-900">Set new password</h2>
         <p className="mt-1 text-sm text-neutral-500">Choose a strong password for your account.</p>
       </div>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">

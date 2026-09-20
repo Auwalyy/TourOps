@@ -55,12 +55,12 @@ export function DataTable<T>({
       <div className="overflow-x-auto">
         <table className="w-full min-w-[720px] text-[13px] sm:min-w-full">
           <thead>
-            <tr className="border-b border-neutral-200 dark:border-neutral-800">
+            <tr className="border-b border-neutral-200">
               {columns.map((col) => (
                 <th
                   key={col.key}
                   className={cn(
-                    'whitespace-nowrap px-4 py-2.5 text-left text-[11px] font-medium text-neutral-500 dark:text-neutral-400',
+                    'whitespace-nowrap px-4 py-2.5 text-left text-[11px] font-medium text-neutral-500',
                     col.className
                   )}
                 >
@@ -69,20 +69,20 @@ export function DataTable<T>({
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
+          <tbody className="divide-y divide-neutral-100">
             {data.map((row) => (
               <tr
                 key={keyExtractor(row)}
                 onClick={() => onRowClick?.(row)}
                 className={cn(
-                  'transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/40',
+                  'transition-colors hover:bg-neutral-50',
                   onRowClick && 'cursor-pointer'
                 )}
               >
                 {columns.map((col) => (
                   <td
                     key={col.key}
-                    className={cn('px-4 py-2.5 text-neutral-700 dark:text-neutral-300', col.className)}
+                    className={cn('px-4 py-2.5 text-neutral-700', col.className)}
                   >
                     {col.render ? col.render(row) : String((row as any)[col.key] ?? '')}
                   </td>
@@ -94,7 +94,7 @@ export function DataTable<T>({
       </div>
 
       {totalPages > 1 && (
-        <div className="flex flex-col gap-3 border-t border-neutral-200 px-4 py-2.5 sm:flex-row sm:items-center sm:justify-between dark:border-neutral-800">
+        <div className="flex flex-col gap-3 border-t border-neutral-200 px-4 py-2.5 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-xs text-neutral-500">
             {(page - 1) * limit + 1}–{Math.min(page * limit, total)} of {total}
           </p>

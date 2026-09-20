@@ -71,14 +71,14 @@ export default function InvoicesPage() {
 
       {summary && (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <SummaryCard label="Total Invoiced" value={formatCurrency(summary.totalInvoiced || 0)} color="text-neutral-900 dark:text-neutral-100" />
+          <SummaryCard label="Total Invoiced" value={formatCurrency(summary.totalInvoiced || 0)} color="text-neutral-900" />
           <SummaryCard label="Total Collected" value={formatCurrency(summary.totalRevenue || 0)} color="text-green-600" />
           <SummaryCard label="Outstanding" value={formatCurrency(summary.totalOutstanding || 0)} color="text-red-600" />
         </div>
       )}
 
       <Card>
-        <div className="flex flex-wrap items-center gap-3 border-b border-neutral-100 px-6 py-4 dark:border-neutral-800">
+        <div className="flex flex-wrap items-center gap-3 border-b border-neutral-100 px-6 py-4">
           <SearchInput value={search} onChange={(v) => { setSearch(v); setPage(1); }} placeholder="Search by invoice #..." className="max-w-xs" />
           <Select value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }} className="w-40">
             <option value="">All Statuses</option>

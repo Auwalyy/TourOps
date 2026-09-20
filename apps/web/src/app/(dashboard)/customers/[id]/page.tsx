@@ -17,7 +17,7 @@ function InfoRow({ icon: Icon, label, value }: { icon: any; label: string; value
       <Icon className="mt-0.5 h-4 w-4 shrink-0 text-neutral-400" />
       <div>
         <span className="text-neutral-500">{label}: </span>
-        <span className="text-neutral-900 dark:text-neutral-100">{value}</span>
+        <span className="text-neutral-900">{value}</span>
       </div>
     </div>
   );
@@ -63,7 +63,7 @@ export default function CustomerDetailPage() {
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div className="flex-1">
-          <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">{customer.fullName}</h1>
+          <h1 className="text-2xl font-bold text-neutral-900">{customer.fullName}</h1>
           <StatusBadge status={customer.status} />
         </div>
         <Button variant="outline" onClick={() => setShowEdit(true)}>
@@ -89,7 +89,7 @@ export default function CustomerDetailPage() {
             {customerTags.length > 0 && (
               <div className="flex flex-wrap gap-1 pt-1">
                 {customerTags.map((tag: string) => (
-                  <span key={tag} className="rounded-full bg-blue-50 px-2 py-0.5 text-xs text-blue-700 dark:bg-blue-900/20 dark:text-blue-400">
+                  <span key={tag} className="rounded-full bg-blue-50 px-2 py-0.5 text-xs text-blue-700">
                     {tag}
                   </span>
                 ))}
@@ -106,11 +106,11 @@ export default function CustomerDetailPage() {
               {!bookings?.length ? (
                 <p className="text-sm text-neutral-400">No bookings yet</p>
               ) : (
-                <ul className="divide-y divide-neutral-50 dark:divide-neutral-800">
+                <ul className="divide-y divide-neutral-50">
                   {bookings.map((b: any) => (
                     <li key={b._id} className="flex items-center justify-between py-3">
                       <div>
-                        <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">{b.bookingNumber}</p>
+                        <p className="text-sm font-medium text-neutral-900">{b.bookingNumber}</p>
                         <p className="text-xs text-neutral-500">{b.bookingType} · {formatDate(b.createdAt)}</p>
                       </div>
                       <StatusBadge status={b.status} />
@@ -127,11 +127,11 @@ export default function CustomerDetailPage() {
               {!visas?.length ? (
                 <p className="text-sm text-neutral-400">No visa applications</p>
               ) : (
-                <ul className="divide-y divide-neutral-50 dark:divide-neutral-800">
+                <ul className="divide-y divide-neutral-50">
                   {visas.map((v: any) => (
                     <li key={v._id} className="flex items-center justify-between py-3">
                       <div>
-                        <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
+                        <p className="text-sm font-medium text-neutral-900">
                           {v.destinationCountry} — {v.visaType}
                         </p>
                         <p className="text-xs text-neutral-500">{formatDate(v.createdAt)}</p>

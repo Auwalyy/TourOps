@@ -29,15 +29,15 @@ export default function PortalLayout({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50 pb-16 dark:bg-neutral-950 md:pb-0">
+    <div className="min-h-screen bg-neutral-50 pb-16 md:pb-0">
       {/* Top nav */}
-      <header className="border-b border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-950">
+      <header className="border-b border-neutral-200 bg-white">
         <div className="mx-auto flex h-16 max-w-5xl items-center justify-between gap-2 px-3 sm:px-6">
           <div className="flex min-w-0 items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600">
               <Globe className="h-4 w-4 text-white" />
             </div>
-            <span className="truncate text-sm font-bold text-neutral-900 sm:text-base dark:text-neutral-100">TourOps Portal</span>
+            <span className="truncate text-sm font-bold text-neutral-900 sm:text-base">TourOps Portal</span>
           </div>
           <nav className="hidden items-center gap-1 md:flex">
             {portalNav.map(({ href, label, icon: Icon }) => (
@@ -47,8 +47,8 @@ export default function PortalLayout({ children }: { children: ReactNode }) {
                 className={cn(
                   'flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
                   pathname === href
-                    ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400'
-                    : 'text-neutral-600 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800'
+                    ? 'bg-blue-50 text-blue-700'
+                    : 'text-neutral-600 hover:bg-neutral-100'
                 )}
               >
                 <Icon className="h-4 w-4" />
@@ -58,7 +58,7 @@ export default function PortalLayout({ children }: { children: ReactNode }) {
           </nav>
           <div className="flex items-center gap-3">
             <span className="hidden text-sm text-neutral-500 sm:block">{user?.firstName}</span>
-            <button onClick={handleLogout} className="rounded-lg p-1.5 text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800">
+            <button onClick={handleLogout} className="rounded-lg p-1.5 text-neutral-400 hover:bg-neutral-100">
               <LogOut className="h-4 w-4" />
             </button>
           </div>
@@ -68,7 +68,7 @@ export default function PortalLayout({ children }: { children: ReactNode }) {
       <main className="mx-auto max-w-5xl px-3 py-5 pb-20 sm:px-6 sm:py-8 md:pb-8">{children}</main>
 
       {/* Mobile bottom tab bar */}
-      <nav className="fixed bottom-0 left-0 right-0 z-10 flex border-t border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-950 md:hidden">
+      <nav className="fixed bottom-0 left-0 right-0 z-10 flex border-t border-neutral-200 bg-white md:hidden">
         {portalNav.map(({ href, label, icon: Icon }) => (
           <Link
             key={href}
@@ -76,8 +76,8 @@ export default function PortalLayout({ children }: { children: ReactNode }) {
             className={cn(
               'flex flex-1 flex-col items-center gap-0.5 py-2 text-[10px] font-medium transition-colors',
               pathname === href
-                ? 'text-blue-600 dark:text-blue-400'
-                : 'text-neutral-500 dark:text-neutral-400'
+                ? 'text-blue-600'
+                : 'text-neutral-500'
             )}
           >
             <Icon className="h-5 w-5" />

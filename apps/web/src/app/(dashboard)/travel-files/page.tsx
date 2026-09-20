@@ -130,7 +130,7 @@ export default function TravelFilesPage() {
       </div>
 
       <Card>
-        <div className="flex flex-wrap items-center gap-3 border-b border-neutral-100 px-6 py-4 dark:border-neutral-800">
+        <div className="flex flex-wrap items-center gap-3 border-b border-neutral-100 px-6 py-4">
           <SearchInput value={search} onChange={(v) => { setSearch(v); setPage(1); }} placeholder="Search file #, destination..." className="max-w-xs" />
           <Select value={travelType} onChange={(e) => { setTravelType(e.target.value); setPage(1); }} className="w-44">
             <option value="">All Types</option>

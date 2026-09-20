@@ -78,17 +78,17 @@ export default function PaymentsPage() {
 
       {/* Pending money summary */}
       {(pending?.length ?? 0) > 0 && (
-        <Card className="border-yellow-200 bg-yellow-50 dark:border-yellow-900/40 dark:bg-yellow-900/10">
+        <Card className="border-yellow-200 bg-yellow-50">
           <CardContent className="flex flex-wrap items-center justify-between gap-3 py-4">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-yellow-400/20">
                 <Clock className="h-5 w-5 text-yellow-600" />
               </div>
               <div>
-                <p className="text-sm font-semibold text-yellow-800 dark:text-yellow-300">
+                <p className="text-sm font-semibold text-yellow-800">
                   {pending!.length} payment{pending!.length === 1 ? '' : 's'} awaiting verification
                 </p>
-                <p className="text-xs text-yellow-700/70 dark:text-yellow-400/70">
+                <p className="text-xs text-yellow-700/70">
                   {formatCurrency(pendingTotal)} reported but not yet confirmed against the bank
                 </p>
               </div>
@@ -98,7 +98,7 @@ export default function PaymentsPage() {
       )}
 
       {/* Tabs */}
-      <div className="border-b border-neutral-200 dark:border-neutral-800">
+      <div className="border-b border-neutral-200">
         <nav className="-mb-px flex gap-1 overflow-x-auto">
           {TABS.map(({ id, label, icon: Icon, count }) => (
             <button
@@ -107,7 +107,7 @@ export default function PaymentsPage() {
               className={`flex items-center gap-2 whitespace-nowrap border-b-2 px-4 py-3 text-sm font-medium transition-colors ${
                 tab === id
                   ? 'border-blue-600 text-blue-600'
-                  : 'border-transparent text-neutral-500 hover:text-neutral-700 dark:text-neutral-400'
+                  : 'border-transparent text-neutral-500 hover:text-neutral-700'
               }`}
             >
               <Icon className="h-4 w-4" />
@@ -133,12 +133,12 @@ export default function PaymentsPage() {
                 <p className="text-sm font-medium text-neutral-500">Nothing waiting — all payments are verified</p>
               </div>
             ) : (
-              <ul className="divide-y divide-neutral-50 dark:divide-neutral-800">
+              <ul className="divide-y divide-neutral-50">
                 {pending.map((p: any) => (
                   <li key={p._id} className="flex flex-wrap items-center gap-4 px-6 py-4">
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="font-semibold text-neutral-900 dark:text-neutral-100">
+                        <span className="font-semibold text-neutral-900">
                           {formatCurrency(p.amount, p.currency)}
                         </span>
                         <span className="text-xs capitalize text-neutral-500">{p.method?.replace(/_/g, ' ')}</span>
@@ -151,7 +151,7 @@ export default function PaymentsPage() {
                           </button>
                         )}
                       </div>
-                      <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                      <p className="text-sm text-neutral-600">
                         {p.customerId?.fullName || `${p.customerId?.firstName || ''} ${p.customerId?.lastName || ''}`.trim() || '—'}
                         {p.customerId?.phone && ` · ${p.customerId.phone}`}
                       </p>
@@ -165,7 +165,7 @@ export default function PaymentsPage() {
                           href={p.proofUrl}
                           target="_blank"
                           rel="noreferrer"
-                          className="flex items-center gap-1 rounded-lg border border-neutral-200 px-2.5 py-1.5 text-xs font-medium text-neutral-600 transition-colors hover:border-blue-400 hover:text-blue-600 dark:border-neutral-700 dark:text-neutral-300"
+                          className="flex items-center gap-1 rounded-lg border border-neutral-200 px-2.5 py-1.5 text-xs font-medium text-neutral-600 transition-colors hover:border-blue-400 hover:text-blue-600"
                         >
                           <ExternalLink className="h-3.5 w-3.5" /> View proof
                         </a>
@@ -198,11 +198,11 @@ export default function PaymentsPage() {
                 <p className="text-sm font-medium text-neutral-500">No one is behind on their payment plan</p>
               </div>
             ) : (
-              <ul className="divide-y divide-neutral-50 dark:divide-neutral-800">
+              <ul className="divide-y divide-neutral-50">
                 {overdue.map((f: any) => (
                   <li
                     key={f._id}
-                    className="flex cursor-pointer flex-wrap items-center gap-4 px-6 py-4 transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/50"
+                    className="flex cursor-pointer flex-wrap items-center gap-4 px-6 py-4 transition-colors hover:bg-neutral-50"
                     onClick={() => router.push(`/travel-files/${f._id}`)}
                   >
                     <div className="min-w-0 flex-1">
@@ -210,7 +210,7 @@ export default function PaymentsPage() {
                         <span className="font-mono text-sm font-semibold text-blue-600">{f.fileNumber}</span>
                         <StatusBadge status={f.status} />
                       </div>
-                      <p className="text-sm text-neutral-700 dark:text-neutral-300">
+                      <p className="text-sm text-neutral-700">
                         {f.customerId?.fullName || `${f.customerId?.firstName || ''} ${f.customerId?.lastName || ''}`.trim()}
                         {f.customerId?.phone && ` · ${f.customerId.phone}`}
                       </p>
@@ -233,7 +233,7 @@ export default function PaymentsPage() {
       {/* All payments */}
       {tab === 'all' && (
         <Card>
-          <div className="flex items-center gap-3 border-b border-neutral-100 px-6 py-4 dark:border-neutral-800">
+          <div className="flex items-center gap-3 border-b border-neutral-100 px-6 py-4">
             <Select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="w-44">
               <option value="">All statuses</option>
               <option value="pending">Pending</option>
@@ -247,12 +247,12 @@ export default function PaymentsPage() {
             ) : !all?.length ? (
               <p className="py-12 text-center text-sm text-neutral-400">No payments found.</p>
             ) : (
-              <ul className="divide-y divide-neutral-50 dark:divide-neutral-800">
+              <ul className="divide-y divide-neutral-50">
                 {all.map((p: any) => (
                   <li key={p._id} className="flex flex-wrap items-center gap-4 px-6 py-3">
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
-                        <span className={`font-semibold ${p.status === 'rejected' ? 'text-neutral-400 line-through' : 'text-neutral-900 dark:text-neutral-100'}`}>
+                        <span className={`font-semibold ${p.status === 'rejected' ? 'text-neutral-400 line-through' : 'text-neutral-900'}`}>
                           {formatCurrency(p.amount, p.currency)}
                         </span>
                         <StatusBadge status={p.status} />
@@ -279,7 +279,7 @@ export default function PaymentsPage() {
       {/* Reject reason */}
       <Modal open={!!rejecting} onClose={() => { setRejecting(null); setRejectReason(''); }} title="Reject Payment" size="sm">
         <div className="space-y-4 p-6">
-          <p className="text-sm text-neutral-600 dark:text-neutral-400">
+          <p className="text-sm text-neutral-600">
             Rejecting {rejecting && formatCurrency(rejecting.amount, rejecting.currency)} from{' '}
             {rejecting?.customerId?.fullName || 'this customer'}. It will not count towards their balance.
           </p>

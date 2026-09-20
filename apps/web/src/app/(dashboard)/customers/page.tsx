@@ -48,7 +48,7 @@ export default function CustomersPage() {
         <div className="flex items-center gap-3">
           <Avatar name={row.fullName} size="sm" />
           <div>
-            <p className="font-medium text-neutral-900 dark:text-neutral-100">{row.fullName}</p>
+            <p className="font-medium text-neutral-900">{row.fullName}</p>
             <p className="text-xs text-neutral-500">{row.email}</p>
           </div>
         </div>
@@ -89,7 +89,7 @@ export default function CustomersPage() {
       />
 
       <Card>
-        <div className="flex items-center gap-3 border-b border-neutral-100 px-6 py-4 dark:border-neutral-800">
+        <div className="flex items-center gap-3 border-b border-neutral-100 px-6 py-4">
           <SearchInput value={search} onChange={(v) => { setSearch(v); setPage(1); }} placeholder="Search customers..." className="max-w-xs" />
         </div>
         <DataTable

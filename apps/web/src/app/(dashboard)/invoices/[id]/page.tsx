@@ -115,7 +115,7 @@ export default function InvoiceDetailPage() {
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" onClick={() => router.back()}><ArrowLeft className="h-4 w-4" /></Button>
         <div className="flex-1">
-          <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">{invoice.invoiceNumber}</h1>
+          <h1 className="text-2xl font-bold text-neutral-900">{invoice.invoiceNumber}</h1>
           <StatusBadge status={invoice.status} />
         </div>
         <Button variant="outline" onClick={downloadPDF}><Download className="h-4 w-4" /> Invoice PDF</Button>
@@ -143,7 +143,7 @@ export default function InvoiceDetailPage() {
 
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-neutral-100 dark:border-neutral-800">
+                  <tr className="border-b border-neutral-100">
                     <th className="py-2 text-left text-xs font-semibold text-neutral-500">Description</th>
                     <th className="py-2 text-right text-xs font-semibold text-neutral-500">Qty</th>
                     <th className="py-2 text-right text-xs font-semibold text-neutral-500">Unit Price</th>
@@ -152,7 +152,7 @@ export default function InvoiceDetailPage() {
                 </thead>
                 <tbody>
                   {lineItems.map((item: { description: string; quantity: number; unitPrice: number; total: number }, i: number) => (
-                    <tr key={i} className="border-b border-neutral-50 dark:border-neutral-800">
+                    <tr key={i} className="border-b border-neutral-50">
                       <td className="py-2">{item.description}</td>
                       <td className="py-2 text-right">{item.quantity}</td>
                       <td className="py-2 text-right">{formatCurrency(item.unitPrice, invoice.currency)}</td>
@@ -177,12 +177,12 @@ export default function InvoiceDetailPage() {
             <Card>
               <CardHeader><CardTitle>Payment History</CardTitle></CardHeader>
               <CardContent>
-                <ul className="divide-y divide-neutral-50 dark:divide-neutral-800">
+                <ul className="divide-y divide-neutral-50">
                   {payments.map((p: any) => (
                     <li key={p._id} className="flex items-center justify-between gap-3 py-3 text-sm">
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
-                          <p className={`font-medium ${p.status === 'rejected' ? 'text-neutral-400 line-through' : 'text-neutral-900 dark:text-neutral-100'}`}>
+                          <p className={`font-medium ${p.status === 'rejected' ? 'text-neutral-400 line-through' : 'text-neutral-900'}`}>
                             {formatCurrency(p.amount, invoice.currency)}
                           </p>
                           <StatusBadge status={p.status} />
@@ -193,7 +193,7 @@ export default function InvoiceDetailPage() {
                         {p.status === 'verified' && (
                           <button
                             onClick={() => downloadReceipt(p._id)}
-                            className="rounded-lg border border-neutral-200 px-2 py-1 text-xs text-neutral-600 hover:border-blue-400 hover:text-blue-600 dark:border-neutral-700 dark:text-neutral-300"
+                            className="rounded-lg border border-neutral-200 px-2 py-1 text-xs text-neutral-600 hover:border-blue-400 hover:text-blue-600"
                           >
                             Receipt
                           </button>
@@ -211,12 +211,12 @@ export default function InvoiceDetailPage() {
             <Card>
               <CardHeader><CardTitle>Refunds</CardTitle></CardHeader>
               <CardContent>
-                <ul className="divide-y divide-neutral-50 dark:divide-neutral-800">
+                <ul className="divide-y divide-neutral-50">
                   {refunds.map((r: any) => (
                     <li key={r._id} className="flex flex-wrap items-center justify-between gap-3 py-3 text-sm">
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
-                          <p className="font-medium text-neutral-900 dark:text-neutral-100">
+                          <p className="font-medium text-neutral-900">
                             {formatCurrency(r.amount, invoice.currency)}
                           </p>
                           <StatusBadge status={r.status} />
@@ -292,7 +292,7 @@ export default function InvoiceDetailPage() {
 
       <Modal open={showRefund} onClose={() => setShowRefund(false)} title="Request Refund" size="sm">
         <div className="space-y-4 p-6">
-          <p className="text-sm text-neutral-600 dark:text-neutral-400">
+          <p className="text-sm text-neutral-600">
             {formatCurrency(invoice.amountPaid, invoice.currency)} has been received on this invoice
             {invoice.totalRefunded ? `, ${formatCurrency(invoice.totalRefunded, invoice.currency)} already refunded` : ''}.
             A refund must be approved before it can be paid out.
@@ -344,14 +344,14 @@ export default function InvoiceDetailPage() {
 }
 
 function Detail({ label, value }: { label: string; value: string }) {
-  return <div><p className="text-xs text-neutral-500">{label}</p><p className="font-medium text-neutral-900 dark:text-neutral-100">{value}</p></div>;
+  return <div><p className="text-xs text-neutral-500">{label}</p><p className="font-medium text-neutral-900">{value}</p></div>;
 }
 
 function Row({ label, value, bold, color }: { label: string; value: string; bold?: boolean; color?: string }) {
   return (
     <div className="flex justify-between">
       <span className="text-neutral-500">{label}</span>
-      <span className={`${bold ? 'font-bold' : ''} ${color || 'text-neutral-900 dark:text-neutral-100'}`}>{value}</span>
+      <span className={`${bold ? 'font-bold' : ''} ${color || 'text-neutral-900'}`}>{value}</span>
     </div>
   );
 }
