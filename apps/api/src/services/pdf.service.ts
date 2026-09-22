@@ -460,6 +460,7 @@ export async function generateStandaloneReceiptPDF(receipt: IReceipt, agency: IA
 }
 
 
+
 // ─── VISA / TICKET BATCH MANIFEST ───────────────────────────────────────────
 export interface ManifestRow {
   passportNumber: string;
@@ -474,8 +475,32 @@ export interface ManifestMeta {
   groupNumber?: string;
   groupName?: string;
   partnerCompany?: string;
+  destination?: string;
+  travelDate?: Date | string;
   /** Column heading — "Visa Number" or "Ticket Number". */
   numberLabel?: string;
+  /** Headline printed on the cover band. Defaults to "VISA MANIFEST". */
+  title?: string;
+}
+
+/** Mix a hex colour towards white so a single brand colour yields a whole palette. */
+function tint(hex: string, ratio: number): string {
+  const m = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(hex.trim());
+  if (!m) return '#f3f4f6';
+  const h = m[1].length === 3 ? m[1].split('').map((c) => c + c).join('') : m[1];
+  const mix = (c: number) => Math.round(c + (255 - c) * ratio);
+  const parts = [0, 2, 4].map((i) => mix(parseInt(h.slice(i, i + 2), 16)));
+  return `#${parts.map((v) => v.toString(16).padStart(2, '0')).join('')}`;
+}
+
+/** Mix a hex colour towards black — used for text that must read on light brand tints. */
+function shade(hex: string, ratio: number): string {
+  const m = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(hex.trim());
+  if (!m) return '#111827';
+  const h = m[1].length === 3 ? m[1].split('').map((c) => c + c).join('') : m[1];
+  const mix = (c: number) => Math.round(c * (1 - ratio));
+  const parts = [0, 2, 4].map((i) => mix(parseInt(h.slice(i, i + 2), 16)));
+  return `#${parts.map((v) => v.toString(16).padStart(2, '0')).join('')}`;
 }
 
 /**
@@ -488,104 +513,222 @@ export async function generateVisaBatchPDF(
   meta: ManifestMeta = {}
 ): Promise<Buffer> {
   return new Promise(async (resolve, reject) => {
-    const doc = new PDFDocument({ margin: 40, size: 'A4' });
+    const doc = new PDFDocument({ margin: 40, size: 'A4', bufferPages: true });
     const chunks: Buffer[] = [];
     doc.on('data', (c) => chunks.push(c));
     doc.on('end', () => resolve(Buffer.concat(chunks)));
     doc.on('error', reject);
 
-    const primaryColor = (agency as any).branding?.primaryColor || '#0d6e52';
+    const brand = (agency as any).branding?.primaryColor || '#0d6e52';
     const companyName = (agency as any).branding?.companyName || agency.name;
     const logoUrl = (agency as any).branding?.logoUrl || agency.logo;
     const printedOn = new Date().toLocaleDateString('en-GB');
+    const fmtDate = (d?: Date | string) => (d ? new Date(d).toLocaleDateString('en-GB') : '—');
 
-    // ── Letterhead band ──
-    doc.rect(40, 40, 515, 46).fill(primaryColor);
-    let titleX = 52;
+    const ink = '#0f172a';
+    const muted = '#64748b';
+    const hairline = '#e8edf2';
+    const zebra = tint(brand, 0.965);
+    const headline = meta.title || (meta.numberLabel === 'Ticket Number' ? 'TICKET MANIFEST' : 'VISA MANIFEST');
+
+    const M = 40;            // page margin
+    const W = 515;           // content width
+    const BOTTOM = 762;      // last y at which a table row may start
+
+    // ── Cover band ────────────────────────────────────────────────────────────
+    const BAND_H = 118;
+    doc.rect(0, 0, 595, BAND_H).fill(brand);
+
+    // Soft decorative discs, clipped to the band.
+    doc.save();
+    doc.rect(0, 0, 595, BAND_H).clip();
+    doc.fillOpacity(0.1);
+    doc.circle(548, 14, 78).fill('#ffffff');
+    doc.fillOpacity(0.07);
+    doc.circle(470, 108, 56).fill('#ffffff');
+    doc.fillOpacity(1);
+    doc.restore();
+
+    let nameX = M;
     if (logoUrl) {
       try {
         const imgBuf = await fetchImageBuffer(logoUrl);
-        doc.image(imgBuf, 52, 48, { height: 30, fit: [70, 30] });
-        titleX = 132;
-      } catch { /* letterhead still works without the logo */ }
+        doc.roundedRect(M, 26, 52, 52, 8).fill('#ffffff');
+        doc.image(imgBuf, M + 6, 32, { fit: [40, 40] });
+        nameX = M + 66;
+      } catch { /* the band still works without a logo */ }
     }
+
     doc.fontSize(17).font('Helvetica-Bold').fillColor('#ffffff')
-      .text(companyName.toUpperCase(), titleX, 56, { width: 400, ellipsis: true });
+      .text(companyName.toUpperCase(), nameX, 32, { width: 300, characterSpacing: 0.4, ellipsis: true, lineBreak: false });
 
-    // ── Meta row ──
-    let y = 98;
-    doc.fontSize(9).font('Helvetica-Bold').fillColor('#111827').text('Agency:', 50, y);
-    doc.font('Helvetica').text(companyName, 100, y, { width: 240, ellipsis: true });
-    doc.font('Helvetica-Bold').text('Date of Print:', 400, y, { width: 155, align: 'right' });
-    doc.font('Helvetica').text(printedOn, 400, y + 12, { width: 155, align: 'right' });
-
-    if (meta.groupNumber || meta.groupName) {
-      y += 16;
-      doc.font('Helvetica-Bold').fillColor('#111827').text('Group:', 50, y);
-      doc.font('Helvetica').text(
-        [meta.groupNumber, meta.groupName].filter(Boolean).join(' — '),
-        100, y, { width: 280, ellipsis: true }
-      );
+    const contact = [agency.address, agency.phone, agency.email].filter(Boolean).join('  ·  ');
+    if (contact) {
+      doc.fillOpacity(0.8).fontSize(8).font('Helvetica').fillColor('#ffffff')
+        .text(contact, nameX, 56, { width: 300, ellipsis: true, lineBreak: false });
+      doc.fillOpacity(1);
     }
-    if (meta.partnerCompany) {
-      y += 14;
-      doc.font('Helvetica-Bold').fillColor('#111827').text('On behalf of:', 50, y);
-      doc.font('Helvetica').text(meta.partnerCompany, 120, y, { width: 260, ellipsis: true });
-    }
-    y += 24;
 
+    // Document-type chip, right aligned on the band.
+    const chipW = 168;
+    doc.roundedRect(595 - M - chipW, 34, chipW, 30, 15).fill(shade(brand, 0.3));
+    doc.fontSize(10.5).font('Helvetica-Bold').fillColor('#ffffff')
+      .text(headline, 595 - M - chipW, 44, { width: chipW, align: 'center', characterSpacing: 1.1 });
+
+    // ── Summary cards ─────────────────────────────────────────────────────────
+    let y = BAND_H + 18;
+    const cards = [
+      meta.groupNumber && { label: 'GROUP NO.', value: meta.groupNumber, accent: true },
+      { label: 'TRAVELLERS', value: String(rows.length), accent: true },
+      meta.destination && { label: 'DESTINATION', value: meta.destination },
+      meta.travelDate && { label: 'TRAVEL DATE', value: fmtDate(meta.travelDate) },
+      { label: 'DATE OF PRINT', value: printedOn },
+    ].filter(Boolean).slice(0, 4) as Array<{ label: string; value: string; accent?: boolean }>;
+
+    const CARD_H = 44;
+    const gap = 10;
+    const cardW = (W - gap * (cards.length - 1)) / cards.length;
+    cards.forEach((c, i) => {
+      const x = M + i * (cardW + gap);
+      doc.roundedRect(x, y, cardW, CARD_H, 6)
+        .fillAndStroke(c.accent ? tint(brand, 0.9) : '#f8fafc', c.accent ? tint(brand, 0.7) : hairline);
+      doc.fontSize(6.5).font('Helvetica-Bold').fillColor(muted)
+        .text(c.label, x + 10, y + 9, { width: cardW - 16, characterSpacing: 0.8, lineBreak: false });
+      doc.fontSize(11).font('Helvetica-Bold').fillColor(c.accent ? shade(brand, 0.15) : ink)
+        .text(c.value, x + 10, y + 22, { width: cardW - 16, ellipsis: true, lineBreak: false });
+    });
+    y += CARD_H + 14;
+
+    // ── Subject strip: what this list is, and who it was prepared for ─────────
+    if (meta.groupName || meta.partnerCompany) {
+      const STRIP_H = 32;
+      doc.roundedRect(M, y, W, STRIP_H, 6).fill(tint(brand, 0.95));
+      doc.rect(M, y + 6, 3, STRIP_H - 12).fill(brand);
+      if (meta.groupName) {
+        doc.fontSize(11).font('Helvetica-Bold').fillColor(shade(brand, 0.2))
+          .text(meta.groupName, M + 14, y + 11, { width: W / 2, ellipsis: true, lineBreak: false });
+      }
+      if (meta.partnerCompany) {
+        doc.fontSize(8).font('Helvetica').fillColor(muted)
+          .text('Prepared for', M + W / 2, y + 7, { width: W / 2 - 14, align: 'right', lineBreak: false });
+        doc.fontSize(9.5).font('Helvetica-Bold').fillColor(ink)
+          .text(meta.partnerCompany, M + W / 2, y + 18, { width: W / 2 - 14, align: 'right', ellipsis: true, lineBreak: false });
+      }
+      y += STRIP_H + 14;
+    }
+
+    // ── Table ─────────────────────────────────────────────────────────────────
     const cols = [
-      { label: 'Passport No.', x: 50, w: 95 },
-      { label: 'Name', x: 145, w: 160 },
-      { label: meta.numberLabel || 'Visa Number', x: 305, w: 100 },
-      { label: 'Purpose', x: 405, w: 90 },
-      { label: 'Issued', x: 495, w: 60 },
+      { label: '#', x: M, w: 26 },
+      { label: 'PASSPORT NO.', x: M + 26, w: 86 },
+      { label: 'TRAVELLER NAME', x: M + 112, w: 150 },
+      { label: (meta.numberLabel || 'Visa Number').toUpperCase(), x: M + 262, w: 104 },
+      { label: 'PURPOSE', x: M + 366, w: 86 },
+      { label: 'ISSUED', x: M + 452, w: 63 },
     ];
+    const ROW_H = 26;
 
     function drawTableHeader() {
-      doc.rect(50, y, 505, 22).fill('#f3f4f6');
-      doc.fontSize(8.5).font('Helvetica-Bold').fillColor('#374151');
-      for (const c of cols) doc.text(c.label, c.x + 5, y + 7, { width: c.w - 8 });
-      y += 22;
-      drawHRule(doc, y, '#111827');
+      doc.rect(M, y, W, 24).fill(shade(brand, 0.12));
+      doc.fontSize(7).font('Helvetica-Bold').fillColor('#ffffff');
+      for (const c of cols) {
+        doc.text(c.label, c.x + 7, y + 9, { width: c.w - 10, characterSpacing: 0.5, ellipsis: true, lineBreak: false });
+      }
+      y += 24;
     }
+
+    /** Slim repeat band so a continued page still carries the agency's identity. */
+    function startContinuationPage() {
+      doc.addPage();
+      doc.rect(0, 0, 595, 5).fill(brand);
+      doc.fontSize(8).font('Helvetica-Bold').fillColor(muted)
+        .text(`${companyName.toUpperCase()} — ${headline}`, M, 26, { width: W / 2, ellipsis: true, lineBreak: false });
+      doc.font('Helvetica').fillColor(muted)
+        .text(
+          [meta.groupNumber, 'continued'].filter(Boolean).join(' · '),
+          M + W / 2, 26, { width: W / 2, align: 'right', lineBreak: false }
+        );
+      y = 48;
+      drawTableHeader();
+    }
+
     drawTableHeader();
 
     rows.forEach((r, i) => {
-      const rowHeight = 24;
-      if (y + rowHeight > 770) {
-        doc.addPage();
-        y = 50;
-        drawTableHeader();
+      if (y + ROW_H > BOTTOM) startContinuationPage();
+
+      if (i % 2 === 1) doc.rect(M, y, W, ROW_H).fill(zebra);
+
+      doc.fontSize(8).font('Helvetica').fillColor('#94a3b8')
+        .text(String(i + 1), cols[0].x + 7, y + 9, { width: cols[0].w - 10, lineBreak: false });
+
+      doc.fontSize(9).font('Helvetica-Bold').fillColor(ink)
+        .text(r.passportNumber || '—', cols[1].x + 7, y + 8.5, { width: cols[1].w - 10, ellipsis: true, lineBreak: false });
+
+      doc.fontSize(9).font('Helvetica').fillColor('#334155')
+        .text(r.name || '—', cols[2].x + 7, y + 8.5, { width: cols[2].w - 10, ellipsis: true, lineBreak: false });
+
+      // The document number is the reason the list exists — give it a pill.
+      if (r.documentNumber) {
+        doc.fontSize(8.5).font('Helvetica-Bold');
+        const textW = Math.min(doc.widthOfString(r.documentNumber), cols[3].w - 24);
+        doc.roundedRect(cols[3].x + 5, y + 5.5, textW + 14, 15, 7.5).fill(tint(brand, 0.86));
+        doc.fillColor(shade(brand, 0.2))
+          .text(r.documentNumber, cols[3].x + 12, y + 9, { width: textW, ellipsis: true, lineBreak: false });
+      } else {
+        doc.fontSize(8.5).font('Helvetica').fillColor('#cbd5e1')
+          .text('—', cols[3].x + 7, y + 9, { width: cols[3].w - 10, lineBreak: false });
       }
-      if (i % 2 === 0) doc.rect(50, y, 505, rowHeight).fill('#fafafa');
 
-      const issued = r.issueDate ? new Date(r.issueDate).toLocaleDateString('en-GB') : '—';
-      doc.fontSize(8.5);
-      doc.fillColor('#1f2937').font('Helvetica-Bold')
-        .text(r.passportNumber || '—', cols[0].x + 5, y + 7, { width: cols[0].w - 8, ellipsis: true });
-      doc.fillColor('#374151').font('Helvetica')
-        .text(r.name || '—', cols[1].x + 5, y + 7, { width: cols[1].w - 8, ellipsis: true });
-      doc.fillColor('#1f2937').font('Helvetica-Bold')
-        .text(r.documentNumber || '—', cols[2].x + 5, y + 7, { width: cols[2].w - 8, ellipsis: true });
-      doc.fillColor('#374151').font('Helvetica')
-        .text(r.purpose || '—', cols[3].x + 5, y + 7, { width: cols[3].w - 8, ellipsis: true });
-      doc.fillColor('#6b7280').fontSize(8)
-        .text(issued, cols[4].x + 5, y + 7, { width: cols[4].w - 8 });
+      doc.fontSize(8.5).font('Helvetica').fillColor('#475569')
+        .text(r.purpose || '—', cols[4].x + 7, y + 9, { width: cols[4].w - 10, ellipsis: true, lineBreak: false });
 
-      y += rowHeight;
+      doc.fontSize(8.5).fillColor(muted)
+        .text(fmtDate(r.issueDate), cols[5].x + 7, y + 9, { width: cols[5].w - 10, lineBreak: false });
+
+      y += ROW_H;
+      doc.moveTo(M, y).lineTo(M + W, y).strokeColor(hairline).lineWidth(0.5).stroke();
     });
 
-    drawHRule(doc, y, '#111827');
-    y += 10;
-    doc.fontSize(8).font('Helvetica').fillColor('#6b7280')
-      .text(`Total travellers: ${rows.length}`, 50, y);
+    // ── Total ─────────────────────────────────────────────────────────────────
+    if (y + 46 > BOTTOM) startContinuationPage();
+    y += 12;
+    doc.roundedRect(M, y, W, 34, 6).fill(tint(brand, 0.9));
+    doc.fontSize(9).font('Helvetica-Bold').fillColor(shade(brand, 0.2))
+      .text('TOTAL TRAVELLERS', M + 14, y + 12, { width: 200, characterSpacing: 0.6, lineBreak: false });
+    doc.fontSize(13).font('Helvetica-Bold').fillColor(shade(brand, 0.1))
+      .text(String(rows.length), M + W - 214, y + 10, { width: 200, align: 'right', lineBreak: false });
+    y += 34;
 
-    doc.fontSize(7).font('Helvetica').fillColor('#9ca3af')
-      .text(
-        `${companyName} · ${agency.address || ''} · ${agency.phone || ''}${(agency as any).rcNumber ? ` · RC: ${(agency as any).rcNumber}` : ''}`,
-        50, 790, { align: 'center', width: 495 }
-      );
+    // ── Signature / stamp ─────────────────────────────────────────────────────
+    if (y + 70 < BOTTOM) {
+      y += 34;
+      const sigW = 190;
+      const slots: Array<[string, number]> = [
+        ['Authorised Signature', M],
+        ['Company Stamp', M + W - sigW],
+      ];
+      for (const [label, x] of slots) {
+        doc.moveTo(x, y).lineTo(x + sigW, y)
+          .strokeColor('#cbd5e1').lineWidth(0.7).dash(2, { space: 2 }).stroke().undash();
+        doc.fontSize(8).font('Helvetica').fillColor(muted)
+          .text(label, x, y + 6, { width: sigW, lineBreak: false });
+      }
+    }
+
+    // ── Footer on every page ──────────────────────────────────────────────────
+    const range = doc.bufferedPageRange();
+    const footer = [companyName, agency.address, agency.phone, (agency as any).rcNumber && `RC: ${(agency as any).rcNumber}`]
+      .filter(Boolean).join('  ·  ');
+    for (let i = range.start; i < range.start + range.count; i++) {
+      doc.switchToPage(i);
+      doc.page.margins.bottom = 0;
+      doc.moveTo(M, 792).lineTo(M + W, 792).strokeColor(hairline).lineWidth(0.5).stroke();
+      doc.fontSize(7).font('Helvetica').fillColor('#9ca3af')
+        .text(footer, M, 800, { width: W - 70, ellipsis: true, lineBreak: false });
+      doc.fontSize(7).font('Helvetica-Bold').fillColor(muted)
+        .text(`Page ${i - range.start + 1} of ${range.count}`, M + W - 70, 800, { width: 70, align: 'right', lineBreak: false });
+    }
 
     doc.end();
   });

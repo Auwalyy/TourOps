@@ -128,7 +128,10 @@ export const visaGroupService: Record<string, (...args: any[]) => Promise<any>> 
       groupNumber: group.groupNumber,
       groupName: group.name,
       partnerCompany: group.partnerCompany,
+      destination: group.destination,
+      travelDate: group.travelDate,
       numberLabel: allTickets ? 'Ticket Number' : 'Visa Number',
+      title: allTickets ? 'TICKET MANIFEST' : 'VISA MANIFEST',
     });
   },
 };

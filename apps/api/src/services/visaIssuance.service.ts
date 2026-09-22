@@ -124,9 +124,11 @@ export const visaIssuanceService = {
     }));
 
     const allTickets = ordered.every((e) => e.type === 'ticket');
+    const mixed = !allTickets && ordered.some((e) => e.type === 'ticket');
     return generateVisaBatchPDF(agency, rows, {
       groupName: title,
       numberLabel: allTickets ? 'Ticket Number' : 'Visa Number',
+      title: allTickets ? 'TICKET MANIFEST' : mixed ? 'ISSUED DOCUMENTS' : 'VISA MANIFEST',
     });
   },
 };
