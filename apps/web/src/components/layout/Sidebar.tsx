@@ -4,7 +4,7 @@ import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, Users, FileText, Package, Receipt,
   FolderOpen, BarChart3, Settings, Sparkles, UserCog, LogOut,
-  FolderKanban, ClipboardCheck, Wallet, UsersRound, Plane, Stamp,
+  FolderKanban, ClipboardCheck, Wallet, UsersRound, Stamp,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/stores/auth.store';
@@ -12,6 +12,7 @@ import { useBrandingStore } from '@/stores/branding.store';
 import { authApi } from '@/services/api.service';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { LogoMark } from '@/components/ui/Logo';
 
 /** Grouped so a 14-item list reads as three short lists instead of one long one. */
 const navGroups: Array<{ label?: string; items: Array<{ href: string; label: string; icon: any }> }> = [
@@ -89,9 +90,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
           {branding.logoUrl ? (
             <Image src={branding.logoUrl} alt={displayName} width={24} height={24} className="h-6 w-6 rounded object-contain" />
           ) : (
-            <span className="flex h-6 w-6 items-center justify-center rounded bg-blue-600">
-              <Plane className="h-3.5 w-3.5 text-white" />
-            </span>
+            <LogoMark size={24} className="text-blue-600" />
           )}
           <span className="truncate text-sm font-semibold text-neutral-900">{displayName}</span>
         </div>

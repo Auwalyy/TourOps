@@ -6,8 +6,9 @@ import { Providers } from './providers';
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
 export const metadata: Metadata = {
-  title: { default: 'Operations Platform', template: '%s | Operations Platform' },
-  description: 'Your complete operations platform',
+  title: { default: 'TourOps', template: '%s | TourOps' },
+  description: 'Travel, visa and Hajj operations software for travel agencies.',
+  icons: { icon: '/icon.svg', apple: '/icon.svg' },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

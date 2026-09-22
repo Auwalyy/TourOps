@@ -1,0 +1,64 @@
+<svg width="600" height="220" viewBox="0 0 600 220" xmlns="http://www.w3.org/2000/svg">
+  <title>Concept A — Route (current pick)</title>
+  <rect width="600" height="220" fill="#ffffff"/>
+
+  <!-- Large -->
+  <g transform="translate(40,40) scale(3)">
+    <rect width="40" height="40" rx="11" fill="#0d6e52"/>
+    <path d="M9.5 28.5C12.5 19.5 18.5 14.8 25.2 13.6" stroke="#ffffff" stroke-width="3.4" stroke-linecap="round"/>
+    <circle cx="29.6" cy="13.1" r="3.3" fill="#ffffff"/>
+    <rect x="9" y="31.4" width="21" height="3.2" rx="1.6" fill="#ffffff" opacity="0.5"/>
+  </g>
+
+  <!-- Lockup -->
+  <g transform="translate(200,52)">
+    <rect width="40" height="40" rx="11" fill="#0d6e52"/>
+    <path d="M9.5 28.5C12.5 19.5 18.5 14.8 25.2 13.6" stroke="#ffffff" stroke-width="3.4" stroke-linecap="round"/>
+    <circle cx="29.6" cy="13.1" r="3.3" fill="#ffffff"/>
+    <rect x="9" y="31.4" width="21" height="3.2" rx="1.6" fill="#ffffff" opacity="0.5"/>
+    <text x="52" y="27" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="21" letter-spacing="-0.6" fill="#1a1a1a">
+      <tspan font-weight="600">Tour</tspan><tspan font-weight="700">Ops</tspan>
+    </text>
+  </g>
+
+  <!-- Small sizes: 32, 24, 16 -->
+  <g transform="translate(200,120)">
+    <rect width="32" height="32" rx="8.8" fill="#0d6e52"/>
+    <g transform="scale(0.8)">
+      <path d="M9.5 28.5C12.5 19.5 18.5 14.8 25.2 13.6" stroke="#ffffff" stroke-width="3.4" stroke-linecap="round"/>
+      <circle cx="29.6" cy="13.1" r="3.3" fill="#ffffff"/>
+      <rect x="9" y="31.4" width="21" height="3.2" rx="1.6" fill="#ffffff" opacity="0.5"/>
+    </g>
+  </g>
+  <g transform="translate(248,128)">
+    <rect width="24" height="24" rx="6.6" fill="#0d6e52"/>
+    <g transform="scale(0.6)">
+      <path d="M9.5 28.5C12.5 19.5 18.5 14.8 25.2 13.6" stroke="#ffffff" stroke-width="3.4" stroke-linecap="round"/>
+      <circle cx="29.6" cy="13.1" r="3.3" fill="#ffffff"/>
+      <rect x="9" y="31.4" width="21" height="3.2" rx="1.6" fill="#ffffff" opacity="0.5"/>
+    </g>
+  </g>
+  <g transform="translate(286,136)">
+    <rect width="16" height="16" rx="4.4" fill="#0d6e52"/>
+    <g transform="scale(0.4)">
+      <path d="M9.5 28.5C12.5 19.5 18.5 14.8 25.2 13.6" stroke="#ffffff" stroke-width="3.4" stroke-linecap="round"/>
+      <circle cx="29.6" cy="13.1" r="3.3" fill="#ffffff"/>
+      <rect x="9" y="31.4" width="21" height="3.2" rx="1.6" fill="#ffffff" opacity="0.5"/>
+    </g>
+  </g>
+
+  <!-- On brand background -->
+  <g transform="translate(400,100)">
+    <rect x="-20" y="-48" width="200" height="120" rx="12" fill="#0d6e52"/>
+    <path d="M9.5 28.5C12.5 19.5 18.5 14.8 25.2 13.6" stroke="#ffffff" stroke-width="3.4" stroke-linecap="round"/>
+    <circle cx="29.6" cy="13.1" r="3.3" fill="#ffffff"/>
+    <rect x="9" y="31.4" width="21" height="3.2" rx="1.6" fill="#ffffff" opacity="0.5"/>
+    <text x="52" y="27" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="21" letter-spacing="-0.6" fill="#ffffff">
+      <tspan font-weight="600">Tour</tspan><tspan font-weight="700">Ops</tspan>
+    </text>
+  </g>
+
+  <text x="40" y="190" font-family="Inter, Helvetica, Arial, sans-serif" font-size="12" fill="#64748b">
+    Concept A — Route: the journey rising to its destination, over the record it leaves behind.
+  </text>
+</svg>

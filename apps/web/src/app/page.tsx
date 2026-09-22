@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { Logo, LogoMark } from '@/components/ui/Logo';
 import {
   Map,
   FileCheck2,
@@ -87,10 +88,7 @@ export default function LandingPage() {
       {/* Nav */}
       <header className="sticky top-0 z-50 border-b border-neutral-200 bg-white">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-4 sm:px-6">
-          <div className="flex items-center gap-2.5">
-            <span className="flex h-8 w-8 items-center justify-center rounded-md bg-blue-600 text-sm font-bold text-white">T</span>
-            <span className="text-lg font-semibold tracking-tight text-neutral-900">TourOps</span>
-          </div>
+          <Logo size={32} className="text-blue-600" />
           <nav className="hidden items-center gap-8 text-sm text-neutral-600 md:flex">
             <a href="#features" className="hover:text-neutral-900 transition-colors">Features</a>
             <a href="#how" className="hover:text-neutral-900 transition-colors">How It Works</a>
@@ -274,7 +272,10 @@ export default function LandingPage() {
       {/* Footer */}
       <footer className="border-t border-neutral-200 bg-white py-8">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-2 px-6 text-sm text-neutral-400 sm:flex-row">
-          <span>© {new Date().getFullYear()} TourOps</span>
+          <span className="flex items-center gap-2">
+            <LogoMark size={20} className="text-blue-600" />
+            © {new Date().getFullYear()} TourOps
+          </span>
           <span>Travel, visa &amp; Hajj operations software</span>
         </div>
       </footer>

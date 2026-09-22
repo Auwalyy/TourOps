@@ -1,7 +1,7 @@
 'use client';
 import { ReactNode } from 'react';
-import { Globe } from 'lucide-react';
 import Image from 'next/image';
+import { LogoMark } from '@/components/ui/Logo';
 import { useBrandingStore } from '@/stores/branding.store';
 
 export default function AuthLayout({ children }: { children: ReactNode }) {
@@ -17,8 +17,8 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
           {branding.logoUrl ? (
             <Image src={branding.logoUrl} alt={displayName} width={36} height={36} className="h-9 w-9 rounded-lg object-contain" />
           ) : (
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/20">
-              <Globe className="h-5 w-5 text-white" />
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/15">
+              <LogoMark size={24} variant="bare" className="text-white" />
             </div>
           )}
           <span className="text-xl font-bold text-white">{displayName}</span>

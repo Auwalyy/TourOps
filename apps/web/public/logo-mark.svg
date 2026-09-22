@@ -1,0 +1,7 @@
+<svg width="160" height="160" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <title>TourOps</title>
+  <rect width="40" height="40" rx="11" fill="#0d6e52"/>
+  <path d="M9.5 28.5C12.5 19.5 18.5 14.8 25.2 13.6" stroke="#ffffff" stroke-width="3.4" stroke-linecap="round"/>
+  <circle cx="29.6" cy="13.1" r="3.3" fill="#ffffff"/>
+  <rect x="9" y="31.4" width="21" height="3.2" rx="1.6" fill="#ffffff" opacity="0.5"/>
+</svg>

@@ -1,0 +1,40 @@
+<svg width="600" height="220" viewBox="0 0 600 220" xmlns="http://www.w3.org/2000/svg">
+  <title>Concept C — Monogram</title>
+  <rect width="600" height="220" fill="#ffffff"/>
+
+  <defs>
+    <g id="mono">
+      <rect width="40" height="40" rx="11" fill="#0d6e52"/>
+      <!-- T -->
+      <rect x="7.5" y="10" width="16" height="3.9" rx="1.95" fill="#ffffff"/>
+      <rect x="13.6" y="10" width="3.9" height="18.5" rx="1.95" fill="#ffffff"/>
+      <!-- O, overlapping low-right -->
+      <circle cx="26.5" cy="24.5" r="6.4" fill="none" stroke="#ffffff" stroke-width="3.6"/>
+    </g>
+  </defs>
+
+  <use href="#mono" transform="translate(40,40) scale(3)"/>
+
+  <g transform="translate(200,52)">
+    <use href="#mono"/>
+    <text x="52" y="27" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="21" letter-spacing="-0.6" fill="#1a1a1a">
+      <tspan font-weight="600">Tour</tspan><tspan font-weight="700">Ops</tspan>
+    </text>
+  </g>
+
+  <use href="#mono" transform="translate(200,120) scale(0.8)"/>
+  <use href="#mono" transform="translate(248,128) scale(0.6)"/>
+  <use href="#mono" transform="translate(286,136) scale(0.4)"/>
+
+  <g transform="translate(400,100)">
+    <rect x="-20" y="-48" width="200" height="120" rx="12" fill="#1c3a5e"/>
+    <use href="#mono"/>
+    <text x="52" y="27" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="21" letter-spacing="-0.6" fill="#ffffff">
+      <tspan font-weight="600">Tour</tspan><tspan font-weight="700">Ops</tspan>
+    </text>
+  </g>
+
+  <text x="40" y="190" font-family="Inter, Helvetica, Arial, sans-serif" font-size="12" fill="#64748b">
+    Concept C — Monogram: T and O locked together. The safest, most corporate of the three.
+  </text>
+</svg>

@@ -1,0 +1,40 @@
+<svg width="600" height="220" viewBox="0 0 600 220" xmlns="http://www.w3.org/2000/svg">
+  <title>Concept B — Stamp</title>
+  <rect width="600" height="220" fill="#ffffff"/>
+
+  <defs>
+    <g id="stamp">
+      <rect width="40" height="40" rx="11" fill="#0d6e52"/>
+      <circle cx="20" cy="18.5" r="9.6" fill="none" stroke="#ffffff" stroke-width="2.6"
+              stroke-dasharray="4.2 3.1" stroke-linecap="round"/>
+      <path d="M15.4 18.8 L18.7 22.1 L25.1 14.8" fill="none" stroke="#ffffff"
+            stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+      <rect x="10.5" y="31.5" width="19" height="3" rx="1.5" fill="#ffffff" opacity="0.5"/>
+    </g>
+  </defs>
+
+  <use href="#stamp" transform="translate(40,40) scale(3)"/>
+
+  <g transform="translate(200,52)">
+    <use href="#stamp"/>
+    <text x="52" y="27" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="21" letter-spacing="-0.6" fill="#1a1a1a">
+      <tspan font-weight="600">Tour</tspan><tspan font-weight="700">Ops</tspan>
+    </text>
+  </g>
+
+  <use href="#stamp" transform="translate(200,120) scale(0.8)"/>
+  <use href="#stamp" transform="translate(248,128) scale(0.6)"/>
+  <use href="#stamp" transform="translate(286,136) scale(0.4)"/>
+
+  <g transform="translate(400,100)">
+    <rect x="-20" y="-48" width="200" height="120" rx="12" fill="#1c3a5e"/>
+    <use href="#stamp"/>
+    <text x="52" y="27" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="21" letter-spacing="-0.6" fill="#ffffff">
+      <tspan font-weight="600">Tour</tspan><tspan font-weight="700">Ops</tspan>
+    </text>
+  </g>
+
+  <text x="40" y="190" font-family="Inter, Helvetica, Arial, sans-serif" font-size="12" fill="#64748b">
+    Concept B — Stamp: the approval stamp every visa lives or dies by, perforated ring and all.
+  </text>
+</svg>
