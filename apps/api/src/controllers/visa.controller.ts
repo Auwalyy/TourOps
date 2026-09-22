@@ -79,4 +79,17 @@ export const visaController = {
       sendSuccess(res, null, 'Deleted');
     } catch (e) { next(e); }
   },
+
+  async batchPDF(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const buffer = await visaService.generateBatchPDF(
+        req.user!.agencyId!.toString(),
+        req.body.ids,
+        req.body.title
+      );
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', 'attachment; filename="visa-batch-list.pdf"');
+      res.send(buffer);
+    } catch (e) { next(e); }
+  },
 };

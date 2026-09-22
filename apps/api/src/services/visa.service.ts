@@ -3,11 +3,13 @@ import { visaApplicationRepository } from '../repositories/visaApplication.repos
 import { paymentRepository } from '../repositories/payment.repository';
 import { paymentService } from './payment.service';
 import { notificationService } from './notification.service';
-import { NotFoundError } from '../utils/errors';
+import { NotFoundError, AppError } from '../utils/errors';
 import { getPaginationParams } from '../utils/helpers';
-import { VisaStatus } from '../models/VisaApplication';
+import { VisaStatus, VisaApplication } from '../models/VisaApplication';
 import { Booking } from '../models/Booking';
 import { Customer } from '../models/Customer';
+import { Agency } from '../models/Agency';
+import { generateVisaBatchPDF } from './pdf.service';
 import { v4 as uuidv4 } from 'uuid';
 
 export const visaService = {
@@ -127,5 +129,38 @@ export const visaService = {
     const visa = await visaApplicationRepository.findOne({ _id: id, agencyId });
     if (!visa) throw new NotFoundError('Visa application');
     return visaApplicationRepository.deleteById(id);
+  },
+
+  /**
+   * The printable manifest an agency hands over for a group of visas issued
+   * together — passport no., name, visa number and purpose, one row each.
+   */
+  async generateBatchPDF(agencyId: string, ids: string[], title?: string): Promise<Buffer> {
+    if (!ids?.length) throw new AppError('Select at least one visa application', 400);
+
+    const [agency, visas] = await Promise.all([
+      Agency.findById(agencyId),
+      VisaApplication.find({ _id: { $in: ids }, agencyId })
+        .populate('customerId', 'firstName lastName fullName passport')
+        .lean(),
+    ]);
+    if (!agency) throw new NotFoundError('Agency');
+    if (!visas.length) throw new NotFoundError('Visa applications');
+
+    // Keep the manifest in the order the caller selected them, not query order.
+    const byId = new Map(visas.map((v) => [v._id.toString(), v]));
+    const ordered = ids.map((id) => byId.get(id)).filter(Boolean) as typeof visas;
+
+    const rows = ordered.map((v: any) => ({
+      passportNumber: v.customerId?.passport?.number || '—',
+      name: v.customerId?.fullName
+        || `${v.customerId?.firstName || ''} ${v.customerId?.lastName || ''}`.trim()
+        || '—',
+      documentNumber: v.visaNumber,
+      purpose: v.visaType || v.purposeOfTravel,
+      issueDate: v.visaIssuedDate,
+    }));
+
+    return generateVisaBatchPDF(agency, rows, { groupName: title });
   },
 };

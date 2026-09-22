@@ -1,8 +1,9 @@
 'use client';
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import { Plus } from 'lucide-react';
+import { toast } from 'sonner';
+import { Plus, FileDown, X } from 'lucide-react';
 import { visasApi } from '@/services/api.service';
 import { VisaApplication } from '@/types';
 import { PageHeader } from '@/components/shared/PageHeader';
@@ -25,6 +26,7 @@ export default function VisasPage() {
   const [paymentStatus, setPaymentStatus] = useState('');
   const [page, setPage] = useState(1);
   const [showForm, setShowForm] = useState(false);
+  const [selected, setSelected] = useState<Record<string, VisaApplication>>({});
 
   const { data, isLoading } = useQuery({
     queryKey: ['visas', { search, status, paymentStatus, page }],
@@ -34,11 +36,53 @@ export default function VisasPage() {
         .then((r) => r.data),
   });
 
+  const selectedIds = Object.keys(selected);
+
+  function toggleSelected(row: VisaApplication) {
+    setSelected((s) => {
+      const next = { ...s };
+      if (next[row._id]) delete next[row._id];
+      else next[row._id] = row;
+      return next;
+    });
+  }
+
+  const batchMutation = useMutation({
+    mutationFn: () => visasApi.batchPDF(selectedIds).then((r) => r.data),
+    onSuccess: (blob) => {
+      const url = URL.createObjectURL(new Blob([blob], { type: 'application/pdf' }));
+      const a = document.createElement('a');
+      a.href = url; a.download = 'visa-batch-list.pdf'; a.click();
+      URL.revokeObjectURL(url);
+      setSelected({});
+    },
+    onError: () => toast.error('Failed to generate batch list'),
+  });
+
   const columns: Column<VisaApplication>[] = [
+    {
+      key: 'select',
+      header: '',
+      className: 'w-8',
+      render: (row) => (
+        <input
+          type="checkbox"
+          checked={!!selected[row._id]}
+          onChange={() => toggleSelected(row)}
+          onClick={(e) => e.stopPropagation()}
+          className="h-3.5 w-3.5 cursor-pointer rounded border-neutral-300 text-blue-600 focus:ring-blue-600/30"
+        />
+      ),
+    },
     {
       key: 'referenceNumber',
       header: 'Reference',
       render: (row) => <span className="font-mono text-sm font-medium text-blue-600">{row.referenceNumber || '—'}</span>,
+    },
+    {
+      key: 'visaNumber',
+      header: 'Visa Number',
+      render: (row) => <span className="font-mono text-sm text-neutral-700">{row.visaNumber || '—'}</span>,
     },
     {
       key: 'customer',
@@ -82,6 +126,22 @@ export default function VisasPage() {
         description="Track and manage all visa applications"
         actions={<Button onClick={() => setShowForm(true)}><Plus className="h-4 w-4" /> New Application</Button>}
       />
+
+      {selectedIds.length > 0 && (
+        <Card className="flex flex-wrap items-center justify-between gap-3 border-blue-200 bg-blue-50 px-4 py-2.5">
+          <span className="text-sm font-medium text-blue-800">
+            {selectedIds.length} selected
+          </span>
+          <div className="flex items-center gap-2">
+            <Button size="sm" loading={batchMutation.isPending} onClick={() => batchMutation.mutate()}>
+              <FileDown className="h-3.5 w-3.5" /> Download Batch List (PDF)
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => setSelected({})}>
+              <X className="h-3.5 w-3.5" /> Clear
+            </Button>
+          </div>
+        </Card>
+      )}
 
       <Card>
         <div className="flex flex-wrap items-center gap-3 border-b border-neutral-100 px-6 py-4">

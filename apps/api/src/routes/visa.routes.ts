@@ -8,6 +8,7 @@ router.use(authenticate);
 
 router.get('/', authorize('visas:read'), visaController.list);
 router.get('/appointments/upcoming', authorize('visas:read'), visaController.getUpcomingAppointments);
+router.post('/batch/pdf', authorize('visas:read'), visaController.batchPDF);
 router.get('/:id', authorize('visas:read'), visaController.getById);
 router.get('/:id/payments', authorize('payments:read'), visaController.listPayments);
 router.post('/:id/payments', authorize('payments:write'), visaController.addPayment);

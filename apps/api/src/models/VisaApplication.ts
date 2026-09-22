@@ -49,6 +49,9 @@ export interface IVisaApplication extends Document {
   /** Cached from verified Payment documents — Payment is the source of truth. */
   amountPaid: number;
   referenceNumber?: string;
+  /** The actual visa number issued by the embassy/portal — not our internal reference. */
+  visaNumber?: string;
+  visaIssuedDate?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -110,6 +113,8 @@ const visaApplicationSchema = new Schema<IVisaApplication>(
     fees: Number,
     amountPaid: { type: Number, default: 0, min: 0 },
     referenceNumber: String,
+    visaNumber: String,
+    visaIssuedDate: Date,
   },
   { timestamps: true, toJSON: { virtuals: true } }
 );

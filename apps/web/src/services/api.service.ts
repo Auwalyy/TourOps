@@ -73,6 +73,8 @@ export const visasApi = {
   getUpcomingAppointments: () => api.get('/visas/appointments/upcoming'),
   listPayments: (id: string) => api.get(`/visas/${id}/payments`),
   addPayment: (id: string, data: Record<string, unknown>) => api.post(`/visas/${id}/payments`, data),
+  batchPDF: (ids: string[], title?: string) =>
+    api.post('/visas/batch/pdf', { ids, title }, { responseType: 'blob' }),
   delete: (id: string) => api.delete(`/visas/${id}`),
 };
 
@@ -216,6 +218,33 @@ export const branchesApi = {
   create: (data: Record<string, unknown>) => api.post('/branches', data),
   update: (id: string, data: Record<string, unknown>) => api.put(`/branches/${id}`, data),
   delete: (id: string) => api.delete(`/branches/${id}`),
+};
+
+// ─── Issued Visas & Tickets (document records + group batches) ───────────────
+export const issuedVisasApi = {
+  list: (params?: Record<string, unknown>) => api.get('/issued-visas', { params }),
+  getById: (id: string) => api.get(`/issued-visas/${id}`),
+  /** FormData — carries the record fields plus the optional visa/ticket file. */
+  create: (data: FormData) =>
+    api.post('/issued-visas', data, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  update: (id: string, data: FormData) =>
+    api.put(`/issued-visas/${id}`, data, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  delete: (id: string) => api.delete(`/issued-visas/${id}`),
+  batchPDF: (ids: string[], title?: string) =>
+    api.post('/issued-visas/pdf', { ids, title }, { responseType: 'blob' }),
+
+  groups: {
+    list: (params?: Record<string, unknown>) => api.get('/issued-visas/groups', { params }),
+    getById: (id: string) => api.get(`/issued-visas/groups/${id}`),
+    create: (data: Record<string, unknown>) => api.post('/issued-visas/groups', data),
+    update: (id: string, data: Record<string, unknown>) => api.put(`/issued-visas/groups/${id}`, data),
+    delete: (id: string) => api.delete(`/issued-visas/groups/${id}`),
+    downloadPDF: (id: string, ids?: string[]) =>
+      api.get(`/issued-visas/groups/${id}/pdf`, {
+        responseType: 'blob',
+        params: ids?.length ? { ids: ids.join(',') } : {},
+      }),
+  },
 };
 
 // ─── Travel Files ─────────────────────────────────────────────────────────────

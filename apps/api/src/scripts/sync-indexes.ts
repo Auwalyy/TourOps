@@ -28,11 +28,13 @@ import { Payment } from '../models/Payment';
 import { Refund } from '../models/Refund';
 import { BookingGroup } from '../models/BookingGroup';
 import { Branch } from '../models/Branch';
+import { VisaGroup } from '../models/VisaGroup';
+import { VisaIssuance } from '../models/VisaIssuance';
 
 const MODELS = [
   Agency, User, Customer, TourPackage, TravelFile, Booking, VisaApplication,
   Invoice, Receipt, DocumentFile, Notification, AuditLog, Payment, Refund,
-  BookingGroup, Branch,
+  BookingGroup, Branch, VisaGroup, VisaIssuance,
 ];
 
 async function main() {

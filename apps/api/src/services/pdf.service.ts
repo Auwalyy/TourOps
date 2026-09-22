@@ -3,6 +3,7 @@ import { IInvoice } from '../models/Invoice';
 import { IReceipt } from '../models/Receipt';
 import { IAgency } from '../models/Agency';
 import { IPayment } from '../models/Payment';
+import { IVisaApplication } from '../models/VisaApplication';
 import https from 'https';
 import http from 'http';
 
@@ -452,6 +453,138 @@ export async function generateStandaloneReceiptPDF(receipt: IReceipt, agency: IA
       .text(
         `${companyName} · ${agency.address || ''} · ${agency.phone || ''}${(agency as any).rcNumber ? ` · RC: ${(agency as any).rcNumber}` : ''}`,
         50, 780, { align: 'center', width: 495 }
+      );
+
+    doc.end();
+  });
+}
+
+
+// ─── VISA / TICKET BATCH MANIFEST ───────────────────────────────────────────
+export interface ManifestRow {
+  passportNumber: string;
+  name: string;
+  documentNumber?: string;
+  purpose?: string;
+  issueDate?: Date | string;
+}
+
+export interface ManifestMeta {
+  /** Group number and travel name, when the batch belongs to a group. */
+  groupNumber?: string;
+  groupName?: string;
+  partnerCompany?: string;
+  /** Column heading — "Visa Number" or "Ticket Number". */
+  numberLabel?: string;
+}
+
+/**
+ * The printable list an agency hands over as proof of a batch of issuances —
+ * one row per traveller: passport, name, document number, purpose, issue date.
+ */
+export async function generateVisaBatchPDF(
+  agency: IAgency,
+  rows: ManifestRow[],
+  meta: ManifestMeta = {}
+): Promise<Buffer> {
+  return new Promise(async (resolve, reject) => {
+    const doc = new PDFDocument({ margin: 40, size: 'A4' });
+    const chunks: Buffer[] = [];
+    doc.on('data', (c) => chunks.push(c));
+    doc.on('end', () => resolve(Buffer.concat(chunks)));
+    doc.on('error', reject);
+
+    const primaryColor = (agency as any).branding?.primaryColor || '#0d6e52';
+    const companyName = (agency as any).branding?.companyName || agency.name;
+    const logoUrl = (agency as any).branding?.logoUrl || agency.logo;
+    const printedOn = new Date().toLocaleDateString('en-GB');
+
+    // ── Letterhead band ──
+    doc.rect(40, 40, 515, 46).fill(primaryColor);
+    let titleX = 52;
+    if (logoUrl) {
+      try {
+        const imgBuf = await fetchImageBuffer(logoUrl);
+        doc.image(imgBuf, 52, 48, { height: 30, fit: [70, 30] });
+        titleX = 132;
+      } catch { /* letterhead still works without the logo */ }
+    }
+    doc.fontSize(17).font('Helvetica-Bold').fillColor('#ffffff')
+      .text(companyName.toUpperCase(), titleX, 56, { width: 400, ellipsis: true });
+
+    // ── Meta row ──
+    let y = 98;
+    doc.fontSize(9).font('Helvetica-Bold').fillColor('#111827').text('Agency:', 50, y);
+    doc.font('Helvetica').text(companyName, 100, y, { width: 240, ellipsis: true });
+    doc.font('Helvetica-Bold').text('Date of Print:', 400, y, { width: 155, align: 'right' });
+    doc.font('Helvetica').text(printedOn, 400, y + 12, { width: 155, align: 'right' });
+
+    if (meta.groupNumber || meta.groupName) {
+      y += 16;
+      doc.font('Helvetica-Bold').fillColor('#111827').text('Group:', 50, y);
+      doc.font('Helvetica').text(
+        [meta.groupNumber, meta.groupName].filter(Boolean).join(' — '),
+        100, y, { width: 280, ellipsis: true }
+      );
+    }
+    if (meta.partnerCompany) {
+      y += 14;
+      doc.font('Helvetica-Bold').fillColor('#111827').text('On behalf of:', 50, y);
+      doc.font('Helvetica').text(meta.partnerCompany, 120, y, { width: 260, ellipsis: true });
+    }
+    y += 24;
+
+    const cols = [
+      { label: 'Passport No.', x: 50, w: 95 },
+      { label: 'Name', x: 145, w: 160 },
+      { label: meta.numberLabel || 'Visa Number', x: 305, w: 100 },
+      { label: 'Purpose', x: 405, w: 90 },
+      { label: 'Issued', x: 495, w: 60 },
+    ];
+
+    function drawTableHeader() {
+      doc.rect(50, y, 505, 22).fill('#f3f4f6');
+      doc.fontSize(8.5).font('Helvetica-Bold').fillColor('#374151');
+      for (const c of cols) doc.text(c.label, c.x + 5, y + 7, { width: c.w - 8 });
+      y += 22;
+      drawHRule(doc, y, '#111827');
+    }
+    drawTableHeader();
+
+    rows.forEach((r, i) => {
+      const rowHeight = 24;
+      if (y + rowHeight > 770) {
+        doc.addPage();
+        y = 50;
+        drawTableHeader();
+      }
+      if (i % 2 === 0) doc.rect(50, y, 505, rowHeight).fill('#fafafa');
+
+      const issued = r.issueDate ? new Date(r.issueDate).toLocaleDateString('en-GB') : '—';
+      doc.fontSize(8.5);
+      doc.fillColor('#1f2937').font('Helvetica-Bold')
+        .text(r.passportNumber || '—', cols[0].x + 5, y + 7, { width: cols[0].w - 8, ellipsis: true });
+      doc.fillColor('#374151').font('Helvetica')
+        .text(r.name || '—', cols[1].x + 5, y + 7, { width: cols[1].w - 8, ellipsis: true });
+      doc.fillColor('#1f2937').font('Helvetica-Bold')
+        .text(r.documentNumber || '—', cols[2].x + 5, y + 7, { width: cols[2].w - 8, ellipsis: true });
+      doc.fillColor('#374151').font('Helvetica')
+        .text(r.purpose || '—', cols[3].x + 5, y + 7, { width: cols[3].w - 8, ellipsis: true });
+      doc.fillColor('#6b7280').fontSize(8)
+        .text(issued, cols[4].x + 5, y + 7, { width: cols[4].w - 8 });
+
+      y += rowHeight;
+    });
+
+    drawHRule(doc, y, '#111827');
+    y += 10;
+    doc.fontSize(8).font('Helvetica').fillColor('#6b7280')
+      .text(`Total travellers: ${rows.length}`, 50, y);
+
+    doc.fontSize(7).font('Helvetica').fillColor('#9ca3af')
+      .text(
+        `${companyName} · ${agency.address || ''} · ${agency.phone || ''}${(agency as any).rcNumber ? ` · RC: ${(agency as any).rcNumber}` : ''}`,
+        50, 790, { align: 'center', width: 495 }
       );
 
     doc.end();

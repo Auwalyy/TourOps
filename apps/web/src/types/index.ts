@@ -176,6 +176,9 @@ export interface VisaApplication {
   amountPaid: number;
   balance?: number;
   referenceNumber?: string;
+  /** The actual visa number issued by the embassy/portal. */
+  visaNumber?: string;
+  visaIssuedDate?: string;
   notes: string;
   createdAt: string;
 }
@@ -370,6 +373,39 @@ export interface BookingGroup {
   memberCount?: number;
   totalCost?: number;
   amountPaid?: number;
+  createdAt: string;
+}
+
+export type IssuanceType = 'visa' | 'ticket' | 'other';
+
+export interface VisaGroup {
+  _id: string;
+  groupNumber: string;
+  name: string;
+  partnerCompany?: string;
+  destination?: string;
+  travelDate?: string;
+  notes?: string;
+  status: 'open' | 'closed';
+  entryCount?: number;
+  entries?: VisaIssuance[];
+  createdAt: string;
+}
+
+export interface VisaIssuance {
+  _id: string;
+  groupId?: VisaGroup | string;
+  type: IssuanceType;
+  travellerName: string;
+  passportNumber: string;
+  documentNumber?: string;
+  purpose?: string;
+  issueDate: string;
+  expiryDate?: string;
+  fileUrl?: string;
+  fileType?: string;
+  fileSize?: number;
+  notes?: string;
   createdAt: string;
 }
 

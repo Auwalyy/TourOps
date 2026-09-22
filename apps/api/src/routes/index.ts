@@ -19,6 +19,7 @@ import paymentRoutes from './payment.routes';
 import refundRoutes from './refund.routes';
 import bookingGroupRoutes from './bookingGroup.routes';
 import branchRoutes from './branch.routes';
+import visaIssuanceRoutes from './visaIssuance.routes';
 
 export function registerRoutes(app: Express): void {
   const API = '/api/v1';
@@ -45,4 +46,5 @@ export function registerRoutes(app: Express): void {
   app.use(`${API}/refunds`, refundRoutes);
   app.use(`${API}/groups`, bookingGroupRoutes);
   app.use(`${API}/branches`, branchRoutes);
+  app.use(`${API}/issued-visas`, visaIssuanceRoutes);
 }

@@ -24,6 +24,8 @@ export default function VisaDetailPage() {
   const [apptDate, setApptDate] = useState('');
   const [apptLocation, setApptLocation] = useState('');
   const [pay, setPay] = useState({ amount: '', method: 'cash', reference: '', note: '' });
+  const [editingVisaNumber, setEditingVisaNumber] = useState(false);
+  const [visaNumberInput, setVisaNumberInput] = useState('');
 
   const { data: visa, isLoading } = useQuery({
     queryKey: ['visas', id],
@@ -55,6 +57,16 @@ export default function VisaDetailPage() {
       qc.invalidateQueries({ queryKey: ['visas', id, 'payments'] });
     },
     onError: (e: any) => toast.error(e.response?.data?.message || 'Failed to record payment'),
+  });
+
+  const visaNumberMutation = useMutation({
+    mutationFn: () => visasApi.update(id, { visaNumber: visaNumberInput.trim() || undefined }),
+    onSuccess: () => {
+      toast.success('Visa number saved');
+      setEditingVisaNumber(false);
+      qc.invalidateQueries({ queryKey: ['visas', id] });
+    },
+    onError: () => toast.error('Failed to save visa number'),
   });
 
   const statusMutation = useMutation({
@@ -118,6 +130,35 @@ export default function VisaDetailPage() {
               <Detail label="Return Date" value={visa.returnDate ? formatDate(visa.returnDate) : '—'} />
               <Detail label="Due Date" value={visa.dueDate ? formatDate(visa.dueDate) : '—'} />
               <Detail label="Assigned Officer" value={officer?.fullName || 'Unassigned'} />
+              <div className="col-span-2 border-t border-neutral-100 pt-3">
+                <p className="mb-1 text-xs text-neutral-500">Visa Number (issued by embassy)</p>
+                {editingVisaNumber ? (
+                  <div className="flex items-center gap-2">
+                    <Input
+                      placeholder="e.g. 6174141815"
+                      value={visaNumberInput}
+                      onChange={(e) => setVisaNumberInput(e.target.value)}
+                      className="max-w-[220px]"
+                    />
+                    <Button size="sm" loading={visaNumberMutation.isPending} onClick={() => visaNumberMutation.mutate()}>
+                      Save
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => setEditingVisaNumber(false)}>Cancel</Button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-3">
+                    <span className="font-mono text-sm font-semibold text-neutral-900">
+                      {visa.visaNumber || '—'}
+                    </span>
+                    <button
+                      onClick={() => { setVisaNumberInput(visa.visaNumber || ''); setEditingVisaNumber(true); }}
+                      className="text-xs font-medium text-blue-600 hover:underline"
+                    >
+                      {visa.visaNumber ? 'Edit' : 'Add'}
+                    </button>
+                  </div>
+                )}
+              </div>
               {visa.notes && <div className="col-span-2"><Detail label="Notes" value={visa.notes} /></div>}
             </CardContent>
           </Card>
