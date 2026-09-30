@@ -10,6 +10,7 @@ import { portalApi } from '@/services/api.service';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { useBrandingStore } from '@/stores/branding.store';
+import { BRAND } from '@/lib/brand';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 
@@ -108,7 +109,7 @@ function TrackFilePageContent() {
   const [noteContent, setNoteContent] = useState('');
   const [sendingNote, setSendingNote] = useState(false);
 
-  const primaryColor = branding.primaryColor || '#0d6e52';
+  const primaryColor = BRAND;
   const companyName = branding.companyName || branding.agencyName || 'Travel Portal';
   const logoUrl = branding.logoUrl;
 

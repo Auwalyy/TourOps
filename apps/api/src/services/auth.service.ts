@@ -3,6 +3,7 @@ import { userRepository } from '../repositories/user.repository';
 import { Agency } from '../models/Agency';
 import { tokenService } from './token.service';
 import { emailService } from './email.service';
+import { subscriptionService } from './subscription.service';
 import { generateToken, hashToken } from '../utils/helpers';
 import { AppError, ConflictError, NotFoundError, UnauthorizedError } from '../utils/errors';
 import { IUser } from '../models/User';
@@ -41,6 +42,7 @@ export const authService = {
       phone: input.agencyPhone,
       address: input.agencyAddress,
       country: input.agencyCountry,
+      subscription: subscriptionService.startTrial(),
     });
 
     const user = await userRepository.create({

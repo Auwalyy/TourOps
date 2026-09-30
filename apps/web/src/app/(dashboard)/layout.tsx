@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/stores/auth.store';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { Topbar } from '@/components/layout/Topbar';
+import { SubscriptionGate } from '@/components/layout/SubscriptionGate';
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   const { isAuthenticated } = useAuthStore();
@@ -22,7 +23,9 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
         <Topbar onMenuClick={() => setSidebarOpen(true)} />
         <main className="flex-1 overflow-y-auto overflow-x-hidden">
-          <div className="mx-auto max-w-[1400px] p-5 sm:p-6 lg:p-8">{children}</div>
+          <div className="mx-auto max-w-[1400px] p-5 sm:p-6 lg:p-8">
+            <SubscriptionGate>{children}</SubscriptionGate>
+          </div>
         </main>
       </div>
     </div>

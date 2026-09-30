@@ -472,3 +472,60 @@ export interface DashboardKPIs {
   bookingStatusCounts: Array<{ _id: string; count: number }>;
   visaStatusCounts: Array<{ _id: string; count: number }>;
 }
+
+// ─── Subscription ────────────────────────────────────────────────────────────
+export type AccessState = 'trialing' | 'active' | 'grace' | 'locked' | 'suspended';
+
+export interface Plan {
+  id: 'starter' | 'professional' | 'enterprise';
+  name: string;
+  monthly: number;
+  yearly: number;
+  maxUsers: number;
+  description: string;
+  features: string[];
+}
+
+export interface SubscriptionStatus {
+  state: AccessState;
+  canWrite: boolean;
+  plan: string;
+  billingCycle?: 'monthly' | 'yearly';
+  trialEndsAt?: string;
+  currentPeriodEnd?: string;
+  accessUntil?: string;
+  graceEndsAt?: string;
+  daysLeft: number;
+  lastPaymentAt?: string;
+  plans?: Record<string, Plan>;
+  gatewayConfigured?: boolean;
+}
+
+export interface SubscriptionPayment {
+  _id: string;
+  agencyId: string | { _id: string; name: string; email: string };
+  plan: string;
+  billingCycle: 'monthly' | 'yearly';
+  amount: number;
+  currency: string;
+  reference: string;
+  status: 'pending' | 'success' | 'failed' | 'abandoned';
+  channel?: string;
+  paidAt?: string;
+  periodEnd?: string;
+  createdAt: string;
+}
+
+export interface PlatformAgencyRow {
+  _id: string;
+  name: string;
+  email: string;
+  phone: string;
+  createdAt: string;
+  plan: string;
+  state: AccessState;
+  daysLeft: number;
+  accessUntil?: string;
+  userCount: number;
+  lastPayment?: { amount: number; paidAt: string } | null;
+}

@@ -14,7 +14,13 @@ const AGENCY = {
   phone: '+2348000000000',
   address: '1 Demo Street, Lagos',
   country: 'Nigeria',
-  subscription: { plan: 'professional' as const, status: 'active' as const },
+  // A long paid period so the demo account is never gated by the trial.
+  subscription: {
+    plan: 'professional' as const,
+    status: 'active' as const,
+    billingCycle: 'yearly' as const,
+    currentPeriodEnd: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+  },
   settings: { currency: 'NGN', timezone: 'Africa/Lagos', dateFormat: 'DD/MM/YYYY' },
 };
 

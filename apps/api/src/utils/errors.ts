@@ -39,3 +39,16 @@ export class ConflictError extends AppError {
     super(message, 409);
   }
 }
+
+/**
+ * The agency's subscription has lapsed. Carries the subscription state so the
+ * client can tell a read-only grace period apart from a full lock-out.
+ */
+export class SubscriptionRequiredError extends AppError {
+  public readonly details: Record<string, unknown>;
+
+  constructor(message: string, details: Record<string, unknown> = {}) {
+    super(message, 402);
+    this.details = details;
+  }
+}

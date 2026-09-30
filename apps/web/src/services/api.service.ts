@@ -275,3 +275,24 @@ export const travelFilesApi = {
   getBookings: (id: string) => api.get(`/travel-files/${id}/bookings`),
   delete: (id: string) => api.delete(`/travel-files/${id}`),
 };
+
+// ─── Subscription (what the agency pays TourOps) ─────────────────────────────
+export const subscriptionApi = {
+  status: () => api.get('/subscription'),
+  plans: () => api.get('/subscription/plans'),
+  history: () => api.get('/subscription/history'),
+  checkout: (plan: string, billingCycle: 'monthly' | 'yearly') =>
+    api.post('/subscription/checkout', { plan, billingCycle }),
+  verify: (reference: string) => api.get(`/subscription/verify/${reference}`),
+};
+
+// ─── Platform admin (TourOps owner only) ─────────────────────────────────────
+export const platformApi = {
+  stats: () => api.get('/platform/stats'),
+  agencies: (params?: Record<string, unknown>) => api.get('/platform/agencies', { params }),
+  payments: () => api.get('/platform/payments'),
+  extend: (id: string, days: number) => api.post(`/platform/agencies/${id}/extend`, { days }),
+  recordPayment: (id: string, data: Record<string, unknown>) =>
+    api.post(`/platform/agencies/${id}/record-payment`, data),
+  suspend: (id: string, suspended: boolean) => api.post(`/platform/agencies/${id}/suspend`, { suspended }),
+};

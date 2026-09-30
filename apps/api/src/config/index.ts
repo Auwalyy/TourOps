@@ -42,4 +42,19 @@ export const config = {
   gemini: {
     apiKey: process.env.GEMINI_API_KEY || '',
   },
+  flutterwave: {
+    secretKey: process.env.FLW_SECRET_KEY || '',
+    publicKey: process.env.FLW_PUBLIC_KEY || '',
+    /** Shared secret echoed in the `verif-hash` webhook header. */
+    secretHash: process.env.FLW_SECRET_HASH || '',
+    /** Where Flutterwave sends the customer back after checkout. */
+    redirectUrl:
+      process.env.FLW_REDIRECT_URL ||
+      `${process.env.CLIENT_URL || 'http://localhost:3000'}/billing/callback`,
+  },
+  billing: {
+    trialDays: parseInt(process.env.TRIAL_DAYS || '30', 10),
+    /** Read-only window after the paid-through date before the account locks. */
+    graceDays: parseInt(process.env.GRACE_DAYS || '7', 10),
+  },
 } as const;

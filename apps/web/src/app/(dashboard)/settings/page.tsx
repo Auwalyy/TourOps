@@ -28,12 +28,12 @@ const companySchema = z.object({
   accountNumber: z.string().optional(),
 });
 
+// The app's colour is fixed TourOps green — an agency brands its documents
+// with its name and logo, not the interface.
 const brandingSchema = z.object({
   companyName: z.string().min(1, 'Required'),
   tagline: z.string().optional(),
-  primaryColor: z.string().regex(/^#[0-9a-fA-F]{6}$/, 'Must be a valid hex e.g. #0d6e52'),
   logoUrl: z.string().url('Must be a valid URL').or(z.literal('')).optional(),
-  faviconUrl: z.string().url('Must be a valid URL').or(z.literal('')).optional(),
 });
 
 const profileSchema = z.object({
@@ -111,9 +111,7 @@ export default function SettingsPage() {
     defaultValues: {
       companyName: branding.companyName,
       tagline: branding.tagline,
-      primaryColor: branding.primaryColor,
       logoUrl: branding.logoUrl,
-      faviconUrl: branding.faviconUrl,
     },
   });
 
@@ -121,7 +119,6 @@ export default function SettingsPage() {
     try {
       await agencyApi.updateBranding(data);
       updateBranding(data);
-      document.documentElement.style.setProperty('--color-primary', data.primaryColor);
       toast.success('Branding updated');
     } catch { toast.error('Failed to update branding'); }
   }
@@ -247,7 +244,7 @@ export default function SettingsPage() {
 
           {/* ── Branding ── */}
           <section>
-            <SectionLabel>Branding & Appearance</SectionLabel>
+            <SectionLabel>Your Company Identity</SectionLabel>
             <Card>
               <CardContent className="pt-6">
                 <form onSubmit={brandingForm.handleSubmit(onBrandingSave)} className="space-y-4">
@@ -258,23 +255,13 @@ export default function SettingsPage() {
                       <p className="mt-1 text-xs text-neutral-400">Shown in the sidebar, login page, and customer portal</p>
                     </div>
                     <div>
-                      <Label>Primary Color</Label>
-                      <div className="flex gap-2">
-                        <Input placeholder="#0d6e52" error={brandingForm.formState.errors.primaryColor?.message} {...brandingForm.register('primaryColor')} />
-                        <input type="color" {...brandingForm.register('primaryColor')} className="h-10 w-10 cursor-pointer rounded-lg border border-neutral-200 p-0.5" />
-                      </div>
+                      <Label>Logo URL</Label>
+                      <Input placeholder="https://cdn.example.com/logo.png" error={brandingForm.formState.errors.logoUrl?.message} {...brandingForm.register('logoUrl')} />
+                      <p className="mt-1 text-xs text-neutral-400">Printed on your invoices, receipts and visa manifests</p>
                     </div>
                     <div className="sm:col-span-2">
                       <Label>Tagline</Label>
                       <Input placeholder="Your trusted travel partner" {...brandingForm.register('tagline')} />
-                    </div>
-                    <div>
-                      <Label>Logo URL</Label>
-                      <Input placeholder="https://cdn.example.com/logo.png" error={brandingForm.formState.errors.logoUrl?.message} {...brandingForm.register('logoUrl')} />
-                    </div>
-                    <div>
-                      <Label>Favicon URL</Label>
-                      <Input placeholder="https://cdn.example.com/favicon.ico" error={brandingForm.formState.errors.faviconUrl?.message} {...brandingForm.register('faviconUrl')} />
                     </div>
                   </div>
                   <div className="flex justify-end border-t border-neutral-100 pt-4">

@@ -12,7 +12,7 @@ import { Modal, ConfirmDialog } from '@/components/ui/Modal';
 import { Input, Label, Select, Textarea } from '@/components/ui/Input';
 import { formatDate } from '@/lib/utils';
 import { IssuanceFormModal } from '@/components/features/issued-visas/IssuanceFormModal';
-import { EntryTable } from '../page';
+import { EntryTable } from '@/components/features/issued-visas/EntryTable';
 
 export default function VisaGroupDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -59,7 +59,7 @@ export default function VisaGroupDetailPage() {
 
   const deleteGroup = useMutation({
     mutationFn: () => issuedVisasApi.groups.delete(id),
-    onSuccess: () => { toast.success('Group deleted'); router.push('/issued-visas'); },
+    onSuccess: () => { toast.success('Group deleted'); router.push('/visas?tab=groups'); },
     onError: (e: any) => toast.error(e.response?.data?.message || 'Failed to delete'),
   });
 
@@ -84,7 +84,7 @@ export default function VisaGroupDetailPage() {
     <div className="space-y-5">
       {/* Header */}
       <div className="flex flex-wrap items-start gap-3">
-        <Button variant="ghost" size="icon" onClick={() => router.push('/issued-visas')}>
+        <Button variant="ghost" size="icon" onClick={() => router.push('/visas?tab=groups')}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div className="min-w-0 flex-1">

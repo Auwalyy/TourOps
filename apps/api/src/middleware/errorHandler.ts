@@ -13,6 +13,9 @@ export function errorHandler(
     res.status(err.statusCode).json({
       success: false,
       message: err.message,
+      // Some errors carry structured context the client acts on — the
+      // subscription state behind a 402, for instance.
+      ...((err as any).details ? { details: (err as any).details } : {}),
     });
     return;
   }

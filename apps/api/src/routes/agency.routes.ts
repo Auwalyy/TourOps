@@ -19,9 +19,19 @@ router.get('/branding', async (req, res, next) => {
 // Protected — agency_owner updates their own branding
 router.put('/branding', authenticate, authorizeRoles('agency_owner', 'system_admin'), async (req: any, res, next) => {
   try {
+    // Only these are an agency's to set. The interface colour is fixed
+    // TourOps brand, so primaryColor and faviconUrl are ignored rather than
+    // trusted from the client. Field-wise $set so omitted keys are kept
+    // instead of the whole branding object being replaced.
+    const allowed = ['companyName', 'tagline', 'logoUrl', 'whatsappNumber'] as const;
+    const update: Record<string, unknown> = {};
+    for (const key of allowed) {
+      if (req.body?.[key] !== undefined) update[`branding.${key}`] = req.body[key];
+    }
+
     const agency = await Agency.findByIdAndUpdate(
       req.user.agencyId,
-      { $set: { branding: req.body } },
+      { $set: update },
       { new: true, runValidators: true }
     ).select('name branding logo');
     sendSuccess(res, agency, 'Branding updated');

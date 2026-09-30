@@ -5,6 +5,7 @@ import { formatCurrency, formatRelativeTime, formatDate } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/Card';
 import { useBrandingStore } from '@/stores/branding.store';
 import { useAuthStore } from '@/stores/auth.store';
+import { BRAND } from '@/lib/brand';
 import {
   Users, FileText, Globe, TrendingUp, FolderKanban,
   AlertTriangle, Calendar, ArrowRight, Clock, CheckCircle2,
@@ -72,7 +73,7 @@ function StatCard({ title, value, href, sub }: {
 export default function DashboardPage() {
   const { user } = useAuthStore();
   const { branding } = useBrandingStore();
-  const primaryColor = branding.primaryColor || '#0d6e52';
+  const primaryColor = BRAND;
 
   const { data: kpis, isLoading: kpisLoading } = useQuery({
     queryKey: ['dashboard', 'kpis'],

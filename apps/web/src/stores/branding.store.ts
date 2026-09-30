@@ -4,9 +4,7 @@ import api from '@/lib/api';
 export interface Branding {
   companyName: string;
   tagline: string;
-  primaryColor: string;
   logoUrl: string;
-  faviconUrl: string;
   whatsappNumber: string;
   agencyName: string;
 }
@@ -14,9 +12,7 @@ export interface Branding {
 const DEFAULTS: Branding = {
   companyName: '',
   tagline: 'Manage customers, bookings, visas, invoices, and documents — all in one place.',
-  primaryColor: '#0d6e52',
   logoUrl: '',
-  faviconUrl: '',
   whatsappNumber: '',
   agencyName: '',
 };
@@ -40,9 +36,7 @@ export const useBrandingStore = create<BrandingState>((set) => ({
         branding: {
           companyName: d?.branding?.companyName || d?.name || '',
           tagline: d?.branding?.tagline || DEFAULTS.tagline,
-          primaryColor: d?.branding?.primaryColor || DEFAULTS.primaryColor,
           logoUrl: d?.branding?.logoUrl || d?.logo || '',
-          faviconUrl: d?.branding?.faviconUrl || '',
           whatsappNumber: d?.branding?.whatsappNumber || '',
           agencyName: d?.name || '',
         },

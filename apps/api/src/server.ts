@@ -11,6 +11,7 @@ import { connectDB } from './config/database';
 import { logger } from './utils/logger';
 import { errorHandler } from './middleware/errorHandler';
 import { notFound } from './middleware/notFound';
+import { enforceSubscription } from './middleware/enforceSubscription';
 import { registerRoutes } from './routes';
 import { startJobs } from './jobs/scheduler';
 
@@ -52,6 +53,10 @@ app.use(compression());
 if (config.env !== 'test') {
   app.use(morgan('combined', { stream: { write: (msg) => logger.info(msg.trim()) } }));
 }
+
+// Trial / subscription gate. Mounted before the routes so every API path is
+// covered by default rather than each route having to remember to opt in.
+app.use('/api/v1', enforceSubscription);
 
 // Routes
 registerRoutes(app);

@@ -1,0 +1,113 @@
+'use client';
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
+import { Plus } from 'lucide-react';
+import { bookingsApi } from '@/services/api.service';
+import { Booking } from '@/types';
+import { SearchInput } from '@/components/shared/SearchInput';
+import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
+import { DataTable, Column } from '@/components/ui/DataTable';
+import { StatusBadge } from '@/components/ui/StatusBadge';
+import { PaymentStatusBadge } from '@/components/ui/PaymentStatusBadge';
+import { Select } from '@/components/ui/Input';
+import { formatDate, formatCurrency } from '@/lib/utils';
+import { BookingFormModal } from '@/components/features/bookings/BookingFormModal';
+
+const BOOKING_STATUSES = ['', 'draft', 'pending', 'reserved', 'confirmed', 'ticketed', 'cancelled', 'completed'];
+const BOOKING_TYPES = ['', 'flight', 'ticket', 'visa', 'hotel', 'transport', 'tour', 'activity', 'package', 'other'];
+
+/** Every individual arrangement — flights, tickets, visas, hotels. */
+export function BookingsListTab() {
+  const router = useRouter();
+  const [search, setSearch] = useState('');
+  const [status, setStatus] = useState('');
+  const [bookingType, setBookingType] = useState('');
+  const [page, setPage] = useState(1);
+  const [showForm, setShowForm] = useState(false);
+
+  const { data, isLoading } = useQuery({
+    queryKey: ['bookings', { search, status, bookingType, page }],
+    queryFn: () =>
+      bookingsApi
+        .list({ search: search || undefined, status: status || undefined, bookingType: bookingType || undefined, page, limit: 20 })
+        .then((r) => r.data),
+  });
+
+  const columns: Column<Booking>[] = [
+    {
+      key: 'bookingNumber',
+      header: 'Booking #',
+      render: (row) => <span className="font-mono text-sm font-semibold text-blue-600">{row.bookingNumber}</span>,
+    },
+    {
+      key: 'customerId',
+      header: 'Customer',
+      render: (row) => {
+        const c = row.customerId as any;
+        return <span>{c?.fullName || `${c?.firstName || ''} ${c?.lastName || ''}`.trim() || '—'}</span>;
+      },
+    },
+    {
+      key: 'travelFileId',
+      header: 'Travel File',
+      render: (row) => {
+        const tf = row.travelFileId as any;
+        return tf?.fileNumber ? <span className="font-mono text-xs text-neutral-600">{tf.fileNumber}</span> : '—';
+      },
+    },
+    { key: 'bookingType', header: 'Type', render: (row) => <span className="capitalize">{row.bookingType}</span> },
+    { key: 'provider', header: 'Provider', render: (row) => <span className="text-neutral-600">{row.provider || '—'}</span> },
+    { key: 'startDate', header: 'Travel Date', render: (row) => (row.startDate ? formatDate(row.startDate) : '—') },
+    { key: 'status', header: 'Status', render: (row) => <StatusBadge status={row.status} /> },
+    { key: 'cost', header: 'Cost', render: (row) => formatCurrency(row.cost, row.currency) },
+    {
+      key: 'paymentStatus',
+      header: 'Payment',
+      render: (row) => <PaymentStatusBadge item={{ fees: row.cost, amountPaid: row.amountPaid }} />,
+    },
+  ];
+
+  return (
+    <div className="space-y-4">
+      <Card>
+        <div className="flex flex-wrap items-center gap-3 border-b border-neutral-100 px-6 py-4">
+          <SearchInput
+            value={search}
+            onChange={(v) => { setSearch(v); setPage(1); }}
+            placeholder="Search by booking #, customer, provider..."
+            className="max-w-xs"
+          />
+          <Select value={bookingType} onChange={(e) => { setBookingType(e.target.value); setPage(1); }} className="w-36">
+            {BOOKING_TYPES.map((t) => (
+              <option key={t} value={t}>{t ? t.charAt(0).toUpperCase() + t.slice(1) : 'All Types'}</option>
+            ))}
+          </Select>
+          <Select value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }} className="w-36">
+            {BOOKING_STATUSES.map((s) => (
+              <option key={s} value={s}>{s ? s.charAt(0).toUpperCase() + s.slice(1) : 'All Statuses'}</option>
+            ))}
+          </Select>
+          <Button className="ml-auto" onClick={() => setShowForm(true)}>
+            <Plus className="h-3.5 w-3.5" /> New Booking
+          </Button>
+        </div>
+        <DataTable
+          columns={columns}
+          data={data?.data || []}
+          loading={isLoading}
+          total={data?.pagination?.total}
+          page={page}
+          limit={20}
+          onPageChange={setPage}
+          onRowClick={(row) => router.push(`/bookings/${row._id}`)}
+          keyExtractor={(row) => row._id}
+          emptyMessage="No bookings found."
+        />
+      </Card>
+
+      <BookingFormModal open={showForm} onClose={() => setShowForm(false)} />
+    </div>
+  );
+}

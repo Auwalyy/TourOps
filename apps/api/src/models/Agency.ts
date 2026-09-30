@@ -19,7 +19,21 @@ export interface IAgency extends Document {
   isActive: boolean;
   subscription: {
     plan: 'trial' | 'starter' | 'professional' | 'enterprise';
-    status: 'active' | 'inactive' | 'trial';
+    /**
+     * A cached label for listing and filtering. The authoritative answer to
+     * "can this agency still use the app?" is derived from the dates below by
+     * subscriptionService.accessState() — never from this string alone.
+     */
+    status: 'trialing' | 'active' | 'grace' | 'locked' | 'cancelled' | 'trial' | 'inactive';
+    billingCycle?: 'monthly' | 'yearly';
+    /** End of the free trial. */
+    trialEndsAt?: Date;
+    /** Paid through this date. */
+    currentPeriodEnd?: Date;
+    lastPaymentAt?: Date;
+    /** Set by the platform owner to hand out extra time manually. */
+    extendedUntil?: Date;
+    /** Legacy field kept so older documents keep validating. */
     expiresAt?: Date;
   };
   settings: {
@@ -58,7 +72,16 @@ const agencySchema = new Schema<IAgency>(
     isActive: { type: Boolean, default: true },
     subscription: {
       plan: { type: String, enum: ['trial', 'starter', 'professional', 'enterprise'], default: 'trial' },
-      status: { type: String, enum: ['active', 'inactive', 'trial'], default: 'trial' },
+      status: {
+        type: String,
+        enum: ['trialing', 'active', 'grace', 'locked', 'cancelled', 'trial', 'inactive'],
+        default: 'trialing',
+      },
+      billingCycle: { type: String, enum: ['monthly', 'yearly'] },
+      trialEndsAt: Date,
+      currentPeriodEnd: Date,
+      lastPaymentAt: Date,
+      extendedUntil: Date,
       expiresAt: Date,
     },
     settings: {

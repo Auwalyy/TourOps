@@ -3,6 +3,7 @@ import { IInvoice } from '../models/Invoice';
 import { IReceipt } from '../models/Receipt';
 import { IAgency } from '../models/Agency';
 import { IPayment } from '../models/Payment';
+import { BRAND } from '../config/brand';
 import { IVisaApplication } from '../models/VisaApplication';
 import https from 'https';
 import http from 'http';
@@ -29,7 +30,7 @@ function drawHRule(doc: PDFKit.PDFDocument, y: number, color = '#e5e7eb') {
 }
 
 async function drawHeader(doc: PDFKit.PDFDocument, agency: IAgency, docType: 'INVOICE' | 'RECEIPT', refNumber: string, date: string, dueDate?: string) {
-  const primaryColor = (agency as any).branding?.primaryColor || '#0d6e52';
+  const primaryColor = BRAND;
   const companyName = (agency as any).branding?.companyName || agency.name;
   const logoUrl = (agency as any).branding?.logoUrl || agency.logo;
 
@@ -83,7 +84,7 @@ export async function generateInvoicePDF(invoice: IInvoice, agency: IAgency): Pr
     doc.on('end', () => resolve(Buffer.concat(chunks)));
     doc.on('error', reject);
 
-    const primaryColor = (agency as any).branding?.primaryColor || '#0d6e52';
+    const primaryColor = BRAND;
     const customer = (invoice as any).customerId as any;
 
     await drawHeader(
@@ -197,7 +198,7 @@ export async function generateReceiptPDF(invoice: IInvoice, agency: IAgency, pay
     doc.on('end', () => resolve(Buffer.concat(chunks)));
     doc.on('error', reject);
 
-    const primaryColor = (agency as any).branding?.primaryColor || '#0d6e52';
+    const primaryColor = BRAND;
     const companyName = (agency as any).branding?.companyName || agency.name;
     const customer = (invoice as any).customerId as any;
     const customerName = customer?.fullName || (customer ? `${customer.firstName} ${customer.lastName}` : 'Customer');
@@ -314,7 +315,7 @@ export async function generateStandaloneReceiptPDF(receipt: IReceipt, agency: IA
     doc.on('end', () => resolve(Buffer.concat(chunks)));
     doc.on('error', reject);
 
-    const primaryColor = (agency as any).branding?.primaryColor || '#0d6e52';
+    const primaryColor = BRAND;
     const companyName = (agency as any).branding?.companyName || agency.name;
     const logoUrl = (agency as any).branding?.logoUrl || agency.logo;
     const customer = (receipt as any).customerId as any;
@@ -519,7 +520,7 @@ export async function generateVisaBatchPDF(
     doc.on('end', () => resolve(Buffer.concat(chunks)));
     doc.on('error', reject);
 
-    const brand = (agency as any).branding?.primaryColor || '#0d6e52';
+    const brand = BRAND;
     const companyName = (agency as any).branding?.companyName || agency.name;
     const logoUrl = (agency as any).branding?.logoUrl || agency.logo;
     const printedOn = new Date().toLocaleDateString('en-GB');

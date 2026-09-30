@@ -30,11 +30,12 @@ import { BookingGroup } from '../models/BookingGroup';
 import { Branch } from '../models/Branch';
 import { VisaGroup } from '../models/VisaGroup';
 import { VisaIssuance } from '../models/VisaIssuance';
+import { SubscriptionPayment } from '../models/SubscriptionPayment';
 
 const MODELS = [
   Agency, User, Customer, TourPackage, TravelFile, Booking, VisaApplication,
   Invoice, Receipt, DocumentFile, Notification, AuditLog, Payment, Refund,
-  BookingGroup, Branch, VisaGroup, VisaIssuance,
+  BookingGroup, Branch, VisaGroup, VisaIssuance, SubscriptionPayment,
 ];
 
 async function main() {

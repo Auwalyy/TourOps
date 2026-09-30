@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { MapPin, Clock, Users, Star, Calendar, MessageCircle, ChevronDown, ChevronUp, Globe, Tag, Zap, Search, Phone, RefreshCw } from 'lucide-react';
 import { portalApi } from '@/services/api.service';
+import { BRAND } from '@/lib/brand';
 import { format, isPast } from 'date-fns';
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -179,7 +180,7 @@ export default function DealsPage() {
 
   const agency = data?.agency;
   const branding = agency?.branding;
-  const primaryColor = branding?.primaryColor || '#0d6e52';
+  const primaryColor = BRAND;
   const companyName = branding?.companyName || agency?.name || 'Travel Deals';
   const logoUrl = branding?.logoUrl || agency?.logo;
   const whatsapp = branding?.whatsappNumber;

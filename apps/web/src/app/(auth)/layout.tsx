@@ -2,6 +2,7 @@
 import { ReactNode } from 'react';
 import Image from 'next/image';
 import { LogoMark } from '@/components/ui/Logo';
+import { BRAND } from '@/lib/brand';
 import { useBrandingStore } from '@/stores/branding.store';
 
 export default function AuthLayout({ children }: { children: ReactNode }) {
@@ -12,7 +13,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-screen flex-col lg:flex-row">
       {/* Left panel */}
-      <div className="hidden w-1/2 flex-col justify-between p-8 lg:flex lg:p-12" style={{ backgroundColor: branding.primaryColor || '#0d6e52' }}>
+      <div className="hidden w-1/2 flex-col justify-between p-8 lg:flex lg:p-12" style={{ backgroundColor: BRAND }}>
         <div className="flex items-center gap-2">
           {branding.logoUrl ? (
             <Image src={branding.logoUrl} alt={displayName} width={36} height={36} className="h-9 w-9 rounded-lg object-contain" />

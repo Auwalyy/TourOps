@@ -4,7 +4,7 @@ import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, Users, FileText, Package, Receipt,
   FolderOpen, BarChart3, Settings, Sparkles, UserCog, LogOut,
-  FolderKanban, ClipboardCheck, Wallet, UsersRound, Stamp,
+  FolderKanban, ClipboardCheck, Wallet, CreditCard, Building2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/stores/auth.store';
@@ -27,8 +27,6 @@ const navGroups: Array<{ label?: string; items: Array<{ href: string; label: str
       { href: '/travel-files', label: 'Travel Files', icon: FolderKanban },
       { href: '/bookings', label: 'Bookings', icon: FileText },
       { href: '/visas', label: 'Visas', icon: ClipboardCheck },
-      { href: '/issued-visas', label: 'Issued Visas', icon: Stamp },
-      { href: '/groups', label: 'Groups', icon: UsersRound },
       { href: '/customers', label: 'Customers', icon: Users },
       { href: '/documents', label: 'Documents', icon: FolderOpen },
     ],
@@ -48,10 +46,14 @@ const navGroups: Array<{ label?: string; items: Array<{ href: string; label: str
       { href: '/packages', label: 'Packages', icon: Package },
       { href: '/ai', label: 'Insights', icon: Sparkles },
       { href: '/users', label: 'Team', icon: UserCog },
+      { href: '/billing', label: 'Billing', icon: CreditCard },
       { href: '/settings', label: 'Settings', icon: Settings },
     ],
   },
 ];
+
+/** Only the TourOps owner sees this — a system_admin belonging to no agency. */
+const platformNav = { href: '/platform', label: 'Platform', icon: Building2 };
 
 interface SidebarProps {
   open?: boolean;
@@ -64,6 +66,13 @@ export function Sidebar({ open, onClose }: SidebarProps) {
   const { branding } = useBrandingStore();
   const router = useRouter();
   const displayName = branding.companyName || branding.agencyName || 'TourOps';
+  const isPlatformOwner = user?.role === 'system_admin' && !user?.agencyId;
+
+  // The platform owner runs TourOps itself, so they get their own section and
+  // none of the per-agency billing noise.
+  const groups = isPlatformOwner
+    ? [...navGroups, { label: 'TourOps', items: [platformNav] }]
+    : navGroups;
 
   async function handleLogout() {
     try { await authApi.logout(); } catch {}
@@ -97,7 +106,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
 
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto px-2 py-3">
-          {navGroups.map((group, gi) => (
+          {groups.map((group, gi) => (
             <div key={group.label || gi} className={gi > 0 ? 'mt-5' : ''}>
               {group.label && (
                 <p className="mb-1 px-2.5 text-[11px] font-medium uppercase tracking-wider text-neutral-400">
