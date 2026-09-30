@@ -9,7 +9,8 @@ React Native app for the TourOps platform. It talks to the existing API in
 # 1. Point the app at your API. The phone cannot reach "localhost",
 #    so use your machine's LAN IP.
 cp apps/mobile/.env.example apps/mobile/.env
-#    then edit EXPO_PUBLIC_API_URL
+#    It points at the deployed backend by default; edit it only to run
+#    against a local API.
 
 # 2. Start the API and the app
 npm run dev --workspace=apps/api

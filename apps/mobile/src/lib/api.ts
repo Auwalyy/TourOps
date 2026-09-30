@@ -26,7 +26,9 @@ export async function clearTokens(): Promise<void> {
 
 const api = axios.create({
   baseURL: `${BASE_URL}/api/v1`,
-  timeout: 20000,
+  // Render's free tier sleeps after idling and takes ~30s to wake. A shorter
+  // timeout makes the first request of the morning fail for no real reason.
+  timeout: 60000,
   headers: { 'Content-Type': 'application/json' },
 });
 
@@ -101,6 +103,9 @@ api.interceptors.response.use(
 /** The API always answers `{ success, message, details? }` on failure. */
 export function errorMessage(e: unknown, fallback = 'Something went wrong'): string {
   const err = e as AxiosError<{ message?: string }>;
+  if (err?.code === 'ECONNABORTED') {
+    return 'The server is taking too long to respond. It may be waking up — try again.';
+  }
   if (err?.message === 'Network Error') {
     return 'Cannot reach the server. Check your connection.';
   }
