@@ -7,3 +7,9 @@ dist/
 *.log
 coverage/
 .DS_Store
+
+# Expo / React Native
+apps/mobile/.expo/
+apps/mobile/dist/
+apps/mobile/android/
+apps/mobile/ios/

@@ -1,0 +1,41 @@
+{
+  "expo": {
+    "name": "TourOps",
+    "slug": "tourops",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "tourops",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.tourops.app"
+    },
+    "android": {
+      "package": "com.tourops.app",
+      "edgeToEdgeEnabled": true
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "TourOps uses your photos so you can attach a visa or ticket to a traveller.",
+          "cameraPermission": "TourOps uses the camera so you can photograph a visa or passport instead of typing it."
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "usesCleartextTraffic": true
+          }
+        }
+      ]
+    ]
+  }
+}
