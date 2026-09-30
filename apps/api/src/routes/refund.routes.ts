@@ -1,10 +1,11 @@
 import { Router } from 'express';
 import { refundController } from '../controllers/refund.controller';
 import { authenticate } from '../middleware/authenticate';
+import { requireFeature } from '../middleware/requireFeature';
 import { authorize } from '../middleware/authorize';
 
 const router = Router();
-router.use(authenticate);
+router.use(authenticate, requireFeature('refunds'));
 
 router.get('/', authorize('refunds:read'), refundController.list);
 router.get('/:id', authorize('refunds:read'), refundController.getById);

@@ -1,7 +1,7 @@
 import crypto from 'crypto';
 import mongoose from 'mongoose';
 import { config } from '../config';
-import { PLANS, PlanId, BillingCycle, planPrice, cycleMonths } from '../config/plans';
+import { PLANS, PlanId, BillingCycle, planPrice, cycleMonths, Entitlements, TRIAL_ENTITLEMENTS } from '../config/plans';
 import { Agency, IAgency } from '../models/Agency';
 import { SubscriptionPayment } from '../models/SubscriptionPayment';
 import { User } from '../models/User';
@@ -117,7 +117,27 @@ export const subscriptionService = {
     return true;
   },
 
-  async getStatus(agencyId: string): Promise<SubscriptionStatus & { plans: typeof PLANS; gatewayConfigured: boolean }> {
+  /**
+   * What this agency may actually use right now.
+   *
+   * A trial gets everything so the whole product can be judged. A lapsed
+   * account keeps its last plan's entitlements — the access gate already
+   * stops it writing, and stripping features as well would only confuse.
+   */
+  entitlements(agency: IAgency): Entitlements {
+    const { state } = this.accessState(agency);
+    if (state === 'trialing') return TRIAL_ENTITLEMENTS;
+
+    const plan = agency.subscription?.plan;
+    if (plan && plan !== 'trial' && PLANS[plan as PlanId]) {
+      return PLANS[plan as PlanId].entitlements;
+    }
+    return TRIAL_ENTITLEMENTS;
+  },
+
+  async getStatus(
+    agencyId: string
+  ): Promise<SubscriptionStatus & { plans: typeof PLANS; gatewayConfigured: boolean; entitlements: Entitlements }> {
     const agency = await Agency.findById(agencyId);
     if (!agency) throw new NotFoundError('Agency');
     await this.ensureTrial(agency);
@@ -125,6 +145,7 @@ export const subscriptionService = {
       ...this.accessState(agency),
       plans: PLANS,
       gatewayConfigured: flutterwaveService.isConfigured(),
+      entitlements: this.entitlements(agency),
     };
   },
 

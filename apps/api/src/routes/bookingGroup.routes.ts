@@ -1,10 +1,11 @@
 import { Router } from 'express';
 import { bookingGroupController } from '../controllers/bookingGroup.controller';
 import { authenticate } from '../middleware/authenticate';
+import { requireFeature } from '../middleware/requireFeature';
 import { authorize } from '../middleware/authorize';
 
 const router = Router();
-router.use(authenticate);
+router.use(authenticate, requireFeature('groups'));
 
 router.get('/', authorize('bookings:read'), bookingGroupController.list);
 router.get('/:id', authorize('bookings:read'), bookingGroupController.getById);

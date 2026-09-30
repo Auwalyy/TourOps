@@ -1,10 +1,11 @@
 import { Router } from 'express';
 import { reportController } from '../controllers/report.controller';
 import { authenticate } from '../middleware/authenticate';
+import { requireFeature } from '../middleware/requireFeature';
 import { authorize } from '../middleware/authorize';
 
 const router = Router();
-router.use(authenticate, authorize('reports:read'));
+router.use(authenticate, requireFeature('reports'), authorize('reports:read'));
 
 router.get('/revenue', reportController.getRevenueReport);
 router.get('/bookings', reportController.getBookingReport);

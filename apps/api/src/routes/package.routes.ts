@@ -1,10 +1,11 @@
 import { Router } from 'express';
 import { packageController } from '../controllers/package.controller';
 import { authenticate } from '../middleware/authenticate';
+import { requireFeature } from '../middleware/requireFeature';
 import { authorize } from '../middleware/authorize';
 
 const router = Router();
-router.use(authenticate);
+router.use(authenticate, requireFeature('packages'));
 
 router.get('/', authorize('packages:read'), packageController.list);
 router.get('/:id', authorize('packages:read'), packageController.getById);

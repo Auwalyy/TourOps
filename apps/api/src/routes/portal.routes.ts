@@ -9,9 +9,23 @@ import { NotFoundError } from '../utils/errors';
 import { cloudinary } from '../config/cloudinary';
 import { Readable } from 'stream';
 import { createDocumentUpload } from '../utils/upload';
+import { subscriptionService } from '../services/subscription.service';
 
 const router = Router();
 const upload = createDocumentUpload();
+
+/**
+ * The public portal is a paid feature. These routes are unauthenticated, so
+ * the plan is resolved from the agency that owns the record being looked up.
+ * A disabled portal reads as "not found" rather than advertising the agency's
+ * billing state to the public.
+ */
+async function assertPortalEnabled(agencyId: unknown): Promise<void> {
+  const agency = await Agency.findById(agencyId as string);
+  if (!agency || !subscriptionService.entitlements(agency).portal) {
+    throw new NotFoundError('Travel file not found. Please check the file number.');
+  }
+}
 
 // This endpoint looks up a travel file by its human-readable file number with
 // no login required, so it needs its own tight limit — independent of the
@@ -49,6 +63,8 @@ router.get('/track/:fileNumber', trackLimiter, async (req: Request, res: Respons
 
     if (!file) throw new NotFoundError('Travel file not found. Please check the file number.');
 
+    await assertPortalEnabled(file.agencyId);
+
     // Payment history now lives in its own collection; expose only the fields a
     // customer should see, and flag anything still awaiting verification so an
     // uploaded receipt doesn't silently look like it was ignored.
@@ -85,6 +101,7 @@ router.get('/deals/:agencyId', async (req: Request, res: Response, next: NextFun
     const { agencyId } = req.params;
     const agency = await Agency.findById(agencyId).select('name branding logo phone').lean();
     if (!agency) throw new NotFoundError('Agency not found');
+    await assertPortalEnabled(agencyId);
 
     const deals = await TourPackage.find({ agencyId, status: 'active' })
       .select('title description category destinations duration pricing coverImage gallery isFeatured eventDate tags availability whatsappNumber')
@@ -100,6 +117,7 @@ router.post('/track/:fileNumber/receipt', trackLimiter, upload.single('receipt')
   try {
     const file = await TravelFile.findOne({ fileNumber: req.params.fileNumber.toUpperCase() });
     if (!file) throw new NotFoundError('Travel file not found');
+    await assertPortalEnabled(file.agencyId);
     if (!req.file) throw new Error('No file uploaded');
 
     const url = await uploadToCloudinary(req.file.buffer, 'payment-receipts');
@@ -142,6 +160,7 @@ router.post('/track/:fileNumber/note', trackLimiter, async (req: Request, res: R
   try {
     const file = await TravelFile.findOne({ fileNumber: req.params.fileNumber.toUpperCase() });
     if (!file) throw new NotFoundError('Travel file not found');
+    await assertPortalEnabled(file.agencyId);
 
     const { content } = req.body;
     if (!content?.trim()) throw new Error('Note content is required');

@@ -1,9 +1,10 @@
 import { Router } from 'express';
 import { aiController, passportUpload } from '../controllers/ai.controller';
 import { authenticate } from '../middleware/authenticate';
+import { requireFeature } from '../middleware/requireFeature';
 
 const router = Router();
-router.use(authenticate);
+router.use(authenticate, requireFeature('ai'));
 
 router.post('/passport/extract', passportUpload, aiController.extractPassport);
 router.post('/documents/:id/validate', aiController.validateDocument);

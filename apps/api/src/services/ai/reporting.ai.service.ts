@@ -2,11 +2,12 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { config } from '../../config';
 import { dashboardService } from '../dashboard.service';
 import { logger } from '../../utils/logger';
+import { AppError } from '../../utils/errors';
 
 function getGemini() {
   const key = (config as any).gemini?.apiKey || '';
   if (!key) throw new Error('GEMINI_API_KEY not configured');
-  return new GoogleGenerativeAI(key).getGenerativeModel({ model: 'gemini-3.6-flash' });
+  return new GoogleGenerativeAI(key).getGenerativeModel({ model: config.gemini.model });
 }
 
 export const aiReportingService = {
@@ -21,8 +22,14 @@ export const aiReportingService = {
       const result = await model.generateContent(prompt);
       return result.response.text() || 'Unable to generate summary at this time.';
     } catch (error) {
+      // Surface *why* it failed. Returning a bland "unavailable" string as if
+      // it were the summary hid a wrong model name for weeks.
       logger.error('AI business summary failed:', error);
-      return 'AI reporting service is currently unavailable.';
+      const reason = (error as Error)?.message || '';
+      if (reason.includes('GEMINI_API_KEY')) {
+        throw new AppError('AI insights are not configured. Add GEMINI_API_KEY on the server.', 503);
+      }
+      throw new AppError(`AI insights are unavailable right now: ${reason.slice(0, 200)}`, 503);
     }
   },
 

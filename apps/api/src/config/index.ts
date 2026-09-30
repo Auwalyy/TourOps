@@ -41,6 +41,8 @@ export const config = {
   },
   gemini: {
     apiKey: process.env.GEMINI_API_KEY || '',
+    /** Overridable so a model rename never needs a code change. */
+    model: process.env.GEMINI_MODEL || 'gemini-3.5-flash',
   },
   flutterwave: {
     secretKey: process.env.FLW_SECRET_KEY || '',

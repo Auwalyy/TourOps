@@ -12,6 +12,7 @@ import { logger } from './utils/logger';
 import { errorHandler } from './middleware/errorHandler';
 import { notFound } from './middleware/notFound';
 import { enforceSubscription } from './middleware/enforceSubscription';
+import { recordAudit } from './middleware/recordAudit';
 import { registerRoutes } from './routes';
 import { startJobs } from './jobs/scheduler';
 
@@ -57,6 +58,9 @@ if (config.env !== 'test') {
 // Trial / subscription gate. Mounted before the routes so every API path is
 // covered by default rather than each route having to remember to opt in.
 app.use('/api/v1', enforceSubscription);
+
+// Audit trail — records every successful change across all routes.
+app.use('/api/v1', recordAudit);
 
 // Routes
 registerRoutes(app);

@@ -296,3 +296,8 @@ export const platformApi = {
     api.post(`/platform/agencies/${id}/record-payment`, data),
   suspend: (id: string, suspended: boolean) => api.post(`/platform/agencies/${id}/suspend`, { suspended }),
 };
+
+// ─── Audit trail ─────────────────────────────────────────────────────────────
+export const auditApi = {
+  list: (params?: Record<string, unknown>) => api.get('/audit', { params }),
+};

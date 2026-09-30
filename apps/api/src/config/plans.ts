@@ -5,6 +5,31 @@
 export type PlanId = 'starter' | 'professional' | 'enterprise';
 export type BillingCycle = 'monthly' | 'yearly';
 
+/**
+ * The capabilities a plan actually grants. Every line printed on the pricing
+ * page must map to one of these, or the page is selling something the system
+ * does not enforce.
+ */
+export interface Entitlements {
+  maxUsers: number;
+  /** Packages with hard seat limits. */
+  packages: boolean;
+  /** Family / departure-group bookings with a shared ledger. */
+  groups: boolean;
+  /** Reports and CSV export. */
+  reports: boolean;
+  /** Customer portal and public tracking links. */
+  portal: boolean;
+  /** Multiple branches. */
+  branches: boolean;
+  /** Refund requests with owner approval. */
+  refunds: boolean;
+  /** AI insights and passport scanning. */
+  ai: boolean;
+}
+
+export type FeatureKey = keyof Omit<Entitlements, 'maxUsers'>;
+
 export interface Plan {
   id: PlanId;
   name: string;
@@ -15,6 +40,7 @@ export interface Plan {
   maxUsers: number;
   description: string;
   features: string[];
+  entitlements: Entitlements;
 }
 
 export const PLANS: Record<PlanId, Plan> = {
@@ -32,6 +58,16 @@ export const PLANS: Record<PlanId, Plan> = {
       'Payments, invoices and receipts',
       'Branded PDF manifests',
     ],
+    entitlements: {
+      maxUsers: 3,
+      packages: false,
+      groups: false,
+      reports: false,
+      portal: false,
+      branches: false,
+      refunds: false,
+      ai: false,
+    },
   },
   professional: {
     id: 'professional',
@@ -48,6 +84,16 @@ export const PLANS: Record<PlanId, Plan> = {
       'Reports and CSV export',
       'Customer portal and tracking links',
     ],
+    entitlements: {
+      maxUsers: 10,
+      packages: true,
+      groups: true,
+      reports: true,
+      portal: true,
+      branches: false,
+      refunds: false,
+      ai: false,
+    },
   },
   enterprise: {
     id: 'enterprise',
@@ -64,7 +110,29 @@ export const PLANS: Record<PlanId, Plan> = {
       'AI insights',
       'Priority support',
     ],
+    entitlements: {
+      maxUsers: 100,
+      packages: true,
+      groups: true,
+      reports: true,
+      portal: true,
+      branches: true,
+      refunds: true,
+      ai: true,
+    },
   },
+};
+
+/** A trial gets everything, so an agency sees the whole product before choosing. */
+export const TRIAL_ENTITLEMENTS: Entitlements = {
+  maxUsers: 100,
+  packages: true,
+  groups: true,
+  reports: true,
+  portal: true,
+  branches: true,
+  refunds: true,
+  ai: true,
 };
 
 export function planPrice(planId: PlanId, cycle: BillingCycle): number {

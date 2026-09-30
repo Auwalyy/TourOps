@@ -4,7 +4,7 @@ import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, Users, FileText, Package, Receipt,
   FolderOpen, BarChart3, Settings, Sparkles, UserCog, LogOut,
-  FolderKanban, ClipboardCheck, Wallet, CreditCard, Building2,
+  FolderKanban, ClipboardCheck, Wallet, CreditCard, Building2, Lock, ShieldCheck,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/stores/auth.store';
@@ -13,9 +13,15 @@ import { authApi } from '@/services/api.service';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { LogoMark } from '@/components/ui/Logo';
+import { useEntitlements } from '@/hooks/useEntitlements';
+import { Entitlements } from '@/types';
+
+type FeatureKey = keyof Omit<Entitlements, 'maxUsers'>;
 
 /** Grouped so a 14-item list reads as three short lists instead of one long one. */
-const navGroups: Array<{ label?: string; items: Array<{ href: string; label: string; icon: any }> }> = [
+type NavItem = { href: string; label: string; icon: any; feature?: FeatureKey };
+
+const navGroups: Array<{ label?: string; items: NavItem[] }> = [
   {
     items: [
       { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -37,15 +43,16 @@ const navGroups: Array<{ label?: string; items: Array<{ href: string; label: str
       { href: '/payments', label: 'Payments', icon: Wallet },
       { href: '/invoices', label: 'Invoices', icon: Receipt },
       { href: '/receipts', label: 'Receipts', icon: Receipt },
-      { href: '/reports', label: 'Reports', icon: BarChart3 },
+      { href: '/reports', label: 'Reports', icon: BarChart3, feature: 'reports' },
     ],
   },
   {
     label: 'Agency',
     items: [
-      { href: '/packages', label: 'Packages', icon: Package },
-      { href: '/ai', label: 'Insights', icon: Sparkles },
+      { href: '/packages', label: 'Packages', icon: Package, feature: 'packages' },
+      { href: '/ai', label: 'Insights', icon: Sparkles, feature: 'ai' },
       { href: '/users', label: 'Team', icon: UserCog },
+      { href: '/audit', label: 'Audit Trail', icon: ShieldCheck, feature: 'refunds' },
       { href: '/billing', label: 'Billing', icon: CreditCard },
       { href: '/settings', label: 'Settings', icon: Settings },
     ],
@@ -53,7 +60,7 @@ const navGroups: Array<{ label?: string; items: Array<{ href: string; label: str
 ];
 
 /** Only the TourOps owner sees this — a system_admin belonging to no agency. */
-const platformNav = { href: '/platform', label: 'Platform', icon: Building2 };
+const platformNav: NavItem = { href: '/platform', label: 'Platform', icon: Building2 };
 
 interface SidebarProps {
   open?: boolean;
@@ -67,6 +74,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
   const router = useRouter();
   const displayName = branding.companyName || branding.agencyName || 'TourOps';
   const isPlatformOwner = user?.role === 'system_admin' && !user?.agencyId;
+  const { entitlements } = useEntitlements();
 
   // The platform owner runs TourOps itself, so they get their own section and
   // none of the per-agency billing noise.
@@ -114,22 +122,34 @@ export function Sidebar({ open, onClose }: SidebarProps) {
                 </p>
               )}
               <div className="space-y-0.5">
-                {group.items.map(({ href, label, icon: Icon }) => {
+                {group.items.map(({ href, label, icon: Icon, feature }) => {
                   const active = pathname === href || pathname.startsWith(`${href}/`);
+                  // Locked items stay visible and point at Billing — hiding
+                  // them would mean nobody ever discovers what a plan adds.
+                  const locked = !!feature && !entitlements[feature];
                   return (
                     <Link
                       key={href}
-                      href={href}
+                      href={locked ? '/billing' : href}
                       onClick={onClose}
+                      title={locked ? `${label} is part of a higher plan` : undefined}
                       className={cn(
                         'flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-[13px] transition-colors',
-                        active
+                        locked
+                          ? 'text-neutral-400 hover:bg-neutral-50'
+                          : active
                           ? 'bg-neutral-100 font-medium text-neutral-900'
                           : 'text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900'
                       )}
                     >
-                      <Icon className={cn('h-4 w-4 shrink-0', active ? 'text-blue-600' : 'text-neutral-400')} />
-                      {label}
+                      <Icon
+                        className={cn(
+                          'h-4 w-4 shrink-0',
+                          locked ? 'text-neutral-300' : active ? 'text-blue-600' : 'text-neutral-400'
+                        )}
+                      />
+                      <span className="flex-1 truncate">{label}</span>
+                      {locked && <Lock className="h-3 w-3 shrink-0 text-neutral-300" />}
                     </Link>
                   );
                 })}

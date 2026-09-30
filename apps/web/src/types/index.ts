@@ -486,6 +486,17 @@ export interface Plan {
   features: string[];
 }
 
+export interface Entitlements {
+  maxUsers: number;
+  packages: boolean;
+  groups: boolean;
+  reports: boolean;
+  portal: boolean;
+  branches: boolean;
+  refunds: boolean;
+  ai: boolean;
+}
+
 export interface SubscriptionStatus {
   state: AccessState;
   canWrite: boolean;
@@ -499,6 +510,7 @@ export interface SubscriptionStatus {
   lastPaymentAt?: string;
   plans?: Record<string, Plan>;
   gatewayConfigured?: boolean;
+  entitlements?: Entitlements;
 }
 
 export interface SubscriptionPayment {
