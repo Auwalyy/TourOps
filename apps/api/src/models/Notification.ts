@@ -5,7 +5,7 @@ export interface INotification extends Document {
   userId: mongoose.Types.ObjectId;
   title: string;
   message: string;
-  type: 'booking' | 'visa' | 'payment' | 'appointment' | 'document' | 'system';
+  type: 'booking' | 'visa' | 'payment' | 'appointment' | 'document' | 'task' | 'system';
   referenceId?: mongoose.Types.ObjectId;
   referenceModel?: string;
   isRead: boolean;
@@ -21,7 +21,7 @@ const notificationSchema = new Schema<INotification>(
     message: { type: String, required: true },
     type: {
       type: String,
-      enum: ['booking', 'visa', 'payment', 'appointment', 'document', 'system'],
+      enum: ['booking', 'visa', 'payment', 'appointment', 'document', 'task', 'system'],
       required: true,
     },
     referenceId: Schema.Types.ObjectId,

@@ -44,6 +44,8 @@ export interface ITask {
   createdBy: mongoose.Types.ObjectId;
   dueDate?: Date;
   completedAt?: Date;
+  /** Last time staff were reminded about this task, so it nags once a day. */
+  remindedAt?: Date;
   priority: 'low' | 'medium' | 'high';
   status: 'todo' | 'in_progress' | 'completed' | 'cancelled';
   createdAt: Date;
@@ -90,6 +92,8 @@ export interface ITravelFile extends Document {
   visaApplicationId?: mongoose.Types.ObjectId;
   destination: string;
   departureDate?: Date;
+  /** Which departure reminders (days before) have already been sent. */
+  departureRemindersSent?: number[];
   returnDate?: Date;
   departureGroup?: string;
   assignedConsultant?: mongoose.Types.ObjectId;
@@ -142,6 +146,7 @@ const taskSchema = new Schema<ITask>(
     createdBy: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     dueDate: Date,
     completedAt: Date,
+    remindedAt: Date,
     priority: { type: String, enum: ['low', 'medium', 'high'], default: 'medium' },
     status: { type: String, enum: ['todo', 'in_progress', 'completed', 'cancelled'], default: 'todo' },
     createdAt: { type: Date, default: Date.now },
@@ -207,6 +212,7 @@ const travelFileSchema = new Schema<ITravelFile>(
     visaApplicationId: { type: Schema.Types.ObjectId, ref: 'VisaApplication' },
     destination: { type: String, required: true },
     departureDate: Date,
+    departureRemindersSent: { type: [Number], default: [] },
     returnDate: Date,
     departureGroup: String,
     assignedConsultant: { type: Schema.Types.ObjectId, ref: 'User' },

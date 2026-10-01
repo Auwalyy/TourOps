@@ -7,6 +7,9 @@ export interface IReceipt extends Document {
   invoiceId?: mongoose.Types.ObjectId;
   bookingId?: mongoose.Types.ObjectId;
   travelFileId?: mongoose.Types.ObjectId;
+  /** The verified payment this receipt acknowledges. Unique, so one payment
+   *  can never produce two receipts. */
+  paymentId?: mongoose.Types.ObjectId;
   amount: number;
   currency: string;
   method: 'cash' | 'bank_transfer' | 'card' | 'mobile_money' | 'other';
@@ -27,6 +30,7 @@ const receiptSchema = new Schema<IReceipt>(
     invoiceId: { type: Schema.Types.ObjectId, ref: 'Invoice' },
     bookingId: { type: Schema.Types.ObjectId, ref: 'Booking' },
     travelFileId: { type: Schema.Types.ObjectId, ref: 'TravelFile' },
+    paymentId: { type: Schema.Types.ObjectId, ref: 'Payment', unique: true, sparse: true },
     amount: { type: Number, required: true },
     currency: { type: String, default: 'NGN' },
     method: {

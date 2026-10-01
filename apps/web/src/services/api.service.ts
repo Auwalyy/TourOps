@@ -168,6 +168,12 @@ export const portalApi = {
 export const aiApi = {
   extractPassport: (formData: FormData) =>
     api.post('/ai/passport/extract', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  /** Several passports in one file, returned for review before saving. */
+  extractPassportBatch: (formData: FormData) =>
+    api.post('/ai/passports/extract-batch', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 120000,
+    }),
   validateDocument: (id: string) => api.post(`/ai/documents/${id}/validate`),
   detectMissingDocuments: (data: Record<string, unknown>) => api.post('/ai/documents/missing', data),
   getBusinessSummary: () => api.get('/ai/reports/summary'),
@@ -252,6 +258,7 @@ export const travelFilesApi = {
   list: (params?: Record<string, unknown>) => api.get('/travel-files', { params }),
   getById: (id: string) => api.get(`/travel-files/${id}`),
   create: (data: Record<string, unknown>) => api.post('/travel-files', data),
+  bulkCreate: (data: Record<string, unknown>) => api.post('/travel-files/bulk', data),
   update: (id: string, data: Record<string, unknown>) => api.put(`/travel-files/${id}`, data),
   updateStatus: (id: string, status: string, reason?: string) =>
     api.patch(`/travel-files/${id}/status`, { status, reason }),

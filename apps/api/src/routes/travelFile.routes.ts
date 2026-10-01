@@ -14,6 +14,8 @@ router.get('/overdue-installments', authorize('payments:read'), travelFileContro
 router.get('/:id', authorize('bookings:read'), travelFileController.getById);
 router.get('/:id/health', authorize('bookings:read'), travelFileController.getHealth);
 router.post('/', authorize('bookings:write'), travelFileController.create);
+// Bulk intake from a scanned batch of passports.
+router.post('/bulk', authorize('bookings:write'), travelFileController.bulkCreate);
 router.put('/:id', authorize('bookings:write'), travelFileController.update);
 router.patch('/:id/status', authorize('bookings:write'), travelFileController.updateStatus);
 router.post('/:id/tasks', authorize('bookings:write'), travelFileController.addTask);

@@ -14,6 +14,7 @@ import { PaymentStatusBadge } from '@/components/ui/PaymentStatusBadge';
 import { Select } from '@/components/ui/Input';
 import { formatDate, formatCurrency } from '@/lib/utils';
 import { BookingFormModal } from '@/components/features/bookings/BookingFormModal';
+import { DateRangeFilter, DateFilterValue, dateParams } from '@/components/shared/DateRangeFilter';
 
 const BOOKING_STATUSES = ['', 'draft', 'pending', 'reserved', 'confirmed', 'ticketed', 'cancelled', 'completed'];
 const BOOKING_TYPES = ['', 'flight', 'ticket', 'visa', 'hotel', 'transport', 'tour', 'activity', 'package', 'other'];
@@ -26,12 +27,13 @@ export function BookingsListTab() {
   const [bookingType, setBookingType] = useState('');
   const [page, setPage] = useState(1);
   const [showForm, setShowForm] = useState(false);
+  const [dates, setDates] = useState<DateFilterValue>({});
 
   const { data, isLoading } = useQuery({
-    queryKey: ['bookings', { search, status, bookingType, page }],
+    queryKey: ['bookings', { search, status, bookingType, page, dates }],
     queryFn: () =>
       bookingsApi
-        .list({ search: search || undefined, status: status || undefined, bookingType: bookingType || undefined, page, limit: 20 })
+        .list({ search: search || undefined, status: status || undefined, bookingType: bookingType || undefined, ...dateParams(dates), page, limit: 20 })
         .then((r) => r.data),
   });
 
@@ -92,6 +94,16 @@ export function BookingsListTab() {
           <Button className="ml-auto" onClick={() => setShowForm(true)}>
             <Plus className="h-3.5 w-3.5" /> New Booking
           </Button>
+        </div>
+        <div className="border-b border-neutral-100 px-6 py-2.5">
+          <DateRangeFilter
+            value={dates}
+            onChange={(v) => { setDates(v); setPage(1); }}
+            fields={[
+              { value: 'createdAt', label: 'Date booked' },
+              { value: 'startDate', label: 'Travel date' },
+            ]}
+          />
         </div>
         <DataTable
           columns={columns}

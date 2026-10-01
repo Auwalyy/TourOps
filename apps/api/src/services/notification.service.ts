@@ -3,7 +3,7 @@ import { notificationRepository } from '../repositories/notification.repository'
 import { User } from '../models/User';
 import { emailService } from './email.service';
 
-type NotificationType = 'booking' | 'visa' | 'payment' | 'appointment' | 'document' | 'system';
+type NotificationType = 'booking' | 'visa' | 'payment' | 'appointment' | 'document' | 'task' | 'system';
 
 interface NotifyPayload {
   agencyId: mongoose.Types.ObjectId;

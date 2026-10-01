@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import { Plus, FolderOpen } from 'lucide-react';
+import { Plus, FolderOpen, Upload } from 'lucide-react';
 import { travelFilesApi } from '@/services/api.service';
 import { TravelFile, TravelFileStatus, TravelType } from '@/types';
 import { PageHeader } from '@/components/shared/PageHeader';
@@ -14,6 +14,8 @@ import { StatusBadge } from '@/components/ui/StatusBadge';
 import { Select } from '@/components/ui/Input';
 import { formatDate } from '@/lib/utils';
 import { TravelFileFormModal } from '@/components/features/travel-files/TravelFileFormModal';
+import { BulkPassportModal } from '@/components/features/travel-files/BulkPassportModal';
+import { DateRangeFilter, DateFilterValue, dateParams } from '@/components/shared/DateRangeFilter';
 
 const TRAVEL_TYPE_LABELS: Record<TravelType, string> = {
   umrah: 'Umrah',
@@ -41,10 +43,12 @@ export default function TravelFilesPage() {
   const [travelType, setTravelType] = useState('');
   const [page, setPage] = useState(1);
   const [showForm, setShowForm] = useState(false);
+  const [showBulk, setShowBulk] = useState(false);
+  const [dates, setDates] = useState<DateFilterValue>({});
 
   const { data, isLoading } = useQuery({
-    queryKey: ['travel-files', { search, status, travelType, page }],
-    queryFn: () => travelFilesApi.list({ search, status: status || undefined, travelType: travelType || undefined, page, limit: 20 }).then((r) => r.data),
+    queryKey: ['travel-files', { search, status, travelType, page, dates }],
+    queryFn: () => travelFilesApi.list({ search, status: status || undefined, travelType: travelType || undefined, ...dateParams(dates), page, limit: 20 }).then((r) => r.data),
   });
 
   const { data: summary } = useQuery({
@@ -109,9 +113,14 @@ export default function TravelFilesPage() {
         title="Travel Files"
         description="Central hub for all customer travel journeys"
         actions={
-          <Button onClick={() => setShowForm(true)}>
-            <Plus className="h-4 w-4" /> New Travel File
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" onClick={() => setShowBulk(true)}>
+              <Upload className="h-3.5 w-3.5" /> Bulk from passports
+            </Button>
+            <Button onClick={() => setShowForm(true)}>
+              <Plus className="h-4 w-4" /> New Travel File
+            </Button>
+          </div>
         }
       />
 
@@ -141,6 +150,16 @@ export default function TravelFilesPage() {
             {Object.entries(STATUS_SUMMARY_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
             <option value="cancelled">Cancelled</option>
           </Select>
+          <div className="w-full">
+            <DateRangeFilter
+              value={dates}
+              onChange={(v) => { setDates(v); setPage(1); }}
+              fields={[
+                { value: 'createdAt', label: 'Date opened' },
+                { value: 'departureDate', label: 'Departure date' },
+              ]}
+            />
+          </div>
         </div>
         <DataTable
           columns={columns}
@@ -157,6 +176,7 @@ export default function TravelFilesPage() {
       </Card>
 
       <TravelFileFormModal open={showForm} onClose={() => setShowForm(false)} />
+      <BulkPassportModal open={showBulk} onClose={() => setShowBulk(false)} />
     </div>
   );
 }

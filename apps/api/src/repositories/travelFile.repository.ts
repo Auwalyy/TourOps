@@ -14,10 +14,15 @@ class TravelFileRepository extends BaseRepository<ITravelFile> {
     travelType?: string;
     customerId?: string;
     priority?: string;
+    /** Already-parsed date clause, e.g. { createdAt: { $gte, $lte } }. */
+    dateClause?: Record<string, unknown>;
     page: number;
     limit: number;
   }) {
-    const filter: mongoose.FilterQuery<ITravelFile> = { agencyId: params.agencyId };
+    const filter: mongoose.FilterQuery<ITravelFile> = {
+      agencyId: params.agencyId,
+      ...(params.dateClause || {}),
+    };
     if (params.status) filter.status = params.status;
     if (params.travelType) filter.travelType = params.travelType;
     if (params.customerId) filter.customerId = params.customerId;

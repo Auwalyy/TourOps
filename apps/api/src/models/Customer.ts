@@ -5,8 +5,8 @@ export interface ICustomer extends Document {
   userId?: mongoose.Types.ObjectId;
   firstName: string;
   lastName: string;
-  email: string;
-  phone: string;
+  email?: string;
+  phone?: string;
   dateOfBirth?: Date;
   nationality?: string;
   gender?: 'male' | 'female' | 'other';
@@ -45,8 +45,11 @@ const customerSchema = new Schema<ICustomer>(
     userId: { type: Schema.Types.ObjectId, ref: 'User' },
     firstName: { type: String, required: true, trim: true },
     lastName: { type: String, required: true, trim: true },
-    email: { type: String, required: true, lowercase: true, trim: true },
-    phone: { type: String, required: true },
+    // Optional: Hajj and Umrah travellers booked by one payer frequently have
+    // neither an email nor their own phone, and a passport scan supplies
+    // neither. Requiring them made bulk intake impossible.
+    email: { type: String, lowercase: true, trim: true },
+    phone: { type: String, trim: true },
     dateOfBirth: Date,
     nationality: String,
     gender: { type: String, enum: ['male', 'female', 'other'] },
@@ -85,7 +88,12 @@ customerSchema.virtual('fullName').get(function () {
   return `${this.firstName} ${this.lastName}`;
 });
 
-customerSchema.index({ agencyId: 1, email: 1 }, { unique: true });
+// Partial, so many customers may have no email while those that do stay
+// unique within the agency.
+customerSchema.index(
+  { agencyId: 1, email: 1 },
+  { unique: true, partialFilterExpression: { email: { $type: 'string' } } }
+);
 customerSchema.index({ agencyId: 1, status: 1 });
 customerSchema.index({ agencyId: 1, firstName: 'text', lastName: 'text', email: 'text' });
 

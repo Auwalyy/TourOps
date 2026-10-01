@@ -3,6 +3,7 @@ import { bookingRepository } from '../repositories/booking.repository';
 import { travelFileRepository } from '../repositories/travelFile.repository';
 import { notificationService } from './notification.service';
 import { NotFoundError, AppError } from '../utils/errors';
+import { parseDateRange, dateClause, pickDateField } from '../utils/dateFilter';
 import { getPaginationParams, generateBookingNumber } from '../utils/helpers';
 import { BookingStatus, BookingType } from '../models/Booking';
 import { Agency } from '../models/Agency';
@@ -55,6 +56,11 @@ export const bookingService = {
       customerId: query.customerId as string,
       startDateFrom: query.startDateFrom as string,
       startDateTo: query.startDateTo as string,
+      // "Bookings for October" may mean booked in October or travelling then.
+      dateClause: dateClause(
+        parseDateRange(query),
+        pickDateField(query, ['createdAt', 'startDate', 'endDate'], 'createdAt')
+      ),
       page,
       limit,
     });

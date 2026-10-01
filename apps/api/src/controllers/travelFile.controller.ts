@@ -25,6 +25,18 @@ export const travelFileController = {
     } catch (e) { next(e); }
   },
 
+  /** Opens one travel file per traveller read from a batch of passports. */
+  async bulkCreate(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const result = await travelFileService.bulkCreateFromTravellers(
+        req.user!.agencyId!.toString(),
+        req.user!.id,
+        req.body
+      );
+      sendCreated(res, result, `${result.createdCount} travel file(s) created`);
+    } catch (e) { next(e); }
+  },
+
   async update(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       sendSuccess(res, await travelFileService.update(req.user!.agencyId!.toString(), req.params.id, req.user!.id, req.body), 'Travel file updated');

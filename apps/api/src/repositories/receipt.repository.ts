@@ -6,10 +6,12 @@ import { BaseRepository } from './base.repository';
 class ReceiptRepository extends BaseRepository<IReceipt> {
   constructor() { super(Receipt); }
 
-  async search({ agencyId, customerId, search, page, limit }: {
-    agencyId: string; customerId?: string; search?: string; page: number; limit: number;
+  async search({ agencyId, customerId, travelFileId, search, dateClause, page, limit }: {
+    agencyId: string; customerId?: string; travelFileId?: string; search?: string;
+    dateClause?: Record<string, unknown>; page: number; limit: number;
   }) {
-    const filter: FilterQuery<IReceipt> = { agencyId };
+    const filter: FilterQuery<IReceipt> = { agencyId, ...(dateClause || {}) };
+    if (travelFileId) filter.travelFileId = travelFileId;
     if (customerId) filter.customerId = customerId;
     if (search) filter.receiptNumber = { $regex: search, $options: 'i' };
     return this.paginate(filter, page, limit, { createdAt: -1 }, [

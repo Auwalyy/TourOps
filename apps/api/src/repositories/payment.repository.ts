@@ -10,6 +10,8 @@ interface PaymentFilter {
   visaApplicationId?: string;
   customerId?: string;
   groupId?: string;
+  /** Already-parsed date clause from the shared date filter. */
+  dateClause?: Record<string, unknown>;
   page: number;
   limit: number;
 }
@@ -19,8 +21,8 @@ class PaymentRepository extends BaseRepository<IPayment> {
     super(Payment);
   }
 
-  async search({ agencyId, status, travelFileId, invoiceId, visaApplicationId, customerId, groupId, page, limit }: PaymentFilter) {
-    const filter: FilterQuery<IPayment> = { agencyId };
+  async search({ agencyId, status, travelFileId, invoiceId, visaApplicationId, customerId, groupId, dateClause, page, limit }: PaymentFilter) {
+    const filter: FilterQuery<IPayment> = { agencyId, ...(dateClause || {}) };
     if (status) filter.status = status;
     if (travelFileId) filter.travelFileId = travelFileId;
     if (invoiceId) filter.invoiceId = invoiceId;

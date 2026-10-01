@@ -7,6 +7,8 @@ import { sendSuccess } from '../utils/response';
 import { createDocumentUpload } from '../utils/upload';
 
 export const passportUpload = createDocumentUpload().single('passport');
+// A batch may be a multi-page PDF of a whole group, not just one photo.
+export const passportBatchUpload = createDocumentUpload().single('file');
 
 export const aiController = {
   async extractPassport(req: AuthRequest, res: Response, next: NextFunction) {
@@ -18,6 +20,18 @@ export const aiController = {
     } catch (e: any) {
       // Return 200 with empty data so frontend can show retry — not a server crash
       res.status(200).json({ success: false, message: e?.message || 'Extraction failed', data: {} });
+    }
+  },
+
+  /** Reads several passports out of one file and returns them for review. */
+  async extractPassportBatch(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      if (!req.file) return res.status(400).json({ success: false, message: 'No file uploaded' }) as any;
+      const base64 = req.file.buffer.toString('base64');
+      const travellers = await aiDocumentService.extractPassportBatch(base64, req.file.mimetype);
+      sendSuccess(res, { travellers, count: travellers.length });
+    } catch (e: any) {
+      res.status(200).json({ success: false, message: e?.message || 'Extraction failed', data: { travellers: [] } });
     }
   },
 

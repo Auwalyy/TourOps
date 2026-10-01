@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, Clock, CheckSquare, StickyNote, FolderOpen, Receipt, AlertCircle, Copy, Check, Upload, Trash2, Download, Plane, Pencil, Wallet } from 'lucide-react';
 import { toast } from 'sonner';
 import { travelFilesApi, documentsApi, bookingsApi, paymentsApi } from '@/services/api.service';
+import { FileReceipts } from '@/components/features/travel-files/FileReceipts';
 import { TravelFile, TravelFileStatus, Booking } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle, Skeleton } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -766,6 +767,8 @@ export default function TravelFileDetailPage() {
               )}
             </CardContent>
           </Card>
+
+          <FileReceipts travelFileId={id} />
 
           <Card>
           <CardHeader><CardTitle>Invoices ({file.invoiceIds.length})</CardTitle></CardHeader>

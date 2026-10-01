@@ -65,6 +65,52 @@ export const aiDocumentService = {
     }
   },
 
+  /**
+   * Reads a file holding several passports — a scanned PDF of a whole group,
+   * or one photo with multiple data pages — and returns one row per traveller.
+   *
+   * Nothing is written to the database. An agency is creating customer
+   * records from an OCR guess, so a person reviews and corrects the rows
+   * before anything is saved.
+   */
+  async extractPassportBatch(
+    fileBase64: string,
+    mimeType: string
+  ): Promise<Array<Record<string, unknown>>> {
+    const model = getGemini();
+
+    const prompt = [
+      'This file contains one or more passport data pages.',
+      'Extract every distinct passport you can find.',
+      'Respond ONLY with valid JSON, no markdown, in exactly this shape:',
+      '{ "travellers": [ { "firstName": string, "lastName": string, "passportNumber": string,',
+      '"dateOfBirth": "YYYY-MM-DD", "expiryDate": "YYYY-MM-DD", "nationality": string,',
+      '"gender": "male"|"female"|"other", "confidence": number } ] }',
+      'Use null for any field you cannot read clearly. Never invent a passport number.',
+      'confidence is 0 to 1, how sure you are of that row overall.',
+      'If the file contains no passport, return { "travellers": [] }.',
+    ].join('\n');
+
+    const result = await model.generateContent([
+      prompt,
+      { inlineData: { mimeType, data: fileBase64 } },
+    ]);
+
+    const parsed = parseJSON(result.response.text());
+    const rows: unknown = parsed?.travellers ?? parsed;
+    if (!Array.isArray(rows)) return [];
+
+    // Drop anything with no passport number — it cannot be matched to a
+    // person, and a half-read row is worse than a missing one.
+    return rows
+      .filter((r): r is Record<string, unknown> => !!r && typeof r === 'object')
+      .filter((r) => typeof r.passportNumber === 'string' && r.passportNumber.trim().length > 3)
+      .map((r) => ({
+        ...r,
+        passportNumber: String(r.passportNumber).toUpperCase().replace(/\s+/g, ''),
+      }));
+  },
+
   async detectMissingDocuments(visaType: string, country: string, uploadedCategories: string[]) {
     try {
       const model = getGemini();

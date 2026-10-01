@@ -2,6 +2,7 @@ import { receiptRepository } from '../repositories/receipt.repository';
 import { Agency } from '../models/Agency';
 import { NotFoundError } from '../utils/errors';
 import { getPaginationParams, generateReceiptNumber } from '../utils/helpers';
+import { parseDateRange, dateClause, pickDateField } from '../utils/dateFilter';
 import { generateStandaloneReceiptPDF } from './pdf.service';
 
 export const receiptService = {
@@ -10,6 +11,8 @@ export const receiptService = {
     return receiptRepository.search({
       agencyId,
       customerId: query.customerId as string,
+      travelFileId: query.travelFileId as string,
+      dateClause: dateClause(parseDateRange(query), pickDateField(query, ['createdAt', 'paidAt'], 'paidAt')),
       search: query.search as string,
       page,
       limit,

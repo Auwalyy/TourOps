@@ -4,6 +4,7 @@ import { paymentRepository } from '../repositories/payment.repository';
 import { paymentService } from './payment.service';
 import { notificationService } from './notification.service';
 import { NotFoundError, AppError } from '../utils/errors';
+import { parseDateRange, dateClause, pickDateField } from '../utils/dateFilter';
 import { getPaginationParams } from '../utils/helpers';
 import { VisaStatus, VisaApplication } from '../models/VisaApplication';
 import { Booking } from '../models/Booking';
@@ -23,6 +24,10 @@ export const visaService = {
       assignedOfficer: query.assignedOfficer as string,
       destinationCountry: query.destinationCountry as string,
       paymentStatus: query.paymentStatus as string,
+      dateClause: dateClause(
+        parseDateRange(query),
+        pickDateField(query, ['createdAt', 'issuedDate', 'dueDate'], 'createdAt')
+      ),
       page,
       limit,
     });

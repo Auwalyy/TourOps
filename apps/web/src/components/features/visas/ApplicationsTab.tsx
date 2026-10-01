@@ -15,6 +15,7 @@ import { PaymentStatusBadge } from '@/components/ui/PaymentStatusBadge';
 import { Select } from '@/components/ui/Input';
 import { formatDate, formatCurrency } from '@/lib/utils';
 import { VisaFormModal } from '@/components/features/visas/VisaFormModal';
+import { DateRangeFilter, DateFilterValue, dateParams } from '@/components/shared/DateRangeFilter';
 
 const STATUS_OPTIONS = ['', 'draft', 'documents_pending', 'documents_submitted', 'appointment_scheduled', 'under_review', 'approved', 'rejected', 'cancelled'];
 
@@ -25,14 +26,15 @@ export function ApplicationsTab() {
   const [status, setStatus] = useState('');
   const [paymentStatus, setPaymentStatus] = useState('');
   const [page, setPage] = useState(1);
+  const [dates, setDates] = useState<DateFilterValue>({});
   const [showForm, setShowForm] = useState(false);
   const [selected, setSelected] = useState<Record<string, VisaApplication>>({});
 
   const { data, isLoading } = useQuery({
-    queryKey: ['visas', { search, status, paymentStatus, page }],
+    queryKey: ['visas', { search, status, paymentStatus, page, dates }],
     queryFn: () =>
       visasApi
-        .list({ search, status: status || undefined, paymentStatus: paymentStatus || undefined, page, limit: 20 })
+        .list({ search, status: status || undefined, paymentStatus: paymentStatus || undefined, ...dateParams(dates), page, limit: 20 })
         .then((r) => r.data),
   });
 
@@ -152,6 +154,9 @@ export function ApplicationsTab() {
           <Button className="ml-auto" onClick={() => setShowForm(true)}>
             <Plus className="h-3.5 w-3.5" /> New Application
           </Button>
+        </div>
+        <div className="border-b border-neutral-100 px-6 py-2.5">
+          <DateRangeFilter value={dates} onChange={(v) => { setDates(v); setPage(1); }} />
         </div>
         <DataTable
           columns={columns}

@@ -4,9 +4,11 @@ import { bookingRepository } from '../repositories/booking.repository';
 import { paymentRepository } from '../repositories/payment.repository';
 import { paymentService } from './payment.service';
 import { notificationService } from './notification.service';
-import { NotFoundError } from '../utils/errors';
+import { NotFoundError, AppError } from '../utils/errors';
 import { getPaginationParams, generateTravelFileNumber } from '../utils/helpers';
+import { parseDateRange, dateClause, pickDateField } from '../utils/dateFilter';
 import { TravelFile, TravelFileStatus } from '../models/TravelFile';
+import { Customer } from '../models/Customer';
 import { Invoice } from '../models/Invoice';
 import { DocumentFile } from '../models/Document';
 
@@ -193,6 +195,11 @@ function computeProgress(file: any, invoices: any[], documents: any[]) {
 export const travelFileService = {
   async list(agencyId: string, query: Record<string, unknown>) {
     const { page, limit } = getPaginationParams(query);
+
+    // "Files for October" can mean opened in October or departing in October,
+    // so the client chooses — from an allow-list, never a free-form field.
+    const field = pickDateField(query, ['createdAt', 'departureDate', 'returnDate'], 'createdAt');
+
     return travelFileRepository.search({
       agencyId,
       search: query.search as string,
@@ -200,6 +207,7 @@ export const travelFileService = {
       travelType: query.travelType as string,
       customerId: query.customerId as string,
       priority: query.priority as string,
+      dateClause: dateClause(parseDateRange(query), field),
       page,
       limit,
     });
@@ -209,6 +217,95 @@ export const travelFileService = {
     const file = await travelFileRepository.findFullById(agencyId, id);
     if (!file) throw new NotFoundError('Travel File');
     return file;
+  },
+
+  /**
+   * Opens a travel file for each traveller read off a batch of passports.
+   *
+   * Customers are matched on passport number first and only created when no
+   * match exists, so re-running the same scan — or a returning pilgrim from
+   * last season — does not produce duplicate people.
+   *
+   * Each traveller is handled independently: one bad row reports its own
+   * error and the rest still go through, because asking an agency to redo a
+   * 40-passenger upload over one unreadable page is not acceptable.
+   */
+  async bulkCreateFromTravellers(
+    agencyId: string,
+    userId: string,
+    input: {
+      travellers: Array<Record<string, unknown>>;
+      shared: Record<string, unknown>;
+    }
+  ) {
+    const travellers = Array.isArray(input.travellers) ? input.travellers : [];
+    if (!travellers.length) throw new AppError('No travellers to create', 400);
+    if (travellers.length > 100) throw new AppError('Create at most 100 files at a time', 400);
+
+    const shared = input.shared || {};
+    const destination = String(shared.destination || '').trim();
+    const travelType = String(shared.travelType || '').trim();
+    if (!destination) throw new AppError('A destination is required', 400);
+    if (!travelType) throw new AppError('A travel type is required', 400);
+
+    const created: unknown[] = [];
+    const failed: Array<{ row: number; name: string; reason: string }> = [];
+
+    for (let i = 0; i < travellers.length; i++) {
+      const t = travellers[i];
+      const firstName = String(t.firstName || '').trim();
+      const lastName = String(t.lastName || '').trim();
+      const passportNumber = String(t.passportNumber || '').trim().toUpperCase();
+
+      try {
+        if (!firstName || !lastName) throw new AppError('A first and last name are required', 400);
+        if (!passportNumber) throw new AppError('A passport number is required', 400);
+
+        // Match an existing person on passport number before creating one.
+        let customer = await Customer.findOne({ agencyId, 'passport.number': passportNumber });
+
+        if (!customer) {
+          customer = await Customer.create({
+            agencyId,
+            firstName,
+            lastName,
+            email: t.email ? String(t.email).trim().toLowerCase() : undefined,
+            phone: t.phone ? String(t.phone).trim() : undefined,
+            dateOfBirth: t.dateOfBirth ? new Date(String(t.dateOfBirth)) : undefined,
+            nationality: t.nationality ? String(t.nationality) : undefined,
+            gender: ['male', 'female', 'other'].includes(String(t.gender)) ? t.gender : undefined,
+            passport: {
+              number: passportNumber,
+              expiryDate: t.expiryDate ? new Date(String(t.expiryDate)) : undefined,
+            },
+            createdBy: userId,
+          });
+        }
+
+        const file = await this.create(agencyId, userId, {
+          customerId: customer._id,
+          travelType,
+          destination,
+          departureDate: shared.departureDate ? new Date(String(shared.departureDate)) : undefined,
+          returnDate: shared.returnDate ? new Date(String(shared.returnDate)) : undefined,
+          departureGroup: shared.departureGroup ? String(shared.departureGroup) : undefined,
+          packageId: shared.packageId || undefined,
+          groupId: shared.groupId || undefined,
+          totalCost: Number(shared.totalCost) || 0,
+          priority: shared.priority || 'normal',
+        });
+
+        created.push(file);
+      } catch (error) {
+        failed.push({
+          row: i + 1,
+          name: [firstName, lastName].filter(Boolean).join(' ') || passportNumber || `Row ${i + 1}`,
+          reason: error instanceof Error ? error.message : 'Could not create this file',
+        });
+      }
+    }
+
+    return { created, failed, createdCount: created.length, failedCount: failed.length };
   },
 
   async create(agencyId: string, userId: string, data: Record<string, unknown>) {

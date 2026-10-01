@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
-import { Payment, PaymentMethod } from '../models/Payment';
+import { Payment, PaymentMethod, IPayment } from '../models/Payment';
+import { Receipt } from '../models/Receipt';
 import { paymentRepository } from '../repositories/payment.repository';
 import { TravelFile } from '../models/TravelFile';
 import { Invoice } from '../models/Invoice';
@@ -7,7 +8,9 @@ import { VisaApplication } from '../models/VisaApplication';
 import { Booking } from '../models/Booking';
 import { notificationService } from './notification.service';
 import { NotFoundError, AppError } from '../utils/errors';
-import { getPaginationParams } from '../utils/helpers';
+import { getPaginationParams, generateReceiptNumber } from '../utils/helpers';
+import { parseDateRange, dateClause, pickDateField } from '../utils/dateFilter';
+import { logger } from '../utils/logger';
 
 interface RecordPaymentInput {
   customerId?: string;
@@ -59,6 +62,10 @@ export const paymentService = {
       visaApplicationId: query.visaApplicationId as string,
       customerId: query.customerId as string,
       groupId: query.groupId as string,
+      dateClause: dateClause(
+        parseDateRange(query),
+        pickDateField(query, ['createdAt', 'paidAt', 'verifiedAt'], 'paidAt')
+      ),
       page,
       limit,
     });
@@ -151,7 +158,10 @@ export const paymentService = {
       paidAt: input.paidAt || new Date(),
     });
 
-    if (verified) await this.recalculate(payment.travelFileId, payment.invoiceId, payment.visaApplicationId, payment.bookingId);
+    if (verified) {
+      await this.recalculate(payment.travelFileId, payment.invoiceId, payment.visaApplicationId, payment.bookingId);
+      await this.issueReceiptFor(payment, userId);
+    }
 
     if (input.travelFileId) {
       await pushTravelFileTimeline(
@@ -178,6 +188,59 @@ export const paymentService = {
     return payment;
   },
 
+  /**
+   * Issues the receipt for a payment the moment it counts as money received.
+   *
+   * Called from both paths that verify a payment — an admin recording one
+   * directly, and an admin approving a customer-uploaded proof — so a
+   * customer never has to ask for a receipt.
+   *
+   * Idempotent via the unique `paymentId` on Receipt: a double verification,
+   * a retry or a replayed webhook cannot produce two receipts for one
+   * payment. Never throws into the caller — a receipt failing must not undo
+   * a verified payment.
+   */
+  async issueReceiptFor(payment: IPayment, userId: string): Promise<void> {
+    try {
+      if (payment.status !== 'verified') return;
+
+      const existing = await Receipt.findOne({ paymentId: payment._id });
+      if (existing) return;
+
+      let description = 'Payment received';
+      if (payment.travelFileId) {
+        const file = await TravelFile.findById(payment.travelFileId).select('fileNumber title');
+        if (file) description = `Payment for travel file ${file.fileNumber}`;
+      } else if (payment.visaApplicationId) {
+        description = 'Payment for visa application';
+      } else if (payment.bookingId) {
+        description = 'Payment for booking';
+      }
+
+      await Receipt.create({
+        agencyId: payment.agencyId,
+        receiptNumber: generateReceiptNumber(),
+        customerId: payment.customerId,
+        travelFileId: payment.travelFileId,
+        invoiceId: payment.invoiceId,
+        bookingId: payment.bookingId,
+        paymentId: payment._id,
+        amount: payment.amount,
+        currency: payment.currency || 'NGN',
+        method: payment.method,
+        reference: payment.reference,
+        description,
+        paidAt: payment.paidAt || new Date(),
+        issuedBy: new mongoose.Types.ObjectId(userId),
+      });
+    } catch (error) {
+      // A duplicate key here means another request won the race — that is the
+      // guard working, not a failure.
+      if ((error as { code?: number }).code === 11000) return;
+      logger.error('Could not issue a receipt for payment ' + payment._id, error as Error);
+    }
+  },
+
   async verify(agencyId: string, id: string, userId: string) {
     const payment = await Payment.findOne({ _id: id, agencyId });
     if (!payment) throw new NotFoundError('Payment');
@@ -190,6 +253,7 @@ export const paymentService = {
     await payment.save();
 
     await this.recalculate(payment.travelFileId, payment.invoiceId, payment.visaApplicationId, payment.bookingId);
+    await this.issueReceiptFor(payment, userId);
 
     if (payment.travelFileId) {
       await pushTravelFileTimeline(

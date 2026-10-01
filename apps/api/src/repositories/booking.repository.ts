@@ -11,6 +11,8 @@ interface BookingFilter {
   customerId?: string;
   startDateFrom?: string;
   startDateTo?: string;
+  /** Already-parsed date clause from the shared date filter. */
+  dateClause?: Record<string, unknown>;
   page: number;
   limit: number;
 }
@@ -20,8 +22,8 @@ class BookingRepository extends BaseRepository<IBooking> {
     super(Booking);
   }
 
-  async search({ agencyId, search, status, bookingType, travelFileId, customerId, startDateFrom, startDateTo, page, limit }: BookingFilter) {
-    const filter: FilterQuery<IBooking> = { agencyId };
+  async search({ agencyId, search, status, bookingType, travelFileId, customerId, startDateFrom, startDateTo, dateClause, page, limit }: BookingFilter) {
+    const filter: FilterQuery<IBooking> = { agencyId, ...(dateClause || {}) };
     if (status) filter.status = status;
     if (bookingType) filter.bookingType = bookingType;
     if (travelFileId) filter.travelFileId = travelFileId;

@@ -10,6 +10,8 @@ interface VisaFilter {
   assignedOfficer?: string;
   destinationCountry?: string;
   paymentStatus?: string;
+  /** Already-parsed date clause from the shared date filter. */
+  dateClause?: Record<string, unknown>;
   page: number;
   limit: number;
 }
@@ -19,8 +21,8 @@ class VisaApplicationRepository extends BaseRepository<IVisaApplication> {
     super(VisaApplication);
   }
 
-  async search({ agencyId, search, status, customerId, assignedOfficer, destinationCountry, paymentStatus, page, limit }: VisaFilter) {
-    const filter: FilterQuery<IVisaApplication> = { agencyId };
+  async search({ agencyId, search, status, customerId, assignedOfficer, destinationCountry, paymentStatus, dateClause, page, limit }: VisaFilter) {
+    const filter: FilterQuery<IVisaApplication> = { agencyId, ...(dateClause || {}) };
     if (status) filter.status = status;
     if (customerId) filter.customerId = customerId;
     if (assignedOfficer) filter.assignedOfficer = assignedOfficer;
