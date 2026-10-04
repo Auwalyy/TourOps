@@ -252,12 +252,12 @@ export default function LandingPage() {
       </section>
 
       {/* CTA */}
-      <section className="border-t border-neutral-200 py-20" style={{ backgroundColor: 'var(--color-navy)' }}>
+      <section className="border-t border-neutral-200 bg-blue-600 py-20">
         <div className="mx-auto max-w-2xl px-6 text-center">
           <h2 className="text-2xl font-semibold tracking-tight text-white sm:text-3xl">
             Ready to get your operation in order?
           </h2>
-          <p className="mt-3 text-neutral-400">Create an account and set up your agency in a few minutes.</p>
+          <p className="mt-3 text-white/80">Create an account and set up your agency in a few minutes.</p>
           <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
             <Link href="/register" className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-white px-6 py-3 text-sm font-medium text-neutral-900 hover:bg-neutral-100 transition-colors sm:w-auto">
               Create your account <ArrowRight size={16} />
