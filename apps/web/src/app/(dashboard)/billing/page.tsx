@@ -50,16 +50,6 @@ export default function BillingPage() {
 
       {sub && <StatusCard status={sub} />}
 
-      {sub && !sub.gatewayConfigured && (
-        <Card className="flex items-start gap-3 border-amber-200 bg-amber-50 p-4">
-          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
-          <p className="text-[13px] text-amber-900">
-            Online payment is not switched on yet. Add your Flutterwave keys on the server, or contact TourOps to
-            pay by transfer.
-          </p>
-        </Card>
-      )}
-
       {/* Cycle toggle */}
       <div className="flex items-center justify-center gap-1 rounded-lg border border-neutral-200 bg-white p-1 sm:w-fit sm:mx-auto">
         {(['monthly', 'yearly'] as const).map((c) => (
@@ -132,11 +122,17 @@ export default function BillingPage() {
                 {current ? 'Renew' : sub?.state === 'trialing' ? 'Choose this plan' : 'Subscribe'}
               </Button>
 
-              {!isOwner && (
+              {!isOwner ? (
                 <p className="mt-2 text-center text-[11px] text-neutral-400">
                   Only the agency owner can change the plan
                 </p>
-              )}
+              ) : !sub?.gatewayConfigured ? (
+                // Never mention server keys here — this screen belongs to the
+                // agency, not to whoever deploys TourOps.
+                <p className="mt-2 text-center text-[11px] text-neutral-400">
+                  Contact TourOps to activate this plan
+                </p>
+              ) : null}
             </Card>
           );
         })}

@@ -27,9 +27,16 @@ export const aiReportingService = {
       logger.error('AI business summary failed:', error);
       const reason = (error as Error)?.message || '';
       if (reason.includes('GEMINI_API_KEY')) {
-        throw new AppError('AI insights are not configured. Add GEMINI_API_KEY on the server.', 503);
+        throw new AppError('AI insights are not available on this account yet.', 503);
       }
-      throw new AppError(`AI insights are unavailable right now: ${reason.slice(0, 200)}`, 503);
+      // The raw provider error helps while developing but means nothing to an
+      // agency, and can leak model names and internal detail.
+      throw new AppError(
+        config.env === 'production'
+          ? 'AI insights are unavailable right now. Please try again shortly.'
+          : `AI insights are unavailable right now: ${reason.slice(0, 200)}`,
+        503
+      );
     }
   },
 

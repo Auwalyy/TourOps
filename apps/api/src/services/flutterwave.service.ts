@@ -24,8 +24,12 @@ export interface VerifyPaymentResult {
 
 function requireKey(): string {
   if (!config.flutterwave.secretKey) {
+    // The agency reading this message did not deploy the server, so it says
+    // what they can do, not what an operator must configure. The real cause
+    // goes to the log.
+    logger.error('Flutterwave is not configured — FLW_SECRET_KEY is missing');
     throw new AppError(
-      'Online payment is not configured yet. Set FLW_SECRET_KEY on the server.',
+      'Online payment is not available right now. Please contact TourOps to activate your plan.',
       503
     );
   }
