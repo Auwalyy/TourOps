@@ -55,7 +55,7 @@ export const authService = {
       isEmailVerified: true,
     });
 
-    await emailService.sendWelcome(user.email, user.firstName, agency.name);
+    emailService.sendWelcome(user.email, user.firstName, agency.name);
     return this._issueTokens(user);
   },
 
