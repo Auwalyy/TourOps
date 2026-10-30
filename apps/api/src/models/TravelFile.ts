@@ -84,6 +84,8 @@ export interface ITravelFile extends Document {
   agencyId: mongoose.Types.ObjectId;
   branchId?: mongoose.Types.ObjectId;
   groupId?: mongoose.Types.ObjectId;
+  /** The Umrah/Hajj season (folder) this pilgrim travels on. */
+  seasonId?: mongoose.Types.ObjectId;
   fileNumber: string;
   customerId: mongoose.Types.ObjectId;
   travelType: TravelType;
@@ -200,6 +202,7 @@ const travelFileSchema = new Schema<ITravelFile>(
     agencyId: { type: Schema.Types.ObjectId, ref: 'Agency', required: true },
     branchId: { type: Schema.Types.ObjectId, ref: 'Branch' },
     groupId: { type: Schema.Types.ObjectId, ref: 'BookingGroup' },
+    seasonId: { type: Schema.Types.ObjectId, ref: 'Season' },
     fileNumber: { type: String, required: true, unique: true },
     customerId: { type: Schema.Types.ObjectId, ref: 'Customer', required: true },
     travelType: {
@@ -247,5 +250,6 @@ travelFileSchema.index({ agencyId: 1, travelType: 1 });
 travelFileSchema.index({ agencyId: 1, priority: 1 });
 travelFileSchema.index({ agencyId: 1, departureDate: 1 });
 travelFileSchema.index({ agencyId: 1, groupId: 1 });
+travelFileSchema.index({ agencyId: 1, seasonId: 1 });
 
 export const TravelFile = mongoose.model<ITravelFile>('TravelFile', travelFileSchema);

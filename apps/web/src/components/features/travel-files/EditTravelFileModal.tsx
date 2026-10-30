@@ -63,14 +63,16 @@ export function EditTravelFileModal({ open, onClose, file }: Props) {
     try {
       await travelFilesApi.update(file._id, {
         destination: data.destination,
-        departureGroup: data.departureGroup || undefined,
-        departureDate: data.departureDate || undefined,
-        returnDate: data.returnDate || undefined,
+        // Empty strings clear a field on the server; undefined would be dropped.
+        departureGroup: data.departureGroup || '',
+        departureDate: data.departureDate || '',
+        returnDate: data.returnDate || '',
         priority: data.priority,
         totalCost: data.totalCost,
-        assignedConsultant: data.assignedConsultant || undefined,
-        assignedVisaOfficer: data.assignedVisaOfficer || undefined,
+        assignedConsultant: data.assignedConsultant || '',
+        assignedVisaOfficer: data.assignedVisaOfficer || '',
       });
+      qc.invalidateQueries({ queryKey: ['seasons'] });
       toast.success('Travel file updated');
       qc.invalidateQueries({ queryKey: ['travel-files', file._id] });
       onClose();

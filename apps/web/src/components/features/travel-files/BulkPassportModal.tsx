@@ -8,6 +8,7 @@ import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Input, Label, Select } from '@/components/ui/Input';
 import { Card } from '@/components/ui/Card';
+import { Season } from '@/types';
 
 interface TravellerRow {
   firstName: string;
@@ -48,17 +49,39 @@ const TRAVEL_TYPES = [
  * The review step is deliberate: these are OCR guesses becoming customer
  * records, and a wrong passport number is expensive to unpick later.
  */
-export function BulkPassportModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+/** Trip details a season already decides, so a batch filed into it inherits them. */
+function sharedFor(season?: Season) {
+  if (!season) return { ...EMPTY_SHARED };
+  return {
+    travelType: season.type,
+    destination: season.destination || 'Saudi Arabia',
+    departureDate: season.departureDate?.slice(0, 10) || '',
+    returnDate: season.returnDate?.slice(0, 10) || '',
+    departureGroup: season.name,
+    totalCost: season.pricePerPerson ? String(season.pricePerPerson) : '',
+  };
+}
+
+export function BulkPassportModal({
+  open,
+  onClose,
+  season,
+}: {
+  open: boolean;
+  onClose: () => void;
+  /** When set, every file created is filed into this Umrah/Hajj season. */
+  season?: Season;
+}) {
   const qc = useQueryClient();
   const fileRef = useRef<HTMLInputElement>(null);
   const [rows, setRows] = useState<TravellerRow[]>([]);
-  const [shared, setShared] = useState({ ...EMPTY_SHARED });
+  const [shared, setShared] = useState(() => sharedFor(season));
   const [fileName, setFileName] = useState('');
   const [result, setResult] = useState<{ createdCount: number; failed: Array<{ name: string; reason: string }> } | null>(null);
 
   function reset() {
     setRows([]);
-    setShared({ ...EMPTY_SHARED });
+    setShared(sharedFor(season));
     setFileName('');
     setResult(null);
     if (fileRef.current) fileRef.current.value = '';
@@ -105,6 +128,7 @@ export function BulkPassportModal({ open, onClose }: { open: boolean; onClose: (
           travellers: rows,
           shared: {
             ...shared,
+            ...(season && { seasonId: season._id }),
             totalCost: shared.totalCost ? Number(shared.totalCost) : 0,
           },
         })
@@ -113,6 +137,7 @@ export function BulkPassportModal({ open, onClose }: { open: boolean; onClose: (
       setResult(data);
       qc.invalidateQueries({ queryKey: ['travel-files'] });
       qc.invalidateQueries({ queryKey: ['customers'] });
+      qc.invalidateQueries({ queryKey: ['seasons'] });
       if (data.failedCount) {
         toast.warning(`${data.createdCount} created, ${data.failedCount} could not be`);
       } else {

@@ -17,6 +17,8 @@ interface Props {
   /** Pre-populated customer from the Travel File */
   customerId?: string;
   onCreated?: () => void;
+  /** Opens on this type, e.g. from an "Add hotel" button. */
+  defaultType?: BookingType;
 }
 
 const BOOKING_TYPES: { value: BookingType; label: string }[] = [
@@ -33,9 +35,10 @@ const BOOKING_TYPES: { value: BookingType; label: string }[] = [
 
 const CURRENCIES = ['NGN', 'USD', 'GBP', 'EUR', 'GHS', 'KES', 'ZAR'];
 
-export function BookingFormModal({ open, onClose, travelFileId, customerId, onCreated }: Props) {
+export function BookingFormModal({ open, onClose, travelFileId, customerId, onCreated, defaultType = 'flight' }: Props) {
   const qc = useQueryClient();
-  const [bookingType, setBookingType] = useState<BookingType>('flight');
+  const [bookingType, setBookingType] = useState<BookingType>(defaultType);
+  useEffect(() => { if (open) setBookingType(defaultType); }, [open, defaultType]);
 
   const { register, handleSubmit, reset, setValue, formState: { isSubmitting } } = useForm({
     defaultValues: { title: '', provider: '', currency: 'NGN', cost: 0, startDate: '', endDate: '' },
@@ -73,7 +76,7 @@ export function BookingFormModal({ open, onClose, travelFileId, customerId, onCr
 
   useEffect(() => {
     if (!open) {
-      reset(); setBookingType('flight'); setSelectedTravelFileId(travelFileId || '');
+      reset(); setBookingType(defaultType); setSelectedTravelFileId(travelFileId || '');
       setSelectedCustomerId(customerId || ''); setVisaApplicationId('');
     }
   }, [open, travelFileId, customerId, reset]);

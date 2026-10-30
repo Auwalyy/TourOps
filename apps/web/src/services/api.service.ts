@@ -283,6 +283,20 @@ export const travelFilesApi = {
   delete: (id: string) => api.delete(`/travel-files/${id}`),
 };
 
+// ─── Umrah & Hajj seasons ────────────────────────────────────────────────────
+export const seasonsApi = {
+  list: (params?: Record<string, unknown>) => api.get('/seasons', { params }),
+  getById: (id: string) => api.get(`/seasons/${id}`),
+  create: (data: Record<string, unknown>) => api.post('/seasons', data),
+  update: (id: string, data: Record<string, unknown>) => api.put(`/seasons/${id}`, data),
+  delete: (id: string) => api.delete(`/seasons/${id}`),
+  addPilgrim: (id: string, data: Record<string, unknown>) => api.post(`/seasons/${id}/pilgrims`, data),
+  attachFiles: (id: string, travelFileIds: string[]) =>
+    api.post(`/seasons/${id}/pilgrims/attach`, { travelFileIds }),
+  detachFile: (id: string, travelFileId: string) => api.delete(`/seasons/${id}/pilgrims/${travelFileId}`),
+  addArrangement: (id: string, data: Record<string, unknown>) => api.post(`/seasons/${id}/arrangements`, data),
+};
+
 // ─── Subscription (what the agency pays TourOps) ─────────────────────────────
 export const subscriptionApi = {
   status: () => api.get('/subscription'),

@@ -10,6 +10,11 @@ class TravelFileRepository extends BaseRepository<ITravelFile> {
   async search(params: {
     agencyId: string;
     search?: string;
+    /** Customers matching `search` by name/phone/passport. */
+    searchCustomerIds?: string[];
+    seasonId?: string;
+    /** Only files not yet in any season — for "move into season". */
+    noSeason?: boolean;
     status?: string;
     travelType?: string;
     customerId?: string;
@@ -27,11 +32,15 @@ class TravelFileRepository extends BaseRepository<ITravelFile> {
     if (params.travelType) filter.travelType = params.travelType;
     if (params.customerId) filter.customerId = params.customerId;
     if (params.priority) filter.priority = params.priority;
+    if (params.seasonId && mongoose.isValidObjectId(params.seasonId)) filter.seasonId = params.seasonId;
+    else if (params.noSeason) filter.seasonId = { $exists: false };
     if (params.search) {
+      const rx = { $regex: params.search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), $options: 'i' };
       filter.$or = [
-        { fileNumber: { $regex: params.search, $options: 'i' } },
-        { destination: { $regex: params.search, $options: 'i' } },
-        { departureGroup: { $regex: params.search, $options: 'i' } },
+        { fileNumber: rx },
+        { destination: rx },
+        { departureGroup: rx },
+        ...(params.searchCustomerIds?.length ? [{ customerId: { $in: params.searchCustomerIds } }] : []),
       ];
     }
     return this.paginate(filter, params.page, params.limit, { createdAt: -1 }, [
@@ -39,6 +48,7 @@ class TravelFileRepository extends BaseRepository<ITravelFile> {
       'assignedConsultant',
       'assignedVisaOfficer',
       'packageId',
+      'seasonId',
     ]);
   }
 
@@ -49,6 +59,7 @@ class TravelFileRepository extends BaseRepository<ITravelFile> {
       .populate('assignedVisaOfficer', 'firstName lastName email role')
       .populate('packageId', 'title category pricing destinations duration')
       .populate('bookingId')
+      .populate('seasonId', 'name type month year status')
       .populate('visaApplicationId')
       .populate('invoiceIds')
       .populate('documentIds')

@@ -443,12 +443,78 @@ export interface TravelFile {
   amountPaid: number;
   paymentSchedule: PaymentScheduleEntry[];
   groupId?: BookingGroup | string;
+  seasonId?: Pick<Season, '_id' | 'name' | 'type' | 'month' | 'year' | 'status'> | string;
   branchId?: string;
   balance: number;
   invoiceIds: Invoice[];
   documentIds: Document[];
   createdAt: string;
   updatedAt: string;
+}
+
+// ─── Umrah & Hajj seasons ────────────────────────────────────────────────────
+export type SeasonType = 'umrah' | 'hajj';
+export type SeasonStatus = 'planning' | 'open' | 'closed' | 'departed' | 'completed' | 'archived';
+
+export interface Season {
+  _id: string;
+  type: SeasonType;
+  name: string;
+  month: number;
+  year: number;
+  departureDate?: string;
+  returnDate?: string;
+  destination: string;
+  packageId?: { _id: string; title: string } | string;
+  pricePerPerson: number;
+  capacity: number;
+  airline?: string;
+  makkahHotel?: string;
+  madinahHotel?: string;
+  status: SeasonStatus;
+  notes?: string;
+  createdAt: string;
+}
+
+/** A season as listed, with its roll-up across active pilgrims. */
+export interface SeasonSummary extends Season {
+  pilgrims: number;
+  ready: number;
+  totalCost: number;
+  amountPaid: number;
+  balance: number;
+  seatsLeft: number | null;
+}
+
+export type StepState = 'done' | 'in_progress' | 'missing';
+export type PilgrimStep = 'passport' | 'ticket' | 'visa' | 'hotel' | 'transport' | 'payment';
+
+export interface SeasonPilgrim {
+  _id: string;
+  fileNumber: string;
+  customerId: Customer;
+  status: TravelFileStatus;
+  priority: TravelFile['priority'];
+  totalCost: number;
+  amountPaid: number;
+  balance: number;
+  bookingCount: number;
+  checklist: Record<PilgrimStep, StepState>;
+  createdAt: string;
+}
+
+export interface SeasonDetail {
+  season: Season;
+  pilgrims: SeasonPilgrim[];
+  totals: {
+    pilgrims: number;
+    capacity: number;
+    seatsLeft: number | null;
+    totalCost: number;
+    amountPaid: number;
+    balance: number;
+    steps: Record<PilgrimStep, number>;
+  };
 }
 
 export interface PaginatedResponse<T> {

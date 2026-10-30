@@ -6,7 +6,8 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { useRef, useState } from 'react';
 import { Loader2, ScanLine, UploadCloud, X } from 'lucide-react';
-import { travelFilesApi, customersApi, packagesApi, usersApi, aiApi, bookingsApi } from '@/services/api.service';
+import { travelFilesApi, customersApi, packagesApi, usersApi, aiApi, bookingsApi, seasonsApi } from '@/services/api.service';
+import { SeasonSummary } from '@/types';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Input, Label, Select } from '@/components/ui/Input';
@@ -22,6 +23,9 @@ const schema = z.object({
 
   travelType: z.enum(['umrah', 'hajj', 'study_abroad', 'tourist_visa', 'business', 'medical', 'other']),
   destination: z.string().min(1, 'Destination is required'),
+  departureDate: z.string().optional(),
+  returnDate: z.string().optional(),
+  seasonId: z.string().optional(),
   departureGroup: z.string().optional(),
   packageId: z.string().optional(),
   assignedConsultant: z.string().optional(),
@@ -77,10 +81,30 @@ export function TravelFileFormModal({ open, onClose, bookingId, prefill }: Props
       totalCost: 0,
       initialDeposit: 0,
       depositMethod: 'cash',
-      ...(prefill?.travelDate && { travelDate: prefill.travelDate.slice(0, 10) }),
+      ...(prefill?.travelDate && { departureDate: prefill.travelDate.slice(0, 10) }),
       ...(prefill?.returnDate && { returnDate: prefill.returnDate.slice(0, 10) }),
     },
   });
+
+  const travelType = watch('travelType');
+  const isPilgrimage = travelType === 'umrah' || travelType === 'hajj';
+  const { data: seasons } = useQuery({
+    queryKey: ['seasons', { type: travelType, statusFilter: '' }],
+    queryFn: () => seasonsApi.list({ type: travelType }).then((r) => r.data.data as SeasonSummary[]),
+    enabled: open && isPilgrimage,
+  });
+
+  /** Picking a season fills the trip details it already decides. */
+  function applySeason(id: string) {
+    setValue('seasonId', id);
+    const s = seasons?.find((x) => x._id === id);
+    if (!s) return;
+    setValue('destination', s.destination || 'Saudi Arabia');
+    setValue('departureGroup', s.name);
+    if (s.departureDate) setValue('departureDate', s.departureDate.slice(0, 10));
+    if (s.returnDate) setValue('returnDate', s.returnDate.slice(0, 10));
+    if (s.pricePerPerson) setValue('totalCost', s.pricePerPerson);
+  }
 
   const totalCost = watch('totalCost') || 0;
   const initialDeposit = watch('initialDeposit') || 0;
@@ -139,23 +163,24 @@ export function TravelFileFormModal({ open, onClose, bookingId, prefill }: Props
 
   async function onSubmit(data: FormData) {
     try {
-      // Upsert customer by passport number or create new
-      let customerId: string;
       const customerRes = await customersApi.create({
         firstName: data.firstName,
         lastName: data.lastName,
-        email: data.email || `${Date.now()}@placeholder.com`,
+        ...(data.email?.trim() && { email: data.email.trim() }),
         phone: data.phone,
         ...(data.dateOfBirth && { dateOfBirth: data.dateOfBirth }),
         ...(data.nationality && { nationality: data.nationality }),
-        ...(data.passportNumber && { passport: { number: data.passportNumber } }),
+        ...(data.passportNumber && { passport: { number: data.passportNumber.trim().toUpperCase() } }),
       });
-      customerId = customerRes.data.data._id;
+      const customerId: string = customerRes.data.data._id;
 
       const file = await travelFilesApi.create({
         customerId,
         travelType: data.travelType,
         destination: data.destination,
+        departureDate: data.departureDate || undefined,
+        returnDate: data.returnDate || undefined,
+        seasonId: (isPilgrimage && data.seasonId) || undefined,
         departureGroup: data.departureGroup || undefined,
         packageId: data.packageId || undefined,
         assignedConsultant: data.assignedConsultant || undefined,
@@ -176,6 +201,7 @@ export function TravelFileFormModal({ open, onClose, bookingId, prefill }: Props
 
       toast.success('Travel file created');
       qc.invalidateQueries({ queryKey: ['travel-files'] });
+      qc.invalidateQueries({ queryKey: ['seasons'] });
       if (selectedBookingId) qc.invalidateQueries({ queryKey: ['bookings'] });
       reset();
       clearPassport();
@@ -285,10 +311,9 @@ export function TravelFileFormModal({ open, onClose, bookingId, prefill }: Props
         {!bookingId && (
           <div>
             <Label>Link to Booking (optional)</Label>
-            <select
+            <Select
               value={selectedBookingId}
               onChange={(e) => setSelectedBookingId(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
             >
               <option value="">None</option>
               {Array.isArray(bookings) && bookings.map((b: any) => (
@@ -296,7 +321,7 @@ export function TravelFileFormModal({ open, onClose, bookingId, prefill }: Props
                   {b.bookingNumber} — {(b.customerId as any)?.fullName || '—'}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
         )}
         {bookingId && (
@@ -328,6 +353,20 @@ export function TravelFileFormModal({ open, onClose, bookingId, prefill }: Props
               <option value="urgent">Urgent</option>
             </Select>
           </div>
+          {isPilgrimage && (
+            <div className="col-span-2">
+              <Label>Season</Label>
+              <Select value={watch('seasonId') || ''} onChange={(e) => applySeason(e.target.value)}>
+                <option value="">Not in a season</option>
+                {(seasons || []).map((s) => (
+                  <option key={s._id} value={s._id}>
+                    {s.name}{s.seatsLeft !== null ? ` — ${s.seatsLeft} seat(s) left` : ''}
+                  </option>
+                ))}
+              </Select>
+              <p className="mt-1 text-xs text-neutral-500">Filing it under a season fills the dates, destination and price below.</p>
+            </div>
+          )}
           <div>
             <Label>Destination *</Label>
             <Input placeholder="e.g. Saudi Arabia" error={errors.destination?.message} {...register('destination')} />
@@ -335,6 +374,14 @@ export function TravelFileFormModal({ open, onClose, bookingId, prefill }: Props
           <div>
             <Label>Departure Group</Label>
             <Input placeholder="e.g. Group A — Jan 2025" {...register('departureGroup')} />
+          </div>
+          <div>
+            <Label>Departure date</Label>
+            <Input type="date" {...register('departureDate')} />
+          </div>
+          <div>
+            <Label>Return date</Label>
+            <Input type="date" {...register('returnDate')} />
           </div>
           <div className="col-span-2">
             <Label>Package (optional)</Label>
@@ -366,8 +413,8 @@ export function TravelFileFormModal({ open, onClose, bookingId, prefill }: Props
         </div>
 
         {/* ── Payment ── */}
-        <div className="border rounded-lg p-4 space-y-3">
-          <p className="text-sm font-medium">Payment</p>
+        <div className="space-y-3 rounded-lg border border-neutral-200 p-4">
+          <p className="text-[13px] font-medium text-neutral-900">Payment</p>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label>Total Cost</Label>
@@ -392,9 +439,9 @@ export function TravelFileFormModal({ open, onClose, bookingId, prefill }: Props
             </div>
           </div>
           {(totalCost > 0 || initialDeposit > 0) && (
-            <div className="flex justify-between text-sm pt-1 border-t">
-              <span className="text-muted-foreground">Balance remaining</span>
-              <span className={balance < 0 ? 'text-destructive font-semibold' : 'font-semibold'}>
+            <div className="flex justify-between border-t border-neutral-100 pt-2 text-[13px]">
+              <span className="text-neutral-500">Balance remaining</span>
+              <span className={balance < 0 ? 'font-semibold text-red-600' : 'font-semibold text-neutral-900'}>
                 {balance.toLocaleString()}
               </span>
             </div>

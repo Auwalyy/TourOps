@@ -23,9 +23,14 @@ export const customerService = {
   },
 
   async create(agencyId: string, data: Record<string, unknown>) {
-    const existing = await customerRepository.findOne({ agencyId, email: data.email });
-    if (existing) throw new ConflictError('A customer with this email already exists');
-    return customerRepository.create({ ...data, agencyId } as any);
+    // Email is optional — many pilgrims have none — so only check when given.
+    const email = typeof data.email === 'string' ? data.email.trim().toLowerCase() : '';
+    if (email) {
+      const existing = await customerRepository.findOne({ agencyId, email });
+      if (existing) throw new ConflictError('A customer with this email already exists');
+    }
+    const { email: _e, ...rest } = data;
+    return customerRepository.create({ ...rest, ...(email && { email }), agencyId } as any);
   },
 
   async update(agencyId: string, id: string, data: Record<string, unknown>) {

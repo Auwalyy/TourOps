@@ -191,6 +191,30 @@ function computeProgress(file: any, invoices: any[], documents: any[]) {
   };
 }
 
+const EDITABLE_FIELDS = [
+  'travelType', 'destination', 'departureDate', 'returnDate', 'departureGroup', 'packageId',
+  'assignedConsultant', 'assignedVisaOfficer', 'priority', 'totalCost', 'seasonId', 'branchId',
+] as const;
+
+/** Customers whose name, phone or passport matches a free-text search. */
+async function customerIdsMatching(agencyId: string, search: string) {
+  const rx = { $regex: search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), $options: 'i' };
+  const parts = search.trim().split(/\s+/);
+  const or: Record<string, unknown>[] = [
+    { firstName: rx }, { lastName: rx }, { phone: rx }, { email: rx }, { 'passport.number': rx },
+  ];
+  // "Aisha Bello" should find first + last name together.
+  if (parts.length > 1) {
+    const esc = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    or.push({
+      firstName: { $regex: esc(parts[0]), $options: 'i' },
+      lastName: { $regex: esc(parts.slice(1).join(' ')), $options: 'i' },
+    });
+  }
+  const found = await Customer.find({ agencyId, $or: or }).select('_id').limit(200).lean();
+  return found.map((c) => c._id.toString());
+}
+
 // ─── Service ──────────────────────────────────────────────────────────────────
 export const travelFileService = {
   async list(agencyId: string, query: Record<string, unknown>) {
@@ -200,9 +224,14 @@ export const travelFileService = {
     // so the client chooses — from an allow-list, never a free-form field.
     const field = pickDateField(query, ['createdAt', 'departureDate', 'returnDate'], 'createdAt');
 
+    const search = typeof query.search === 'string' ? query.search.trim() : '';
+
     return travelFileRepository.search({
       agencyId,
-      search: query.search as string,
+      search: search || undefined,
+      searchCustomerIds: search ? await customerIdsMatching(agencyId, search) : undefined,
+      seasonId: query.seasonId as string,
+      noSeason: query.noSeason === 'true',
       status: query.status as string,
       travelType: query.travelType as string,
       customerId: query.customerId as string,
@@ -291,6 +320,7 @@ export const travelFileService = {
           departureGroup: shared.departureGroup ? String(shared.departureGroup) : undefined,
           packageId: shared.packageId || undefined,
           groupId: shared.groupId || undefined,
+          seasonId: shared.seasonId || undefined,
           totalCost: Number(shared.totalCost) || 0,
           priority: shared.priority || 'normal',
         });
@@ -341,8 +371,22 @@ export const travelFileService = {
     const file = await travelFileRepository.findOne({ _id: id, agencyId });
     if (!file) throw new NotFoundError('Travel File');
 
+    // Money, status and identity fields have their own audited endpoints, so
+    // only plain details may change here.
+    const set: Record<string, unknown> = {};
+    const unset: Record<string, ''> = {};
+    for (const key of EDITABLE_FIELDS) {
+      if (data[key] === undefined) continue;
+      if (data[key] === '' || data[key] === null) unset[key] = '';
+      else set[key] = data[key];
+    }
+    if (set.totalCost !== undefined && !(Number(set.totalCost) >= 0)) {
+      throw new AppError('Total cost must be zero or more', 400);
+    }
+
     const updated = await travelFileRepository.updateById(id, {
-      ...data,
+      $set: set,
+      ...(Object.keys(unset).length && { $unset: unset }),
       $push: {
         timeline: {
           action: 'Travel File Updated',

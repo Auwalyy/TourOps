@@ -8,7 +8,7 @@ import { TravelFile, TravelFileStatus, TravelType } from '@/types';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { SearchInput } from '@/components/shared/SearchInput';
 import { Button } from '@/components/ui/Button';
-import { Card, CardContent } from '@/components/ui/Card';
+import { Badge, Card } from '@/components/ui/Card';
 import { DataTable, Column } from '@/components/ui/DataTable';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { Select } from '@/components/ui/Input';
@@ -62,24 +62,34 @@ export default function TravelFilesPage() {
     {
       key: 'fileNumber',
       header: 'File #',
-      render: (row) => <span className="font-mono text-sm font-semibold text-blue-600">{row.fileNumber}</span>,
+      render: (row) => <span className="whitespace-nowrap font-mono text-xs font-medium text-blue-600">{row.fileNumber}</span>,
     },
     {
       key: 'customerId',
       header: 'Customer',
       render: (row) => {
         const c = row.customerId as any;
-        return <span className="font-medium">{c?.fullName || c?.firstName + ' ' + c?.lastName || '—'}</span>;
+        const name = c?.fullName || [c?.firstName, c?.lastName].filter(Boolean).join(' ') || '—';
+        return (
+          <div>
+            <p className="font-medium text-neutral-900">{name}</p>
+            {c?.phone && <p className="text-xs text-neutral-500">{c.phone}</p>}
+          </div>
+        );
       },
     },
     {
       key: 'travelType',
       header: 'Type',
-      render: (row) => (
-        <span className="rounded-full bg-neutral-50 px-2.5 py-0.5 text-xs font-medium text-neutral-700">
-          {TRAVEL_TYPE_LABELS[row.travelType]}
-        </span>
-      ),
+      render: (row) => {
+        const season = typeof row.seasonId === 'object' ? row.seasonId : null;
+        return (
+          <div>
+            <p className="text-neutral-700">{TRAVEL_TYPE_LABELS[row.travelType]}</p>
+            {season && <p className="text-xs text-neutral-500">{season.name}</p>}
+          </div>
+        );
+      },
     },
     { key: 'destination', header: 'Destination', render: (row) => row.destination },
     {
@@ -94,13 +104,8 @@ export default function TravelFilesPage() {
       key: 'priority',
       header: 'Priority',
       render: (row) => {
-        const colors: Record<string, string> = {
-          urgent: 'bg-red-100 text-red-700',
-          high: 'bg-amber-100 text-amber-700',
-          normal: 'bg-neutral-100 text-neutral-600',
-          low: 'bg-green-100 text-green-700',
-        };
-        return <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${colors[row.priority]}`}>{row.priority}</span>;
+        const variant: Record<string, string> = { urgent: 'red', high: 'yellow', normal: 'default', low: 'default' };
+        return <Badge variant={variant[row.priority]} className="capitalize">{row.priority}</Badge>;
       },
     },
     { key: 'status', header: 'Status', render: (row) => <StatusBadge status={row.status} /> },
@@ -111,55 +116,70 @@ export default function TravelFilesPage() {
     <div className="space-y-6">
       <PageHeader
         title="Travel Files"
-        description="Central hub for all customer travel journeys"
+        description="One file per traveller — customer details, bookings, visa, documents and payments in one place"
         actions={
-          <div className="flex flex-wrap gap-2">
+          <>
             <Button variant="outline" onClick={() => setShowBulk(true)}>
               <Upload className="h-3.5 w-3.5" /> Bulk from passports
             </Button>
             <Button onClick={() => setShowForm(true)}>
-              <Plus className="h-4 w-4" /> New Travel File
+              <Plus className="h-3.5 w-3.5" /> New travel file
             </Button>
-          </div>
+          </>
         }
       />
 
-      {/* Status summary */}
+      {/* Status summary — click a tile to filter */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
         {Object.entries(STATUS_SUMMARY_LABELS).map(([key, label]) => (
           <button
             key={key}
             onClick={() => { setStatus(status === key ? '' : key); setPage(1); }}
-            className={`rounded-xl border p-4 text-left transition-colors hover:border-blue-300 ${status === key ? 'border-blue-500 bg-blue-50' : 'border-neutral-100 bg-white'}`}
+            className={`rounded-lg border px-4 py-3 text-left transition-colors ${
+              status === key ? 'border-blue-600 bg-blue-50' : 'border-neutral-200 bg-white hover:border-neutral-300'
+            }`}
           >
-            <div className="text-2xl font-bold text-blue-600">{summaryMap[key] ?? 0}</div>
-            <div className="mt-1 text-xs font-medium text-neutral-500">{label}</div>
+            <div className="text-lg font-semibold text-neutral-900">{summaryMap[key] ?? 0}</div>
+            <div className={`mt-0.5 text-xs ${status === key ? 'font-medium text-blue-700' : 'text-neutral-500'}`}>{label}</div>
           </button>
         ))}
       </div>
 
       <Card>
-        <div className="flex flex-wrap items-center gap-3 border-b border-neutral-100 px-6 py-4">
-          <SearchInput value={search} onChange={(v) => { setSearch(v); setPage(1); }} placeholder="Search file #, destination..." className="max-w-xs" />
-          <Select value={travelType} onChange={(e) => { setTravelType(e.target.value); setPage(1); }} className="w-44">
-            <option value="">All Types</option>
+        <div className="flex flex-col gap-2 border-b border-neutral-200 px-4 py-3 md:flex-row md:flex-wrap md:items-center">
+          <SearchInput
+            value={search}
+            onChange={(v) => { setSearch(v); setPage(1); }}
+            placeholder="Search name, phone, passport, file #…"
+            className="w-full md:w-72"
+          />
+          <Select value={travelType} onChange={(e) => { setTravelType(e.target.value); setPage(1); }} className="w-full md:w-40">
+            <option value="">All types</option>
             {Object.entries(TRAVEL_TYPE_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
           </Select>
-          <Select value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }} className="w-44">
-            <option value="">All Statuses</option>
+          <Select value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }} className="w-full md:w-44">
+            <option value="">All statuses</option>
             {Object.entries(STATUS_SUMMARY_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
             <option value="cancelled">Cancelled</option>
           </Select>
-          <div className="w-full">
-            <DateRangeFilter
-              value={dates}
-              onChange={(v) => { setDates(v); setPage(1); }}
-              fields={[
-                { value: 'createdAt', label: 'Date opened' },
-                { value: 'departureDate', label: 'Departure date' },
-              ]}
-            />
-          </div>
+          <DateRangeFilter
+            value={dates}
+            onChange={(v) => { setDates(v); setPage(1); }}
+            fields={[
+              { value: 'createdAt', label: 'Date opened' },
+              { value: 'departureDate', label: 'Departure date' },
+            ]}
+          />
+          {(search || status || travelType) && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="md:ml-auto"
+              onClick={() => { setSearch(''); setStatus(''); setTravelType(''); setPage(1); }}
+            >
+              Reset filters
+            </Button>
+          )}
         </div>
         <DataTable
           columns={columns}

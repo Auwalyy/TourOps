@@ -4,7 +4,7 @@ import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, Users, FileText, Package, Receipt,
   FolderOpen, BarChart3, Settings, Sparkles, UserCog, LogOut,
-  FolderKanban, ClipboardCheck, Wallet, CreditCard, Building2, Lock, ShieldCheck,
+  FolderKanban, ClipboardCheck, Moon, Wallet, CreditCard, Building2, Lock, ShieldCheck,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/stores/auth.store';
@@ -30,6 +30,7 @@ const navGroups: Array<{ label?: string; items: NavItem[] }> = [
   {
     label: 'Operations',
     items: [
+      { href: '/seasons', label: 'Umrah & Hajj', icon: Moon },
       { href: '/travel-files', label: 'Travel Files', icon: FolderKanban },
       { href: '/bookings', label: 'Bookings', icon: FileText },
       { href: '/visas', label: 'Visas', icon: ClipboardCheck },

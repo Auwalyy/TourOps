@@ -2,12 +2,16 @@
 import { useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, Clock, CheckSquare, StickyNote, FolderOpen, Receipt, AlertCircle, Copy, Check, Upload, Trash2, Download, Plane, Pencil, Wallet } from 'lucide-react';
+import Link from 'next/link';
+import {
+  ArrowLeft, Clock, CheckSquare, StickyNote, FolderOpen, Receipt, AlertCircle, Copy, Check, Upload, Trash2,
+  Download, Plane, Pencil, Wallet, Archive, Moon, BedDouble, Bus, Stamp, Plus,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { travelFilesApi, documentsApi, bookingsApi, paymentsApi } from '@/services/api.service';
 import { FileReceipts } from '@/components/features/travel-files/FileReceipts';
-import { TravelFile, TravelFileStatus, Booking } from '@/types';
-import { Card, CardContent, CardHeader, CardTitle, Skeleton } from '@/components/ui/Card';
+import { TravelFile, TravelFileStatus, Booking, BookingType } from '@/types';
+import { Badge, Card, CardContent, CardHeader, CardTitle, Skeleton } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { Select, Input, Label, Textarea } from '@/components/ui/Input';
@@ -15,11 +19,22 @@ import { formatDate, formatCurrency, formatRelativeTime } from '@/lib/utils';
 import { TravelFileHealthBanner } from '@/components/features/travel-files/TravelFileHealthBanner';
 import { BookingFormModal } from '@/components/features/bookings/BookingFormModal';
 import { EditTravelFileModal } from '@/components/features/travel-files/EditTravelFileModal';
+import { PhysicalFileTab } from '@/components/features/travel-files/PhysicalFileTab';
 
 const TRAVEL_TYPE_LABELS: Record<string, string> = {
   umrah: 'Umrah', hajj: 'Hajj', study_abroad: 'Study Abroad',
-  tourist_visa: 'Tourist Visa', business: 'Business', medical: 'Medical',
+  tourist_visa: 'Tourist Visa', business: 'Business', medical: 'Medical', other: 'Other',
 };
+
+const BOOKING_DONE = ['confirmed', 'ticketed', 'completed'];
+
+/** The arrangements almost every trip needs, shown as a checklist on the overview. */
+const ARRANGEMENTS: Array<{ label: string; types: BookingType[]; addAs: BookingType; icon: typeof Plane }> = [
+  { label: 'Flight ticket', types: ['flight', 'ticket'], addAs: 'flight', icon: Plane },
+  { label: 'Visa', types: ['visa'], addAs: 'visa', icon: Stamp },
+  { label: 'Hotel', types: ['hotel'], addAs: 'hotel', icon: BedDouble },
+  { label: 'Transport', types: ['transport'], addAs: 'transport', icon: Bus },
+];
 
 const TABS = [
   { id: 'overview', label: 'Overview', icon: AlertCircle },
@@ -29,6 +44,7 @@ const TABS = [
   { id: 'notes', label: 'Notes', icon: StickyNote },
   { id: 'documents', label: 'Documents', icon: FolderOpen },
   { id: 'payments', label: 'Payments', icon: Receipt },
+  { id: 'physical', label: 'Physical File', icon: Archive },
   { id: 'history', label: 'Status History', icon: Clock },
 ];
 
@@ -48,6 +64,7 @@ export default function TravelFileDetailPage() {
   const [docName, setDocName] = useState('');
   const fileUploadRef = useRef<HTMLInputElement>(null);
   const [showBookingForm, setShowBookingForm] = useState(false);
+  const [bookingType, setBookingType] = useState<BookingType>('flight');
   const [showEditModal, setShowEditModal] = useState(false);
   const [payment, setPayment] = useState({ amount: '', method: 'cash', reference: '', note: '' });
 
@@ -179,48 +196,60 @@ export default function TravelFileDetailPage() {
   const officer = file.assignedVisaOfficer as any;
   const pkg = file.packageId as any;
   const pendingTasks = file.tasks.filter((t) => t.status !== 'completed' && t.status !== 'cancelled').length;
+  const season = typeof file.seasonId === 'object' ? file.seasonId : null;
+  const visaApp = typeof file.visaApplicationId === 'object' ? (file.visaApplicationId as any) : null;
+  const customerName = customer?.fullName || [customer?.firstName, customer?.lastName].filter(Boolean).join(' ');
+
+  function openBooking(type: BookingType = 'flight') {
+    setBookingType(type);
+    setShowBookingForm(true);
+  }
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-wrap items-start gap-4">
-        <Button variant="ghost" size="icon" onClick={() => router.back()}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <div className="flex-1 min-w-0">
-          <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-2xl font-bold text-neutral-900">{file.fileNumber}</h1>
-            <button
-              onClick={copyTrackingLink}
-              title="Copy customer tracking link"
-              className="flex items-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-xs font-medium text-neutral-600 hover:border-blue-400 hover:text-blue-600 transition-colors"
-            >
-              {copied ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5" />}
-              {copied ? 'Copied!' : 'Copy tracking link'}
-            </button>
-            <span className="rounded-full bg-neutral-100 px-3 py-0.5 text-sm font-medium text-neutral-700">
-              {TRAVEL_TYPE_LABELS[file.travelType]} Travel File
-            </span>
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <div className="min-w-0">
+          <button onClick={() => router.back()} className="inline-flex items-center gap-1 text-xs text-neutral-500 hover:text-neutral-800">
+            <ArrowLeft className="h-3.5 w-3.5" /> Back
+          </button>
+          <div className="mt-1 flex flex-wrap items-center gap-2">
+            <h1 className="text-lg font-semibold text-neutral-900">{customerName || file.fileNumber}</h1>
             <StatusBadge status={file.status} />
-            <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${
-              file.priority === 'urgent' ? 'bg-red-100 text-red-700' :
-              file.priority === 'high' ? 'bg-amber-100 text-amber-700' :
-              'bg-neutral-100 text-neutral-600'
-            }`}>{file.priority}</span>
+            {file.priority !== 'normal' && (
+              <Badge variant={file.priority === 'urgent' ? 'red' : file.priority === 'high' ? 'yellow' : 'default'} className="capitalize">
+                {file.priority}
+              </Badge>
+            )}
           </div>
-          <p className="mt-1 text-sm text-neutral-500">
-            {customer?.fullName || `${customer?.firstName} ${customer?.lastName}`} · {file.destination}
-            {file.departureGroup && ` · ${file.departureGroup}`}
+          <p className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-neutral-500">
+            <span className="font-mono text-blue-600">{file.fileNumber}</span>
+            <span>·</span>
+            <span>{TRAVEL_TYPE_LABELS[file.travelType]} to {file.destination}</span>
+            {file.departureDate && <><span>·</span><span>Departs {formatDate(file.departureDate)}</span></>}
+            {season && (
+              <Link
+                href={`/seasons/${season._id}`}
+                className="inline-flex items-center gap-1 rounded border border-blue-200 bg-blue-50 px-1.5 py-0.5 text-[11px] font-medium text-blue-700 hover:border-blue-300"
+              >
+                <Moon className="h-3 w-3" /> {season.name}
+              </Link>
+            )}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <Button variant="outline" onClick={copyTrackingLink} title="Copy the customer's tracking link">
+            {copied ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
+            {copied ? 'Copied' : 'Tracking link'}
+          </Button>
           <Button variant="outline" onClick={() => setShowEditModal(true)}>
-            <Pencil className="h-4 w-4" /> Edit Details
+            <Pencil className="h-3.5 w-3.5" /> Edit details
           </Button>
           <Select
             value={file.status}
             onChange={(e) => statusMutation.mutate(e.target.value as TravelFileStatus)}
             className="w-48"
+            aria-label="File status"
           >
             {STATUS_OPTIONS.map((s) => (
               <option key={s} value={s}>{s.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}</option>
@@ -236,21 +265,21 @@ export default function TravelFileDetailPage() {
             <button
               key={tabId}
               onClick={() => setActiveTab(tabId)}
-              className={`flex items-center gap-2 whitespace-nowrap border-b-2 px-4 py-3 text-sm font-medium transition-colors ${
+              className={`flex shrink-0 items-center gap-2 whitespace-nowrap border-b-2 px-3 py-2 text-[13px] transition-colors ${
                 activeTab === tabId
-                  ? 'border-blue-600 text-blue-600'
-                  : 'border-transparent text-neutral-500 hover:text-neutral-700'
+                  ? 'border-blue-600 font-medium text-blue-700'
+                  : 'border-transparent text-neutral-500 hover:text-neutral-800'
               }`}
             >
-              <Icon className="h-4 w-4" />
+              <Icon className="h-3.5 w-3.5" />
               {label}
               {tabId === 'tasks' && pendingTasks > 0 && (
-                <span className="rounded-full bg-blue-100 px-1.5 py-0.5 text-xs font-bold text-blue-700">
+                <span className="rounded-full bg-blue-100 px-1.5 text-[11px] font-medium text-blue-700">
                   {pendingTasks}
                 </span>
               )}
               {tabId === 'bookings' && (bookings?.length ?? 0) > 0 && (
-                <span className="rounded-full bg-neutral-100 px-1.5 py-0.5 text-xs font-bold text-neutral-700">
+                <span className="rounded-full bg-neutral-100 px-1.5 text-[11px] font-medium text-neutral-700">
                   {bookings!.length}
                 </span>
               )}
@@ -268,6 +297,57 @@ export default function TravelFileDetailPage() {
       {activeTab === 'overview' && (
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           <div className="space-y-6 lg:col-span-2">
+            {/* Arrangements checklist */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Trip arrangements</CardTitle>
+                <Button size="sm" variant="ghost" onClick={() => setActiveTab('bookings')}>All bookings</Button>
+              </CardHeader>
+              <ul className="divide-y divide-neutral-100">
+                {ARRANGEMENTS.map(({ label, types, addAs, icon: Icon }) => {
+                  const own = (bookings || []).filter((b) => types.includes(b.bookingType) && b.status !== 'cancelled');
+                  const done = own.find((b) => BOOKING_DONE.includes(b.status));
+                  const shown = done || own[0];
+                  const viaApplication = addAs === 'visa' && !shown && visaApp;
+                  const complete = !!done || (viaApplication && visaApp.status === 'approved');
+                  return (
+                    <li key={label} className="flex items-center gap-3 px-5 py-3">
+                      <span
+                        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-md ${
+                          complete ? 'bg-emerald-50 text-emerald-700' : shown || viaApplication ? 'bg-amber-50 text-amber-600' : 'bg-neutral-100 text-neutral-400'
+                        }`}
+                      >
+                        <Icon className="h-4 w-4" />
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[13px] font-medium text-neutral-900">{label}</p>
+                        <p className="truncate text-xs text-neutral-500">
+                          {shown
+                            ? `${shown.title}${own.length > 1 ? ` (+${own.length - 1} more)` : ''}`
+                            : viaApplication
+                            ? 'Visa application on file'
+                            : 'Not added yet'}
+                        </p>
+                      </div>
+                      {shown ? (
+                        <button onClick={() => router.push(`/bookings/${shown._id}`)} className="shrink-0" title="Open booking">
+                          <StatusBadge status={shown.status} />
+                        </button>
+                      ) : viaApplication ? (
+                        <button onClick={() => router.push(`/visas/${visaApp._id}`)} className="shrink-0" title="Open visa application">
+                          <StatusBadge status={visaApp.status} />
+                        </button>
+                      ) : (
+                        <Button size="sm" variant="outline" onClick={() => openBooking(addAs)}>
+                          <Plus className="h-3 w-3" /> Add
+                        </Button>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            </Card>
+
             {/* Customer Info */}
             <Card>
               <CardHeader><CardTitle>Customer Information</CardTitle></CardHeader>
@@ -294,6 +374,9 @@ export default function TravelFileDetailPage() {
                 <Detail label="File Number" value={file.fileNumber} />
                 <Detail label="Travel Type" value={TRAVEL_TYPE_LABELS[file.travelType]} />
                 <Detail label="Destination" value={file.destination} />
+                <Detail label="Departure" value={file.departureDate ? formatDate(file.departureDate) : '—'} />
+                <Detail label="Return" value={file.returnDate ? formatDate(file.returnDate) : '—'} />
+                <Detail label="Season" value={season?.name || '—'} />
                 <Detail label="Departure Group" value={file.departureGroup || '—'} />
                 <Detail label="Package" value={pkg?.title || '—'} />
                 <Detail label="Created" value={formatDate(file.createdAt)} />
@@ -382,8 +465,8 @@ export default function TravelFileDetailPage() {
       {activeTab === 'bookings' && (
         <div className="space-y-4">
           <div className="flex justify-end">
-            <Button onClick={() => setShowBookingForm(true)}>
-              <Plane className="h-4 w-4" /> Add Booking
+            <Button onClick={() => openBooking('flight')}>
+              <Plus className="h-3.5 w-3.5" /> Add booking
             </Button>
           </div>
           {!bookings || bookings.length === 0 ? (
@@ -392,7 +475,7 @@ export default function TravelFileDetailPage() {
                 <Plane className="mx-auto h-10 w-10 text-neutral-300 mb-3" />
                 <p className="text-sm font-medium text-neutral-500">No bookings yet</p>
                 <p className="text-xs text-neutral-400 mt-1">Add a flight, hotel, transport or other arrangement to this travel file.</p>
-                <Button className="mt-4" onClick={() => setShowBookingForm(true)}>Add First Booking</Button>
+                <Button className="mt-4" onClick={() => openBooking('flight')}>Add first booking</Button>
               </CardContent>
             </Card>
           ) : (
@@ -819,9 +902,16 @@ export default function TravelFileDetailPage() {
         onClose={() => setShowBookingForm(false)}
         travelFileId={id}
         customerId={typeof file.customerId === 'object' ? (file.customerId as any)._id : file.customerId}
-        onCreated={() => qc.invalidateQueries({ queryKey: ['travel-files', id, 'bookings'] })}
+        defaultType={bookingType}
+        onCreated={() => {
+          // Bookings change the health banner and the season checklist too.
+          qc.invalidateQueries({ queryKey: ['travel-files', id] });
+          qc.invalidateQueries({ queryKey: ['seasons'] });
+        }}
       />
       <EditTravelFileModal open={showEditModal} onClose={() => setShowEditModal(false)} file={file} />
+
+      {activeTab === 'physical' && <PhysicalFileTab fileId={id} physicalFile={file.physicalFile} />}
 
       {activeTab === 'history' && (
         <Card>

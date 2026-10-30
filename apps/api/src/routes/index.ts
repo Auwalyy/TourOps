@@ -23,6 +23,7 @@ import visaIssuanceRoutes from './visaIssuance.routes';
 import subscriptionRoutes from './subscription.routes';
 import platformRoutes from './platform.routes';
 import auditRoutes from './audit.routes';
+import seasonRoutes from './season.routes';
 
 export function registerRoutes(app: Express): void {
   const API = '/api/v1';
@@ -53,4 +54,5 @@ export function registerRoutes(app: Express): void {
   app.use(`${API}/subscription`, subscriptionRoutes);
   app.use(`${API}/platform`, platformRoutes);
   app.use(`${API}/audit`, auditRoutes);
+  app.use(`${API}/seasons`, seasonRoutes);
 }
