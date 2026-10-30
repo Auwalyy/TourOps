@@ -107,7 +107,7 @@ export default function SeasonDetailPage() {
   const visibleIds = visible.filter((p) => !INACTIVE.includes(p.status)).map((p) => p._id);
   const allChecked = visibleIds.length > 0 && visibleIds.every((x) => selected.includes(x));
   const selectedActive = selected.filter((x) => pilgrims.some((p) => p._id === x && !INACTIVE.includes(p.status)));
-  const pkg = typeof season.packageId === 'object' ? season.packageId : null;
+  const pkg = season.packageId && typeof season.packageId === 'object' ? season.packageId : null;
   const full = totals.seatsLeft === 0;
 
   function toggleAll() {

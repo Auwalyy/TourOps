@@ -8,6 +8,7 @@ import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Input, Label, Select, Textarea } from '@/components/ui/Input';
 import { Season, SeasonType } from '@/types';
+import { refId } from '@/lib/utils';
 import { MONTHS, SEASON_STATUS, seasonLabel } from './seasonMeta';
 
 interface Props {
@@ -48,7 +49,7 @@ function fromSeason(s: Season) {
     departureDate: s.departureDate?.slice(0, 10) || '',
     returnDate: s.returnDate?.slice(0, 10) || '',
     destination: s.destination || '',
-    packageId: typeof s.packageId === 'object' ? s.packageId._id : s.packageId || '',
+    packageId: refId(s.packageId),
     pricePerPerson: s.pricePerPerson ? String(s.pricePerPerson) : '',
     capacity: s.capacity ? String(s.capacity) : '',
     airline: s.airline || '',

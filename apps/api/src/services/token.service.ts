@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import { config } from '../config';
 import { JwtPayload } from '../types/express';
@@ -12,6 +13,9 @@ export const tokenService = {
   generateRefreshToken(payload: JwtPayload): string {
     return jwt.sign(payload, config.jwt.refreshSecret, {
       expiresIn: config.jwt.refreshExpiresIn,
+      // Two tokens issued in the same second would otherwise be identical,
+      // and revoking one would silently revoke the other.
+      jwtid: crypto.randomUUID(),
     } as jwt.SignOptions);
   },
 

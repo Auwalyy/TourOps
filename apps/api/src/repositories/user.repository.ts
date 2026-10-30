@@ -26,22 +26,31 @@ class UserRepository extends BaseRepository<IUser> {
   }
 
   async findByIdWithTokens(id: string): Promise<IUser | null> {
-    return User.findById(id).select('+refreshTokens').exec();
+    return User.findById(id).select('+refreshTokens +rotatedRefreshTokens').exec();
   }
 
   async addRefreshToken(userId: string, token: string): Promise<void> {
     await User.findByIdAndUpdate(userId, {
-      $push: { refreshTokens: token },
+      // Keep the 10 most recent sessions; older devices simply sign in again.
+      $push: { refreshTokens: { $each: [token], $slice: -10 } },
       lastLogin: new Date(),
     });
   }
 
   async removeRefreshToken(userId: string, token: string): Promise<void> {
-    await User.findByIdAndUpdate(userId, { $pull: { refreshTokens: token } });
+    await User.findByIdAndUpdate(userId, { $pull: { refreshTokens: token, rotatedRefreshTokens: { token } } });
+  }
+
+  /** Retires a token on rotation but remembers it briefly for requests already in flight. */
+  async rotateRefreshToken(userId: string, token: string): Promise<void> {
+    await User.findByIdAndUpdate(userId, {
+      $pull: { refreshTokens: token },
+      $push: { rotatedRefreshTokens: { $each: [{ token, rotatedAt: new Date() }], $slice: -20 } },
+    });
   }
 
   async clearRefreshTokens(userId: string): Promise<void> {
-    await User.findByIdAndUpdate(userId, { $set: { refreshTokens: [] } });
+    await User.findByIdAndUpdate(userId, { $set: { refreshTokens: [], rotatedRefreshTokens: [] } });
   }
 }
 

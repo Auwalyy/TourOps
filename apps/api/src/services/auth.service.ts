@@ -31,6 +31,9 @@ interface TokenPair {
   user: IUser;
 }
 
+/** How long a just-rotated refresh token is still accepted. */
+const ROTATION_GRACE_MS = 60 * 1000;
+
 export const authService = {
   async registerAgency(input: RegisterAgencyInput): Promise<TokenPair> {
     const existing = await userRepository.findByEmail(input.email);
@@ -80,14 +83,22 @@ export const authService = {
     const user = await userRepository.findByIdWithTokens(payload.userId);
     if (!user || !user.isActive) throw new UnauthorizedError('User not found');
 
-    // Reject tokens that were already revoked (logout, password change/reset)
-    if (!user.refreshTokens.includes(refreshToken)) {
-      throw new UnauthorizedError('Refresh token has been revoked');
+    if (user.refreshTokens.includes(refreshToken)) {
+      // Rotate: retire the old token, issue a new pair.
+      await userRepository.rotateRefreshToken(user.id, refreshToken);
+      return this._issueTokens(user);
     }
 
-    // Rotate: remove old, issue new
-    await userRepository.removeRefreshToken(user.id, refreshToken);
-    return this._issueTokens(user);
+    // A second tab, or a request that raced the one that rotated, arrives with
+    // the token rotated moments ago. Honour it briefly instead of signing the
+    // user out. Logout and password changes clear this list, so a revoked
+    // session never comes back through here.
+    const justRotated = (user.rotatedRefreshTokens || []).some(
+      (r) => r.token === refreshToken && Date.now() - new Date(r.rotatedAt).getTime() < ROTATION_GRACE_MS
+    );
+    if (justRotated) return this._issueTokens(user);
+
+    throw new UnauthorizedError('Refresh token has been revoked');
   },
 
   async logout(userId: string, refreshToken: string): Promise<void> {

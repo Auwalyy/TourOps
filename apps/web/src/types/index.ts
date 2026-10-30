@@ -465,7 +465,7 @@ export interface Season {
   departureDate?: string;
   returnDate?: string;
   destination: string;
-  packageId?: { _id: string; title: string } | string;
+  packageId?: { _id: string; title: string } | string | null;
   pricePerPerson: number;
   capacity: number;
   airline?: string;

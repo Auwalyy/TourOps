@@ -8,6 +8,7 @@ import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Input, Label, Select, Textarea } from '@/components/ui/Input';
 import { BookingType } from '@/types';
+import { refId } from '@/lib/utils';
 
 interface Props {
   open: boolean;
@@ -64,7 +65,7 @@ export function BookingFormModal({ open, onClose, travelFileId, customerId, onCr
   // When a travel file is selected from the dropdown, auto-populate customerId
   const selectedTf = (travelFiles as any[])?.find((tf: any) => tf._id === selectedTravelFileId);
   const effectiveCustomerId = customerId
-    || (selectedTf ? (typeof selectedTf.customerId === 'object' ? selectedTf.customerId._id : selectedTf.customerId) : selectedCustomerId);
+    || (selectedTf ? refId(selectedTf.customerId) : selectedCustomerId);
 
   // For visa bookings — link the charge to the application it pays for.
   const [visaApplicationId, setVisaApplicationId] = useState('');

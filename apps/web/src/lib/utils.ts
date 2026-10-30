@@ -5,6 +5,17 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+/**
+ * The id of a Mongo reference whether it came back populated, as a bare id, or
+ * null (the referenced record was deleted). `typeof null === 'object'`, so
+ * checking typeof alone crashes on the null case.
+ */
+export function refId(ref: unknown): string {
+  if (!ref) return '';
+  if (typeof ref === 'string') return ref;
+  return String((ref as { _id?: unknown })._id ?? '');
+}
+
 export function formatCurrency(amount: number, currency = 'NGN'): string {
   return new Intl.NumberFormat('en-NG', { style: 'currency', currency }).format(amount);
 }

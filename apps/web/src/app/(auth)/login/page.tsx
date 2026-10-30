@@ -29,7 +29,9 @@ export default function LoginPage() {
     try {
       const res = await authApi.login(data.email.trim(), data.password.trim());
       setAuth(res.data.data.user, res.data.data.accessToken);
-      router.push('/dashboard');
+      // Back to where the session ended — same-site paths only, never "//evil".
+      const next = new URLSearchParams(window.location.search).get('next') || '';
+      router.push(next.startsWith('/') && !next.startsWith('//') ? next : '/dashboard');
     } catch (err: any) {
       toast.error(err.response?.data?.message || 'Login failed');
     }

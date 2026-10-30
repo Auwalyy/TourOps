@@ -18,6 +18,11 @@ import { startJobs } from './jobs/scheduler';
 
 const app = express();
 
+// Requests reach us through the Next.js proxy and the host's load balancer.
+// Without trusting those hops, req.ip is the proxy's address, so every user of
+// every agency would share one rate-limit bucket. Override with TRUST_PROXY_HOPS.
+app.set('trust proxy', Number(process.env.TRUST_PROXY_HOPS ?? 2));
+
 // Security
 app.use(helmet());
 app.use(mongoSanitize());

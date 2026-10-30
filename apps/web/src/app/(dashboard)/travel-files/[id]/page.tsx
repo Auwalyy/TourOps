@@ -15,7 +15,7 @@ import { Badge, Card, CardContent, CardHeader, CardTitle, Skeleton } from '@/com
 import { Button } from '@/components/ui/Button';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { Select, Input, Label, Textarea } from '@/components/ui/Input';
-import { formatDate, formatCurrency, formatRelativeTime } from '@/lib/utils';
+import { formatDate, formatCurrency, formatRelativeTime, refId } from '@/lib/utils';
 import { TravelFileHealthBanner } from '@/components/features/travel-files/TravelFileHealthBanner';
 import { BookingFormModal } from '@/components/features/bookings/BookingFormModal';
 import { EditTravelFileModal } from '@/components/features/travel-files/EditTravelFileModal';
@@ -249,6 +249,7 @@ export default function TravelFileDetailPage() {
             value={file.status}
             onChange={(e) => statusMutation.mutate(e.target.value as TravelFileStatus)}
             className="w-48"
+            disabled={statusMutation.isPending}
             aria-label="File status"
           >
             {STATUS_OPTIONS.map((s) => (
@@ -901,7 +902,7 @@ export default function TravelFileDetailPage() {
         open={showBookingForm}
         onClose={() => setShowBookingForm(false)}
         travelFileId={id}
-        customerId={typeof file.customerId === 'object' ? (file.customerId as any)._id : file.customerId}
+        customerId={refId(file.customerId)}
         defaultType={bookingType}
         onCreated={() => {
           // Bookings change the health banner and the season checklist too.

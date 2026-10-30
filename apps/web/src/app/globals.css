@@ -78,3 +78,15 @@ canvas {
   border: 3px solid transparent;
   background-clip: content-box;
 }
+
+/* Top progress bar — an indeterminate sweep while the app is busy. */
+@keyframes progress-sweep {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(300%); }
+}
+.progress-bar-indeterminate {
+  animation: progress-sweep 1.1s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .progress-bar-indeterminate { animation: none; width: 100%; opacity: 0.6; }
+}

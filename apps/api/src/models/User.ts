@@ -17,6 +17,8 @@ export interface IUser extends Document {
   passwordResetToken?: string;
   passwordResetExpires?: Date;
   refreshTokens: string[];
+  /** Tokens rotated in the last moments, still honoured briefly — see authService.refreshTokens. */
+  rotatedRefreshTokens: Array<{ token: string; rotatedAt: Date }>;
   lastLogin?: Date;
   createdAt: Date;
   updatedAt: Date;
@@ -43,6 +45,11 @@ const userSchema = new Schema<IUser>(
     passwordResetToken: { type: String, select: false },
     passwordResetExpires: { type: Date, select: false },
     refreshTokens: { type: [String], select: false, default: [] },
+    rotatedRefreshTokens: {
+      type: [{ token: String, rotatedAt: Date, _id: false }],
+      select: false,
+      default: [],
+    },
     lastLogin: Date,
   },
   {
@@ -52,6 +59,7 @@ const userSchema = new Schema<IUser>(
       transform: (_, ret: any) => {
         delete ret.password;
         delete ret.refreshTokens;
+        delete ret.rotatedRefreshTokens;
         delete ret.passwordResetToken;
         delete ret.passwordResetExpires;
         return ret;

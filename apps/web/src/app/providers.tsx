@@ -1,7 +1,8 @@
 'use client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'sonner';
-import { useState, ReactNode, useEffect } from 'react';
+import { useState, ReactNode, useEffect, Suspense } from 'react';
+import { ProgressBar } from '@/components/layout/ProgressBar';
 import { useBrandingStore } from '@/stores/branding.store';
 import { useAuthStore } from '@/stores/auth.store';
 
@@ -23,7 +24,16 @@ export function Providers({ children }: { children: ReactNode }) {
     () =>
       new QueryClient({
         defaultOptions: {
-          queries: { staleTime: 30 * 1000, retry: 1 },
+          queries: {
+            staleTime: 30 * 1000,
+            // A 4xx (not found, forbidden, invalid) won't change on retry — show
+            // it straight away. Retry once only for network/server failures.
+            retry: (count, error: any) => {
+              const status = error?.response?.status;
+              if (status && status >= 400 && status < 500) return false;
+              return count < 1;
+            },
+          },
           mutations: { retry: 0 },
         },
       })
@@ -32,6 +42,9 @@ export function Providers({ children }: { children: ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
       <BrandingBootstrap />
+      <Suspense fallback={null}>
+        <ProgressBar />
+      </Suspense>
       {children}
       <Toaster position="top-right" richColors closeButton />
     </QueryClientProvider>

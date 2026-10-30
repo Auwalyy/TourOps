@@ -15,6 +15,12 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     if (!isAuthenticated) router.replace('/login');
   }, [isAuthenticated, router]);
 
+  // The app rendered, so any auto-reload for a new build has done its job;
+  // clear the guard so the next deploy can reload again (see error.tsx).
+  useEffect(() => {
+    try { sessionStorage.removeItem('reloaded-for-new-build'); } catch {}
+  }, []);
+
   if (!isAuthenticated) return null;
 
   return (
