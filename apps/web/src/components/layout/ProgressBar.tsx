@@ -27,14 +27,27 @@ export function ProgressBar() {
       if (url.pathname === window.location.pathname && url.search === window.location.search) return;
       setNavigating(true);
     }
+    // Row clicks and other router.push navigations announce themselves.
+    const onNavigate = () => setNavigating(true);
     document.addEventListener('click', onClick, true);
-    return () => document.removeEventListener('click', onClick, true);
+    window.addEventListener('tourops:navigate', onNavigate);
+    return () => {
+      document.removeEventListener('click', onClick, true);
+      window.removeEventListener('tourops:navigate', onNavigate);
+    };
   }, []);
 
   // The route changed — navigation is done.
   useEffect(() => {
     setNavigating(false);
   }, [pathname, search]);
+
+  // Never leave the bar running if a navigation is cancelled or goes nowhere.
+  useEffect(() => {
+    if (!navigating) return;
+    const t = setTimeout(() => setNavigating(false), 15000);
+    return () => clearTimeout(t);
+  }, [navigating]);
 
   const busy = navigating || firstLoads > 0 || saving > 0;
 

@@ -65,4 +65,15 @@ export const seasonController = {
       sendCreated(res, result, `Booked for ${result.createdCount} pilgrim(s)`);
     } catch (e) { next(e); }
   },
+
+  async manifest(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const u = req.user as any;
+      const preparedBy = [u?.firstName, u?.lastName].filter(Boolean).join(' ') || undefined;
+      const { buffer, filename } = await seasonService.manifest(req.user!.agencyId!.toString(), req.params.id, preparedBy);
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.send(buffer);
+    } catch (e) { next(e); }
+  },
 };

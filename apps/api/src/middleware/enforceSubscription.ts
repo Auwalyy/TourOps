@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { config } from '../config';
-import { Agency } from '../models/Agency';
+import { getAgencyForAccessCheck } from './requireFeature';
 import { subscriptionService } from '../services/subscription.service';
 import { JwtPayload } from '../types/express';
 import { SubscriptionRequiredError } from '../utils/errors';
@@ -53,7 +53,7 @@ export async function enforceSubscription(req: Request, _res: Response, next: Ne
     if (payload.role === 'system_admin' && !payload.agencyId) return next();
     if (!payload.agencyId) return next();
 
-    const agency = await Agency.findById(payload.agencyId);
+    const agency = await getAgencyForAccessCheck(payload.agencyId);
     if (!agency) return next();
 
     // An agency created before billing existed has no dates at all. Give it a

@@ -9,6 +9,7 @@ router.use(authenticate);
 
 router.get('/', authorize('bookings:read'), seasonController.list);
 router.get('/:id', authorize('bookings:read'), seasonController.getById);
+router.get('/:id/manifest', authorize('bookings:read'), seasonController.manifest);
 router.post('/', authorize('bookings:write'), seasonController.create);
 router.put('/:id', authorize('bookings:write'), seasonController.update);
 router.delete('/:id', authorize('bookings:delete'), seasonController.delete);

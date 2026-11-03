@@ -1,4 +1,5 @@
 import mongoose, { Document, Schema } from 'mongoose';
+import { agencyCache } from '../utils/agencyCache';
 
 export interface IAgency extends Document {
   name: string;
@@ -99,5 +100,14 @@ const agencySchema = new Schema<IAgency>(
   },
   { timestamps: true }
 );
+
+// Keep the access-check cache honest: any change to an agency drops its entry.
+agencySchema.post('save', (doc) => agencyCache.invalidate(doc._id));
+agencySchema.post(['findOneAndUpdate', 'updateOne', 'findOneAndDelete', 'deleteOne'], function (this: any) {
+  const id = this.getQuery?.()._id;
+  if (id) agencyCache.invalidate(id);
+  else agencyCache.clear();
+});
+agencySchema.post('updateMany', () => agencyCache.clear());
 
 export const Agency = mongoose.model<IAgency>('Agency', agencySchema);

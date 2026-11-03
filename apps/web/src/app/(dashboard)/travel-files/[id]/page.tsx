@@ -20,6 +20,7 @@ import { TravelFileHealthBanner } from '@/components/features/travel-files/Trave
 import { BookingFormModal } from '@/components/features/bookings/BookingFormModal';
 import { EditTravelFileModal } from '@/components/features/travel-files/EditTravelFileModal';
 import { PhysicalFileTab } from '@/components/features/travel-files/PhysicalFileTab';
+import { TravelFileSkeleton } from '@/components/features/travel-files/TravelFileSkeleton';
 
 const TRAVEL_TYPE_LABELS: Record<string, string> = {
   umrah: 'Umrah', hajj: 'Hajj', study_abroad: 'Study Abroad',
@@ -188,8 +189,15 @@ export default function TravelFileDetailPage() {
     e.target.value = '';
   }
 
-  if (isLoading) return <Skeleton className="h-96 w-full" />;
-  if (!file) return <p className="text-neutral-500">Travel file not found.</p>;
+  if (isLoading) return <TravelFileSkeleton />;
+  if (!file) {
+    return (
+      <div className="py-16 text-center">
+        <p className="text-sm text-neutral-500">This travel file could not be found, or you no longer have access to it.</p>
+        <Button variant="outline" className="mt-4" onClick={() => router.push('/travel-files')}>Back to travel files</Button>
+      </div>
+    );
+  }
 
   const customer = file.customerId as any;
   const consultant = file.assignedConsultant as any;

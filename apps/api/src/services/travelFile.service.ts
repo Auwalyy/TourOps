@@ -645,7 +645,13 @@ export const travelFileService = {
   },
 
   async getHealth(agencyId: string, id: string) {
-    const file = await travelFileRepository.findFullById(agencyId, id);
+    // Only the passport is needed from the linked records. The full file load
+    // (~15 lookups) is already made by getById for the same page; repeating
+    // it here roughly doubled the time to open a travel file.
+    const file = await TravelFile.findOne({ _id: id, agencyId })
+      .select('status tasks totalCost amountPaid departureDate invoiceIds documentIds customerId')
+      .populate('customerId', 'passport')
+      .lean();
     if (!file) throw new NotFoundError('Travel File');
 
     const [invoices, documents, bookings] = await Promise.all([

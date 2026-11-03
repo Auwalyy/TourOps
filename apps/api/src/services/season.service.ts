@@ -6,6 +6,8 @@ import { Booking } from '../models/Booking';
 import { VisaApplication } from '../models/VisaApplication';
 import { VisaIssuance } from '../models/VisaIssuance';
 import { travelFileService } from './travelFile.service';
+import { generateManifestPDF, ManifestRow } from './manifestPdf.service';
+import { Agency } from '../models/Agency';
 import { bookingService } from './booking.service';
 import { NotFoundError, AppError } from '../utils/errors';
 
@@ -159,6 +161,7 @@ export const seasonService: {
   addArrangement(
     agencyId: string, id: string, userId: string, data: Record<string, unknown>
   ): Promise<{ createdCount: number; failedCount: number; failed: Array<{ travelFileId: string; reason: string }> }>;
+  manifest(agencyId: string, id: string, preparedBy?: string): Promise<{ buffer: Buffer; filename: string }>;
 } = {
   /**
    * Every season of a type with its roll-up, newest first. Agencies run a
@@ -478,5 +481,94 @@ export const seasonService: {
     }
 
     return { createdCount: created.length, failedCount: failed.length, failed };
+  },
+
+  /**
+   * The pilgrim manifest for the season — what goes to the Saudi ground agent,
+   * the airline and the visa office. Active pilgrims only, in surname order.
+   */
+  async manifest(agencyId: string, id: string, preparedBy?: string) {
+    const season = await loadSeason(agencyId, id);
+    const agency = await Agency.findById(agencyId);
+    if (!agency) throw new NotFoundError('Agency');
+
+    const files = await TravelFile.find({ agencyId, seasonId: id, status: { $nin: INACTIVE_FILE } })
+      .select('customerId visaApplicationId')
+      .populate('customerId', 'firstName lastName fullName gender dateOfBirth nationality passport phone')
+      .lean();
+
+    const customerIds = files.map((f: any) => f.customerId?._id).filter(Boolean);
+    const passports = files.map((f: any) => f.customerId?.passport?.number).filter(Boolean);
+    const [issued, visaApps, flights] = await Promise.all([
+      VisaIssuance.find({
+        agencyId,
+        type: 'visa',
+        $or: [{ customerId: { $in: customerIds } }, { passportNumber: { $in: passports } }],
+      })
+        .select('customerId passportNumber documentNumber')
+        .lean(),
+      VisaApplication.find({ agencyId, _id: { $in: files.map((f) => f.visaApplicationId).filter(Boolean) } })
+        .select('visaNumber')
+        .lean(),
+      Booking.find({
+        agencyId,
+        travelFileId: { $in: files.map((f) => f._id) },
+        bookingType: { $in: ['flight', 'ticket'] },
+        status: { $ne: 'cancelled' },
+      })
+        .select('travelFileId details.ticketNumber details.pnr')
+        .lean(),
+    ]);
+
+    const visaByCustomer = new Map(issued.filter((v) => v.customerId).map((v) => [v.customerId!.toString(), v.documentNumber]));
+    const visaByPassport = new Map(issued.map((v) => [String(v.passportNumber || '').toUpperCase(), v.documentNumber]));
+    const visaByApp = new Map(visaApps.map((v) => [v._id.toString(), v.visaNumber]));
+    const flightByFile = new Map(flights.map((b) => [b.travelFileId!.toString(), b.details]));
+
+    const rows: ManifestRow[] = files
+      .map((f: any) => {
+        const c = f.customerId || {};
+        const passport = String(c.passport?.number || '').toUpperCase();
+        const visa =
+          (c._id && visaByCustomer.get(c._id.toString())) ||
+          (passport && visaByPassport.get(passport)) ||
+          (f.visaApplicationId && visaByApp.get(f.visaApplicationId.toString())) ||
+          '';
+        const flight: any = flightByFile.get(f._id.toString());
+        const remarks = flight?.ticketNumber ? `Ticket ${flight.ticketNumber}` : flight?.pnr ? `PNR ${flight.pnr}` : '';
+        return {
+          name: c.fullName || [c.firstName, c.lastName].filter(Boolean).join(' '),
+          surname: String(c.lastName || ''),
+          passportNumber: passport,
+          gender: c.gender,
+          dateOfBirth: c.dateOfBirth,
+          nationality: c.nationality,
+          passportExpiry: c.passport?.expiryDate,
+          documentNumber: visa || undefined,
+          phone: c.phone,
+          remarks,
+        };
+      })
+      .sort((a, b) => a.surname.localeCompare(b.surname) || a.name.localeCompare(b.name))
+      .map(({ surname: _s, ...row }) => row);
+
+    const label = season.type === 'hajj' ? 'HAJJ' : 'UMRAH';
+    const buffer = await generateManifestPDF(agency, rows, {
+      title: `${label} PILGRIM MANIFEST`,
+      groupName: season.name,
+      destination: season.destination,
+      travelDate: season.departureDate,
+      returnDate: season.returnDate,
+      airline: season.airline,
+      numberLabel: 'Visa number',
+      extraDetails: [
+        { label: 'Makkah hotel', value: season.makkahHotel },
+        { label: 'Madinah hotel', value: season.madinahHotel },
+      ],
+      preparedBy,
+    });
+
+    const slug = season.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    return { buffer, filename: `${slug || 'season'}-manifest.pdf` };
   },
 };

@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { prefetchTravelFile } from '@/lib/prefetch';
 import { useRouter } from 'next/navigation';
 import { Plus, FolderOpen, Upload } from 'lucide-react';
 import { travelFilesApi } from '@/services/api.service';
@@ -38,6 +39,7 @@ const STATUS_SUMMARY_LABELS: Record<string, string> = {
 
 export default function TravelFilesPage() {
   const router = useRouter();
+  const qc = useQueryClient();
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('');
   const [travelType, setTravelType] = useState('');
@@ -190,6 +192,7 @@ export default function TravelFilesPage() {
           limit={20}
           onPageChange={setPage}
           onRowClick={(row) => router.push(`/travel-files/${row._id}`)}
+          onRowHover={(row) => prefetchTravelFile(qc, row._id, router.prefetch)}
           keyExtractor={(row) => row._id}
           emptyMessage="No travel files found."
         />

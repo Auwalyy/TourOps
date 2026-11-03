@@ -11,7 +11,9 @@ export async function authenticate(req: AuthRequest, _res: Response, next: NextF
     if (!token) throw new UnauthorizedError('No token provided');
 
     const payload = jwt.verify(token, config.jwt.accessSecret) as JwtPayload;
-    const user = await User.findById(payload.userId).select('+refreshTokens');
+    // Not the stored refresh tokens — nothing downstream needs them, and they
+    // were being loaded on every single request.
+    const user = await User.findById(payload.userId);
 
     if (!user || !user.isActive) throw new UnauthorizedError('User not found or inactive');
 

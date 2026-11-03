@@ -1,9 +1,23 @@
 import { Response, NextFunction } from 'express';
-import { Agency } from '../models/Agency';
+import { Agency, IAgency } from '../models/Agency';
+import { agencyCache } from '../utils/agencyCache';
 import { subscriptionService } from '../services/subscription.service';
 import { FeatureKey, PLANS, PlanId } from '../config/plans';
 import { AuthRequest } from '../types/express';
 import { AppError } from '../utils/errors';
+
+/**
+ * The agency behind the current request, for read-only access checks. Cached
+ * briefly (see utils/agencyCache) because every API call needs it.
+ */
+export async function getAgencyForAccessCheck(agencyId: unknown): Promise<IAgency | null> {
+  const id = String(agencyId);
+  const cached = agencyCache.get<IAgency>(id);
+  if (cached) return cached;
+  const agency = await Agency.findById(id);
+  if (agency) agencyCache.set(id, agency);
+  return agency;
+}
 
 /** The cheapest plan that includes a feature — named in the upgrade message. */
 function cheapestPlanWith(feature: FeatureKey): string {
@@ -26,7 +40,7 @@ export function requireFeature(feature: FeatureKey) {
       if (user.role === 'system_admin' && !user.agencyId) return next();
       if (!user.agencyId) return next();
 
-      const agency = await Agency.findById(user.agencyId);
+      const agency = await getAgencyForAccessCheck(user.agencyId);
       if (!agency) return next();
 
       if (subscriptionService.entitlements(agency)[feature]) return next();
@@ -52,7 +66,7 @@ export async function enforceSeatLimit(req: AuthRequest, _res: Response, next: N
     const user = req.user;
     if (!user?.agencyId) return next();
 
-    const agency = await Agency.findById(user.agencyId);
+    const agency = await getAgencyForAccessCheck(user.agencyId);
     if (!agency) return next();
 
     const { maxUsers } = subscriptionService.entitlements(agency);

@@ -295,6 +295,7 @@ export const seasonsApi = {
     api.post(`/seasons/${id}/pilgrims/attach`, { travelFileIds }),
   detachFile: (id: string, travelFileId: string) => api.delete(`/seasons/${id}/pilgrims/${travelFileId}`),
   addArrangement: (id: string, data: Record<string, unknown>) => api.post(`/seasons/${id}/arrangements`, data),
+  manifest: (id: string) => api.get(`/seasons/${id}/manifest`, { responseType: 'blob', timeout: 120000 }),
 };
 
 // ─── Subscription (what the agency pays TourOps) ─────────────────────────────

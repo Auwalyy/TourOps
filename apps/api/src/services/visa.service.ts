@@ -146,7 +146,7 @@ export const visaService = {
     const [agency, visas] = await Promise.all([
       Agency.findById(agencyId),
       VisaApplication.find({ _id: { $in: ids }, agencyId })
-        .populate('customerId', 'firstName lastName fullName passport')
+        .populate('customerId', 'firstName lastName fullName passport gender dateOfBirth nationality phone')
         .lean(),
     ]);
     if (!agency) throw new NotFoundError('Agency');
@@ -161,11 +161,20 @@ export const visaService = {
       name: v.customerId?.fullName
         || `${v.customerId?.firstName || ''} ${v.customerId?.lastName || ''}`.trim()
         || '—',
+      gender: v.customerId?.gender,
+      dateOfBirth: v.customerId?.dateOfBirth,
+      nationality: v.customerId?.nationality,
+      passportExpiry: v.customerId?.passport?.expiryDate,
       documentNumber: v.visaNumber,
       purpose: v.visaType || v.purposeOfTravel,
       issueDate: v.visaIssuedDate,
     }));
 
-    return generateVisaBatchPDF(agency, rows, { groupName: title });
+    // One destination across the batch is the common case; print it if so.
+    const destinations = Array.from(new Set(ordered.map((v: any) => v.destinationCountry).filter(Boolean)));
+    return generateVisaBatchPDF(agency, rows, {
+      groupName: title,
+      destination: destinations.length === 1 ? (destinations[0] as string) : undefined,
+    });
   },
 };

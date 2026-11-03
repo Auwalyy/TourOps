@@ -1,7 +1,8 @@
 'use client';
-import { ReactNode } from 'react';
-import { ChevronLeft, ChevronRight, Inbox } from 'lucide-react';
+import { ReactNode, useRef, useState } from 'react';
+import { ChevronLeft, ChevronRight, Inbox, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { startProgress } from '@/lib/prefetch';
 import { Button } from './Button';
 import { Skeleton } from './Card';
 
@@ -22,14 +23,37 @@ interface DataTableProps<T> {
   onPageChange?: (page: number) => void;
   emptyMessage?: string;
   onRowClick?: (row: T) => void;
+  /** Fires when the pointer rests on a row — use it to prefetch what a click opens. */
+  onRowHover?: (row: T) => void;
   keyExtractor: (row: T) => string;
 }
 
 export function DataTable<T>({
   columns, data, loading, total = 0, page = 1, limit = 20,
-  onPageChange, emptyMessage = 'No records found', onRowClick, keyExtractor,
+  onPageChange, emptyMessage = 'No records found', onRowClick, onRowHover, keyExtractor,
 }: DataTableProps<T>) {
   const totalPages = Math.ceil(total / limit);
+  // The row just clicked, so it can show it is opening while the next page loads.
+  const [opening, setOpening] = useState<string | null>(null);
+  const hoverTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  function handleClick(row: T) {
+    if (!onRowClick) return;
+    setOpening(keyExtractor(row));
+    startProgress();
+    onRowClick(row);
+  }
+
+  function handleEnter(row: T) {
+    if (!onRowHover) return;
+    // A short dwell, so sweeping the mouse down the table doesn't fetch every row.
+    if (hoverTimer.current) clearTimeout(hoverTimer.current);
+    hoverTimer.current = setTimeout(() => onRowHover(row), 120);
+  }
+
+  function handleLeave() {
+    if (hoverTimer.current) clearTimeout(hoverTimer.current);
+  }
 
   if (loading) {
     return (
@@ -73,17 +97,24 @@ export function DataTable<T>({
             {data.map((row) => (
               <tr
                 key={keyExtractor(row)}
-                onClick={() => onRowClick?.(row)}
+                onClick={() => handleClick(row)}
+                onMouseEnter={() => handleEnter(row)}
+                onMouseLeave={handleLeave}
+                onTouchStart={() => onRowHover?.(row)}
                 className={cn(
                   'transition-colors hover:bg-neutral-50',
-                  onRowClick && 'cursor-pointer'
+                  onRowClick && 'cursor-pointer',
+                  opening === keyExtractor(row) && 'bg-blue-50/60 hover:bg-blue-50/60'
                 )}
               >
-                {columns.map((col) => (
+                {columns.map((col, i) => (
                   <td
                     key={col.key}
-                    className={cn('px-4 py-2.5 text-neutral-700', col.className)}
+                    className={cn('px-4 py-2.5 text-neutral-700', i === 0 && 'relative', col.className)}
                   >
+                    {i === 0 && opening === keyExtractor(row) && (
+                      <Loader2 className="absolute left-0.5 top-1/2 h-3 w-3 -translate-y-1/2 animate-spin text-blue-600" aria-label="Opening" />
+                    )}
                     {col.render ? col.render(row) : String((row as any)[col.key] ?? '')}
                   </td>
                 ))}

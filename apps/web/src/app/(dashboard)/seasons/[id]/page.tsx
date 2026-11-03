@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import {
-  ArrowLeft, BedDouble, CalendarDays, FolderInput, Pencil, Plane, Plus, Trash2, Upload, UserMinus, Users,
+  ArrowLeft, BedDouble, CalendarDays, FileDown, FolderInput, Pencil, Plane, Plus, Trash2, Upload, UserMinus, Users,
 } from 'lucide-react';
 import { seasonsApi } from '@/services/api.service';
 import { Button } from '@/components/ui/Button';
@@ -15,6 +15,7 @@ import { ConfirmDialog } from '@/components/ui/Modal';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { SearchInput } from '@/components/shared/SearchInput';
 import { cn, formatCurrency, formatDate } from '@/lib/utils';
+import { prefetchTravelFile, startProgress } from '@/lib/prefetch';
 import { PilgrimStep, SeasonDetail, SeasonPilgrim } from '@/types';
 import { SeasonFormModal } from '@/components/features/seasons/SeasonFormModal';
 import { AddPilgrimModal } from '@/components/features/seasons/AddPilgrimModal';
@@ -50,6 +51,7 @@ export default function SeasonDetailPage() {
   const [selected, setSelected] = useState<string[]>([]);
   const [modal, setModal] = useState<'' | 'edit' | 'add' | 'bulk' | 'attach' | 'arrange' | 'delete'>('');
   const [removing, setRemoving] = useState<SeasonPilgrim | null>(null);
+  const [opening, setOpening] = useState<string | null>(null);
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['seasons', id],
@@ -65,6 +67,20 @@ export default function SeasonDetailPage() {
       qc.invalidateQueries({ queryKey: ['travel-files'] });
     },
     onError: (e: any) => toast.error(e.response?.data?.message || 'Could not remove pilgrim'),
+  });
+
+  const manifestMutation = useMutation({
+    mutationFn: () => seasonsApi.manifest(id),
+    onSuccess: (res) => {
+      const url = URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${(data?.season.name || 'season').toLowerCase().replace(/[^a-z0-9]+/g, '-')}-manifest.pdf`;
+      a.click();
+      // Revoking straight away can cancel the download in some browsers.
+      setTimeout(() => URL.revokeObjectURL(url), 10000);
+    },
+    onError: () => toast.error('Could not create the manifest — please try again'),
   });
 
   const deleteMutation = useMutation({
@@ -138,6 +154,16 @@ export default function SeasonDetailPage() {
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Button variant="outline" onClick={() => setModal('edit')}><Pencil className="h-3.5 w-3.5" /> Edit season</Button>
+          <Button
+            variant="outline"
+            onClick={() => manifestMutation.mutate()}
+            loading={manifestMutation.isPending}
+            disabled={!activeCount}
+            title={activeCount ? 'Download the pilgrim manifest (PDF)' : 'Add pilgrims first'}
+          >
+            {!manifestMutation.isPending && <FileDown className="h-3.5 w-3.5" />}
+            {manifestMutation.isPending ? 'Preparing…' : 'Manifest PDF'}
+          </Button>
           <Button variant="outline" onClick={() => setModal('attach')}><FolderInput className="h-3.5 w-3.5" /> Move files in</Button>
           <Button variant="outline" onClick={() => setModal('bulk')} disabled={full}><Upload className="h-3.5 w-3.5" /> Bulk from passports</Button>
           <Button onClick={() => setModal('add')} disabled={full} title={full ? 'This season is fully booked' : undefined}>
@@ -259,8 +285,14 @@ export default function SeasonDetailPage() {
                   return (
                     <tr
                       key={p._id}
-                      onClick={() => router.push(`/travel-files/${p._id}`)}
-                      className={cn('cursor-pointer transition-colors hover:bg-neutral-50', inactive && 'opacity-50')}
+                      onClick={() => { setOpening(p._id); startProgress(); router.push(`/travel-files/${p._id}`); }}
+                      onMouseEnter={() => prefetchTravelFile(qc, p._id, router.prefetch)}
+                      onTouchStart={() => prefetchTravelFile(qc, p._id, router.prefetch)}
+                      className={cn(
+                        'cursor-pointer transition-colors hover:bg-neutral-50',
+                        inactive && 'opacity-50',
+                        opening === p._id && 'bg-blue-50/60 hover:bg-blue-50/60'
+                      )}
                     >
                       <td className="px-4 py-2.5" onClick={(e) => e.stopPropagation()}>
                         {!inactive && (
